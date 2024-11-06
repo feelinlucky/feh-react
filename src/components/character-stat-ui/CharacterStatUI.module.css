@@ -1,0 +1,67 @@
+.characterTable {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr; /* Three columns: auto-sized first column, equal-width second and third columns */
+    grid-template-rows: 308px repeat(6, 77px); /* First row is 308px, other rows are 1/4 of 308px */
+    gap: 10px; /* Gap between cells */
+    width: 100%; /* Ensure the grid takes the full width of the page */
+    max-width: 1200px; /* Optional: Set a maximum width for the grid */
+    margin: 0 auto; /* Center the grid on the page */
+}
+
+.characterCell {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden; /* Hide overflow content */
+}
+
+.characterHeader {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.characterLevel {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.statContainer {
+    position: relative;
+    display: inline-block;
+    width: 100%; /* Make the stat container responsive */
+    height: 100%; /* Make the stat container take the full height of the grid cell */
+    background-size: cover; /* Scale the background image to fit the container */
+    background-position: center; /* Center the background image */
+    z-index: 0; /* Add z-index property */
+    margin-bottom: 0; /* Remove margin for spacing */
+}
+
+.statText {
+    position: absolute;
+    top: 50%; /* Set top to 50% */
+    left: 50%; /* Set left to 50% */
+    transform: translate(-50%, -50%); /* Translate to center */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 16px; /* Adjust the font size to fit within the container */
+    color: white; /* Change font color to white */
+    font-weight: bold;
+    z-index: 1; /* Add z-index property */
+}
+
+.sprite {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    z-index: 0; /* Ensure the sprite is behind the text */
+}
