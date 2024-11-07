@@ -5,7 +5,7 @@ import { GameDataProvider } from '../../store/GameDataContext';
 
 const mockState = {
   character: {
-    name: 'Alfonse',
+    charName: 'Alfonse',
     image: '/path/to/alfonse-image.jpg',
     level: 40,
     stats: { hp: 40, atk: 60, def: 25, spd: 40, res: 60 },
@@ -13,7 +13,7 @@ const mockState = {
   },
   map: {
     image: '/assets/images/map/Map_S0001.jpg',
-    selectedOption: 'Map_S0001'
+    name: 'Map_S0001'
   }
 };
 

@@ -2,9 +2,9 @@ import React from 'react';
 import styles from './CharacterStatUI.module.css';
 import MockChild from '../../components/mock-child/MockChild';
 
-const CharacterStatUI = ({ name, level, wpn, hp, atk, spd, def, res }) => {
+const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
     const characterStats = [
-        { CharacterStatType: 'NAME', CharacterStatValue: name },
+        { CharacterStatType: 'NAME', CharacterStatValue: charName },
         { CharacterStatType: 'LV', CharacterStatValue: level },
         { CharacterStatType: 'WPN', CharacterStatValue: wpn },
         { CharacterStatType: 'HP', CharacterStatValue: hp },
@@ -13,6 +13,17 @@ const CharacterStatUI = ({ name, level, wpn, hp, atk, spd, def, res }) => {
         { CharacterStatType: 'DEF', CharacterStatValue: def },
         { CharacterStatType: 'RES', CharacterStatValue: res },
     ];
+
+    console.log('Character Stats:', {
+        charName,
+        level,
+        wpn,
+        hp,
+        atk,
+        spd,
+        def,
+        res
+    });
 
     const characterStatsSlice1 = characterStats.slice(0, 4);
     const characterStatsSlice2 = characterStats.slice(4);
