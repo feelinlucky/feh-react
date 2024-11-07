@@ -1,28 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import styles from './GameUI.module.css';
 import { useLocation } from 'react-router-dom';
-import MockChild from '../../components/mock-child/MockChild';
-
+import CharacterStatUI from '../character-stat-ui/CharacterStatUI';  // Updated import path
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
 const GameUI = () => {
   const location = useLocation();
-  const frontPageState = location.state || {}; // Provide default empty object
+  const frontPageState = location.state || {};
   const character = frontPageState.character;
   const map = frontPageState.map;
 
-  const [characterState, setCharacterState] = useState({}); // Initialize with an empty object
-  const [mapState, setMapState] = useState({}); // Initialize with an empty object
+  const [characterState, setCharacterState] = useState({});
+  const [mapState, setMapState] = useState({});
 
   const characterSetup = () => {
     if (!character) {
-      return {}; // Return an empty object if character is null
+      return {};
     }
 
     const { charName, level, stats, weapon } = character;
-    const { hp, atk, spd, def, res } = stats || {}; // Handle potential null stats
-    const wpn = weapon?.name || ''; // Handle potential null weapon
-    const wpnIconUrl = weapon?.icon ? `${publicFolder}${weapon.icon}` : ''; // Handle potential null weapon icon
+    const { hp, atk, spd, def, res } = stats || {};
+    const wpn = weapon?.name || '';
+    const wpnIconUrl = weapon?.icon ? `${publicFolder}${weapon.icon}` : '';
     
     return {
       charName: charName || '',
@@ -33,13 +32,13 @@ const GameUI = () => {
       atk: atk || 0,
       spd: spd || 0,
       def: def || 0,
-      res: res || 0
+      res: res || 0,
     };
   };
 
   const mapSetup = () => {
     if (!map) {
-      return {}; // Return an empty object if map is null
+      return {};
     }
 
     const name = map.name || '';
@@ -52,20 +51,20 @@ const GameUI = () => {
     setMapState(mapSetup());
   }, [character, map]);
 
-  console.log(characterState.charName);
-  console.log(mapState.name);
+  const mapImage = mapState.imageUrl || `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
 
-  const mapImage = mapState.imageUrl || `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`; // TODO: add placeholder image
   return (
     <div className={styles['game-container']}>
-      {console.log('Rendering GameUI')}
       <div className={styles['content-wrapper']}>
-        <MockChild 
-          componentName="CharacterStatUI" 
-          width="40vw" 
-          minWidth="720px" 
-          backgroundColor="gray" 
-          componentState={frontPageState} 
+        <CharacterStatUI
+          charName={characterState.charName}
+          level={characterState.level}
+          wpn={characterState.wpn}
+          hp={characterState.hp}
+          atk={characterState.atk}
+          spd={characterState.spd}
+          def={characterState.def}
+          res={characterState.res}
         />
         <div className={styles['map-container']}>
           <img src={mapImage} alt="Game Map" className={styles['map-image']} />

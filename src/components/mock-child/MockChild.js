@@ -11,7 +11,7 @@ const MockChild = ({ componentName, ...props }) => {
     const commonStyles = {
       display: 'flex',
       alignItems: 'center',
-      paddingLeft: '16px', // Add indentation
+      paddingLeft: '8px', // Add indentation
       boxSizing: 'border-box', // Ensure padding is included in the width and height
     };
 
@@ -34,7 +34,7 @@ const MockChild = ({ componentName, ...props }) => {
           </div>
         );
       case 'SingleCharacterStatUI':
-        const { CharacterStatType, CharacterStatValue } = props;
+        const { characterStatType, characterStatValue } = props;
         return (
           <div
             data-testid="mock-single-character-stat-ui"
@@ -47,7 +47,7 @@ const MockChild = ({ componentName, ...props }) => {
               minHeight: `${1280 * 0.04}px`,
             }}
           >
-            {CharacterStatType}: {CharacterStatValue}
+            {characterStatType}: {characterStatValue}
           </div>
         );
       case 'CharacterStatPortrait':
@@ -58,7 +58,7 @@ const MockChild = ({ componentName, ...props }) => {
             style={{
               ...commonStyles,
               width: '20vw',
-              height: '16vh',
+              height: '40px',
               backgroundColor: props.backgroundColor,
               minWidth: `${720 * 0.2}px`, // based on the width of 'CharacterStatUI'
               minHeight: `${1280 * 0.16}px`,

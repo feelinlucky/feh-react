@@ -6,7 +6,7 @@ export default {
   title: 'SingleCharacterStatUI',
   component: SingleCharacterStatUI,
   argTypes: {
-    CharacterStatType: { control: 'text' },
+    characterStatType: { control: 'text' },
   },
 };
 
@@ -14,15 +14,18 @@ const Template = (args) => <SingleCharacterStatUI {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
-  CharacterStatType: 'Attack',
+  characterStatType: 'ATK',
+  characterStatValue: 60,
 };
 
 export const DifferentStatType = Template.bind({});
 DifferentStatType.args = {
-  CharacterStatType: 'Defense',
+  characterStatType: 'DEF',
+  characterStatValue: 60,
 };
 
 export const LongStatType = Template.bind({});
 LongStatType.args = {
-  CharacterStatType: 'Magic Resistance',
+  characterStatType: 'RES',
+  characterStatValue: 60,
 };

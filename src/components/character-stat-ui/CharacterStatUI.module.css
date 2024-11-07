@@ -1,17 +1,17 @@
 .characterTable {
     display: grid;
-    grid-template-columns: auto 1fr 1fr; /* Three columns: auto-sized first column, equal-width second and third columns */
-    grid-template-rows: 308px repeat(6, 77px); /* First row is 308px, other rows are 1/4 of 308px */
-    gap: 10px; /* Gap between cells */
-    width: 100%; /* Ensure the grid takes the full width of the page */
-    max-width: 1200px; /* Optional: Set a maximum width for the grid */
-    margin: 0 auto; /* Center the grid on the page */
+    grid-template-columns: auto 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 0px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .characterCell {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0px; /* Reduced from 8px */
     overflow: hidden; /* Hide overflow content */
 }
 

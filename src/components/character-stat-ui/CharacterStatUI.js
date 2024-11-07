@@ -4,14 +4,14 @@ import MockChild from '../../components/mock-child/MockChild';
 
 const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
     const characterStats = [
-        { CharacterStatType: 'NAME', CharacterStatValue: charName },
-        { CharacterStatType: 'LV', CharacterStatValue: level },
-        { CharacterStatType: 'WPN', CharacterStatValue: wpn },
-        { CharacterStatType: 'HP', CharacterStatValue: hp },
-        { CharacterStatType: 'ATK', CharacterStatValue: atk },
-        { CharacterStatType: 'SPD', CharacterStatValue: spd },
-        { CharacterStatType: 'DEF', CharacterStatValue: def },
-        { CharacterStatType: 'RES', CharacterStatValue: res },
+        { characterStatType: 'NAME', characterStatValue: charName },
+        { characterStatType: 'LV', characterStatValue: level },
+        { characterStatType: 'WPN', characterStatValue: wpn },
+        { characterStatType: 'HP', characterStatValue: hp },
+        { characterStatType: 'ATK', characterStatValue: atk },
+        { characterStatType: 'SPD', characterStatValue: spd },
+        { characterStatType: 'DEF', characterStatValue: def },
+        { characterStatType: 'RES', characterStatValue: res },
     ];
 
     console.log('Character Stats:', {
@@ -40,8 +40,8 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
                             key={index}
                             componentName="SingleCharacterStatUI"
                             backgroundColor="lightcoral"
-                            CharacterStatType={item.CharacterStatType}
-                            CharacterStatValue={item.CharacterStatValue}
+                            characterStatType={item.characterStatType}
+                            characterStatValue={item.characterStatValue}
                         />
                     ))}
                 </div>
@@ -53,8 +53,8 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
                             key={index}
                             componentName="SingleCharacterStatUI"
                             backgroundColor="gray"
-                            CharacterStatType={item.CharacterStatType}
-                            CharacterStatValue={item.CharacterStatValue}
+                            characterStatType={item.characterStatType}
+                            characterStatValue={item.characterStatValue}
                         />
                     ))}
                 </div>
