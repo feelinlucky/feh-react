@@ -5,20 +5,7 @@ import styles from './SingleCharacterStatUI.module.css';
 
 const SingleCharacterStatUI = ({ characterStatType, characterStatValue, backgroundColor }) => {
   return (
-    <div
-      className={styles.statContainer}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '8px',
-        boxSizing: 'border-box',
-        width: '40vw',
-        height: '4vh',
-        backgroundColor: backgroundColor,
-        minWidth: `${720 * 0.4}px`,
-        minHeight: `${1280 * 0.04}px`,
-      }}
-    >
+    <div className={styles.statContainer} style={{ backgroundColor }}>
       <Sprite spriteName="UiStatBg" className={styles.sprite} />
       <span className={styles.statText}>
     {characterStatType}: {characterStatValue}
