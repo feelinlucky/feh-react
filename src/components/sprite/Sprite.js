@@ -46,7 +46,7 @@ const Sprite = ({ spriteName, children }) => {
     height: `${spriteDimension.height}px`,
     background: `url(${spriteSheet[spriteName]})`,
     backgroundPosition: `-${spritePosition.x}px -${spritePosition.y}px`,
-    backgroundSize: 'auto',
+    backgroundSize: `auto`,
     display: 'inline-block',
     transform: spriteInfo.rotate ? 'rotate(90deg)' : 'none',
     position: 'relative',
@@ -54,7 +54,9 @@ const Sprite = ({ spriteName, children }) => {
 
   return (
     <div className={styles.sprite} style={style} data-testid="sprite">
-      <div className={styles.textContainer} style={{ transform: spriteInfo.rotate ? 'rotate(-90deg)' : 'none' }}/>
+      <div className={styles.textContainer} style={{ transform: spriteInfo.rotate ? 'rotate(-90deg)' : 'none' }}>
+        {children}
+      </div>
     </div>
   );
 };

@@ -6,7 +6,10 @@ import styles from './SingleCharacterStatUI.module.css';
 const SingleCharacterStatUI = ({ characterStatType, characterStatValue, backgroundColor }) => {
   return (
     <div className={styles.statContainer} style={{ backgroundColor }}>
-      <Sprite spriteName="UiStatBg" className={styles.sprite} />
+      <Sprite 
+        spriteName="UiStatBg" 
+        className={styles.sprite} 
+      />
       <span className={styles.statText}>
     {characterStatType}: {characterStatValue}
       </span>

@@ -17,7 +17,7 @@ const MockChild = ({ componentName, ...props }) => {
 
     switch (componentName) {
       case 'CharacterStatUI':
-        
+
         return (
           <div
             data-testid="mock-character-stat-ui"

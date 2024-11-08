@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './CharacterStatUI.module.css';
 import MockChild from '../../components/mock-child/MockChild';
+import SingleCharacterStatUI from '../../components/single-character-stat-ui/SingleCharacterStatUI';
 
 const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
     const characterStats = [
@@ -36,12 +37,10 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
             <div className={styles.characterCell} style={{ gridColumn: '2 / 3', gridRow: '1 / span 7' }}>
                 <div>
                     {characterStatsSlice1.map((item, index) => (
-                        <MockChild
-                            key={index}
-                            componentName="SingleCharacterStatUI"
-                            backgroundColor="lightcoral"
+                        <SingleCharacterStatUI
                             characterStatType={item.characterStatType}
                             characterStatValue={item.characterStatValue}
+                            backgroundColor="white"
                         />
                     ))}
                 </div>
@@ -49,6 +48,13 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
             <div className={styles.characterCell} style={{ gridColumn: '3 / 4', gridRow: '1 / span 7' }}>
                 <div>
                     {characterStatsSlice2.map((item, index) => (
+                        <SingleCharacterStatUI
+                            characterStatType={item.characterStatType}
+                            characterStatValue={item.characterStatValue}
+                            backgroundColor="white"
+                        />
+
+/*
                         <MockChild
                             key={index}
                             componentName="SingleCharacterStatUI"
@@ -56,6 +62,7 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
                             characterStatType={item.characterStatType}
                             characterStatValue={item.characterStatValue}
                         />
+*/                        
                     ))}
                 </div>
             </div>

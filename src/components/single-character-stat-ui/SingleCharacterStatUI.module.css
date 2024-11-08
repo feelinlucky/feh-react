@@ -1,5 +1,4 @@
 .statContainer {
-    position: relative;
     display: flex;
     align-items: center;
     padding-left: 8px;
@@ -7,19 +6,18 @@
     width: 40vw;
     height: 4vh;
     min-width: 288px;
-    /* 720 * 0.4 */
     min-height: 51.2px;
-    /* 1280 * 0.04 */
+    position: relative;
+    overflow: hidden;
 }
 
 .statText {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2;
     color: white;
     font-weight: bold;
+    z-index: 2;
+    position: absolute;
+    top: 16px;
+    left: 16px;
 }
 
 .sprite {
@@ -30,6 +28,8 @@
     height: 100%;
     background-size: cover;
     background-position: center;
-    z-index: 0;
-    /* Ensure the sprite is behind the text */
+    z-index: 1;
+    isolation: isolate;
+    display: block;
+    object-fit: cover;
 }
