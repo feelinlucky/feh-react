@@ -12,3 +12,13 @@ export const Default = Template.bind({});
 Default.args = {
     spriteName: "UiStatBg"
 };
+
+export const CharPortraitDefault = Template.bind({});
+CharPortraitDefault.args = {
+  spriteName: "PortraitAlfonse",
+};
+
+export const ButtonBgDefault = Template.bind({});
+ButtonBgDefault.args = {
+  spriteName: "ButtonBg1",
+};

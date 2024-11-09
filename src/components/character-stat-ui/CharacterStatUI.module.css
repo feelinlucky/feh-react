@@ -1,6 +1,6 @@
 .characterTable {
     display: grid;
-    grid-template-columns: auto 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr;
     gap: 0px;
     width: 100%;
@@ -9,11 +9,33 @@
     isolation: isolate;
 }
 
+:root {
+    --stat-cell-height: 51.35px;
+    --stat-cell-count: 4;
+}
+
 .characterCell {
     display: flex;
     flex-direction: column;
-    gap: 0px; /* Reduced from 8px */
-    overflow: hidden; /* Hide overflow content */
+    gap: 0px;
+    overflow: hidden;
+    position: relative;
+    height: min(calc(var(--stat-cell-height) * var(--stat-cell-count)), 25vh);
+    min-height: calc(var(--stat-cell-height) * var(--stat-cell-count));
+}
+
+.characterCell:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.characterCell:first-child > div {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .characterHeader {
@@ -31,38 +53,38 @@
 .statContainer {
     position: relative;
     display: inline-block;
-    width: 100%; /* Make the stat container responsive */
-    height: 100%; /* Make the stat container take the full height of the grid cell */
-    background-size: cover; /* Scale the background image to fit the container */
-    background-position: center; /* Center the background image */
-    z-index: 0; /* Add z-index property */
-    margin-bottom: 0; /* Remove margin for spacing */
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+    margin-bottom: 0;
 }
 
 .statText {
     position: absolute;
-    top: 50%; /* Set top to 50% */
-    left: 50%; /* Set left to 50% */
-    transform: translate(-50%, -50%); /* Translate to center */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    font-size: 16px; /* Adjust the font size to fit within the container */
-    color: white; /* Change font color to white */
+    font-size: 16px;
+    color: white;
     font-weight: bold;
-    z-index: 1; /* Add z-index property */
+    z-index: 1;
 }
 
-.sprite {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+.Sprite[spriteName="PortraitAlfonse"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 'auto';
     height: 100%;
-    background-size: cover;
-    background-position: center;
-    z-index: 0; /* Ensure the sprite is behind the text */
+    padding-left: 8px;
+    box-sizing: border-box;
+    overflow: hidden;
 }

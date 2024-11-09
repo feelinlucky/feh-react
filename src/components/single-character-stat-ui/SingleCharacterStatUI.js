@@ -8,7 +8,7 @@ const SingleCharacterStatUI = ({ characterStatType, characterStatValue, backgrou
     <div className={styles.statContainer} style={{ backgroundColor }}>
       <Sprite 
         spriteName="UiStatBg" 
-        className={styles.sprite} 
+        className={styles.sprite}
       />
       <span className={styles.statText}>
     {characterStatType}: {characterStatValue}

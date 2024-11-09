@@ -1,7 +1,8 @@
 import React from 'react';
 import styles from './CharacterStatUI.module.css';
-import MockChild from '../../components/mock-child/MockChild';
-import SingleCharacterStatUI from '../../components/single-character-stat-ui/SingleCharacterStatUI';
+import Sprite from '../sprite/Sprite';
+import SingleCharacterStatUI from '../single-character-stat-ui/SingleCharacterStatUI';
+import MockChild from '../mock-child/MockChild';
 
 const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
     const characterStats = [
@@ -28,46 +29,35 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
 
     const characterStatsSlice1 = characterStats.slice(0, 4);
     const characterStatsSlice2 = characterStats.slice(4);
-
     return (
         <div className={styles.characterTable}>
-            <div className={styles.characterCell} style={{ gridColumn: '1 / 2', gridRow: '1 / span 7' }}>
-                <MockChild componentName="CharacterStatPortrait" backgroundColor="lightgray" characterName="Alfonse" />
-            </div>
-            <div className={styles.characterCell} style={{ gridColumn: '2 / 3', gridRow: '1 / span 7' }}>
-                <div>
-                    {characterStatsSlice1.map((item, index) => (
-                        <SingleCharacterStatUI
-                            characterStatType={item.characterStatType}
-                            characterStatValue={item.characterStatValue}
-                            backgroundColor="white"
-                        />
-                    ))}
+            <div className={styles.characterCell}>
+                <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+                    <Sprite spriteName="PortraitAlfonse" />
                 </div>
             </div>
-            <div className={styles.characterCell} style={{ gridColumn: '3 / 4', gridRow: '1 / span 7' }}>
-                <div>
-                    {characterStatsSlice2.map((item, index) => (
-                        <SingleCharacterStatUI
-                            characterStatType={item.characterStatType}
-                            characterStatValue={item.characterStatValue}
-                            backgroundColor="white"
-                        />
-
-/*
-                        <MockChild
-                            key={index}
-                            componentName="SingleCharacterStatUI"
-                            backgroundColor="gray"
-                            characterStatType={item.characterStatType}
-                            characterStatValue={item.characterStatValue}
-                        />
-*/                        
-                    ))}
-                </div>
+            <div className={styles.characterCell}>
+                {characterStatsSlice1.map((item, index) => (
+                    <SingleCharacterStatUI
+                        key={index}
+                        characterStatType={item.characterStatType}
+                        characterStatValue={item.characterStatValue}
+                        backgroundColor="white"
+                    />
+                ))}
+            </div>
+            <div className={styles.characterCell}>
+                {characterStatsSlice2.map((item, index) => (
+                    <SingleCharacterStatUI
+                        key={index}
+                        characterStatType={item.characterStatType}
+                        characterStatValue={item.characterStatValue}
+                        backgroundColor="white"
+                    />
+                ))}
             </div>
         </div>
+
     );
 };
-
 export default CharacterStatUI;

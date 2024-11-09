@@ -11,6 +11,7 @@ const Sprite = ({ spriteName, children }) => {
     Weapon1: `${process.env.PUBLIC_URL}/assets/images/ui/UnitEdit.png`,
     PortraitAlfonse: `${process.env.PUBLIC_URL}/assets/images/portrait/87754.png`,
     UiStatBg: `${process.env.PUBLIC_URL}/assets/images/ui/Common_Window.png`,
+    ButtonBg1: `${process.env.PUBLIC_URL}/assets/images/ui/UnitEdit.png`,
   };
 
   const spriteData = {
@@ -26,7 +27,11 @@ const Sprite = ({ spriteName, children }) => {
       position: { x: 1561, y: 944 },
       dimension: { width: 73, height: 860 },
       rotate: true,
-    }
+    },
+    ButtonBg1: {
+      position: { x: 1296, y: 1134 },
+      dimension: { width: 142, height: 142 },
+    },
   };
 
   const spriteInfo = spriteData[spriteName];

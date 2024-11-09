@@ -59,20 +59,30 @@
 }
 
 .action-button {
-  width: 50px;
-  height: 50px;
-  margin: 0 5px;
+  width: 60px;
+  /* Set a fixed width */
+  height: 60px;
+  /* Match the width for perfect circle */
+  margin: 10px;
   background-color: #4a90e2;
   border: none;
   border-radius: 50%;
 }
 
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .leftAlignedButtons {
-  float: left;
+  display: flex;
+  gap: 10px;
 }
 
 .rightAlignedButtons {
-  float: right;
+  display: flex;
+  gap: 10px;
 }
 
 .game-container .button-group {
