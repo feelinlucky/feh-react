@@ -80,12 +80,12 @@
 
 .leftAlignedButtons {
   display: flex;
-  gap: 10px;
+  gap: 1vw;
 }
 
 .rightAlignedButtons {
   display: flex;
-  gap: 10px;
+  gap: 1vw;
 }
 
 .game-container .button-group {
