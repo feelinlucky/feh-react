@@ -32,6 +32,12 @@ export const CharacterStatPortraitDefault = Template.bind({});
 CharacterStatPortraitDefault.args = {
   componentName: "CharacterStatPortrait",
   backgroundColor: "lightyellow",
-  CharacterName: "Alfonse",
+  characterName: "Alfonse",
 };
 
+export const MapCharacterDefault = Template.bind({});
+MapCharacterDefault.args = {
+  componentName: "MapCharacter",
+  backgroundColor: "lightyellow",
+  characterName: "Alfonse",
+};

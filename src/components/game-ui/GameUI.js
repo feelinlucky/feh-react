@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import styles from './GameUI.module.css';
 import { useLocation } from 'react-router-dom';
 import CharacterStatUI from '../character-stat-ui/CharacterStatUI';  // Updated import path
+import Sprite from '../sprite/Sprite';
+
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
 const GameUI = () => {
@@ -13,7 +15,7 @@ const GameUI = () => {
   const [characterState, setCharacterState] = useState({});
   const [mapState, setMapState] = useState({});
 
-  const characterSetup = () => {
+  const characterSetup = useCallback(() => {
     if (!character) {
       return {};
     }
@@ -22,7 +24,7 @@ const GameUI = () => {
     const { hp, atk, spd, def, res } = stats || {};
     const wpn = weapon?.name || '';
     const wpnIconUrl = weapon?.icon ? `${publicFolder}${weapon.icon}` : '';
-    
+
     return {
       charName: charName || '',
       level: level || 0,
@@ -34,9 +36,8 @@ const GameUI = () => {
       def: def || 0,
       res: res || 0,
     };
-  };
-
-  const mapSetup = () => {
+  }, [character]);
+  const mapSetup = useCallback(() => {
     if (!map) {
       return {};
     }
@@ -44,12 +45,12 @@ const GameUI = () => {
     const name = map.name || '';
     const imageUrl = map.image ? `${publicFolder}${map.image}` : `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
     return { name, imageUrl };
-  };
+  }, [map]);
 
   useEffect(() => {
     setCharacterState(characterSetup());
     setMapState(mapSetup());
-  }, [character, map]);
+  }, [characterSetup, mapSetup]);
 
   const mapImage = mapState.imageUrl || `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
 
@@ -72,13 +73,23 @@ const GameUI = () => {
         <div className={styles['actionButtonsContainer']}>
           <div className={styles['button-group']}>
             <div className={styles['leftAlignedButtons']}>
-              <button className={styles['action-button']}>1</button>
-              <button className={styles['action-button']}>2</button>
+              <Sprite spriteName="ButtonBg1">
+                <button className={styles['action-button']}>1</button>
+              </Sprite>
+              <Sprite spriteName="ButtonBg1">
+                <button className={styles['action-button']}>2</button>
+              </Sprite>
             </div>
             <div className={styles['rightAlignedButtons']}>
-              <button className={styles['action-button']}>3</button>
-              <button className={styles['action-button']}>4</button>
-              <button className={styles['action-button']}>5</button>
+              <Sprite spriteName="ButtonBg1">
+                <button className={styles['action-button']}>3</button>
+              </Sprite>
+              <Sprite spriteName="ButtonBg1">
+                <button className={styles['action-button']}>4</button>
+              </Sprite>
+              <Sprite spriteName="ButtonBg1">
+                <button className={styles['action-button']}>5</button>
+              </Sprite>
             </div>
           </div>
         </div>

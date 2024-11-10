@@ -1,0 +1,27 @@
+.map-container {
+    position: relative;
+    width: fit-content;
+}
+
+.map-image {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(8, 1fr);
+    pointer-events: none;
+}
+
+.grid-cell {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0); /* Invisible */
+}

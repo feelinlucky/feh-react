@@ -29,8 +29,17 @@ export default function FrontPage() {
 
     navigate('/game-ui', {
       state: {
-        character: { userInput },
-        map: { selectedOption },
+        character: {
+          charName: 'Alfonse',
+          image: '/path/to/alfonse-image.jpg',
+          level: 40,
+          stats: { hp: 40, atk: 60, def: 25, spd: 40, res: 60 },
+          weapon: { name: 'Levin Sword', icon: '/path/to/weapon-icon.png' }
+        },
+        map: {
+          image: '/assets/images/map/Map_S0001.jpg',
+          name: 'Map_S0001'
+        }
       },
     });
   };

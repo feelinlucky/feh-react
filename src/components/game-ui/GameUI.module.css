@@ -59,14 +59,17 @@
 }
 
 .action-button {
-  width: 60px;
-  /* Set a fixed width */
-  height: 60px;
-  /* Match the width for perfect circle */
-  margin: 10px;
-  background-color: #4a90e2;
+  width: 100%;
+  height: 100%;
   border: none;
-  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: calc(1em + 1vw); /* Adjust font size proportionally to button size */
 }
 
 .button-group {
