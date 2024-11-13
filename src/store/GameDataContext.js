@@ -10,7 +10,7 @@ const initialState = {
     weapon: { name: 'Levin Sword', icon: '/path/to/weapon-icon.png' },
   },
   map: {
-    image: '${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg',
+    image: `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`,
   },
 };
 

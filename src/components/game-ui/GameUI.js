@@ -1,94 +1,94 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import styles from './GameUI.module.css';
 import { useLocation } from 'react-router-dom';
-import CharacterStatUI from '../character-stat-ui/CharacterStatUI';  // Updated import path
+import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
 import Sprite from '../sprite/Sprite';
 import GameMap from '../game-map/GameMap';
+
+// TODO make frontPageState.character setting connected to characterData  
+import { characterData } from '../character-data/CharacterData';
+import MapCharacter from '../map-character/MapCharacter';
 
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
 const GameUI = () => {
+  // Get setup from FrontPage
   const location = useLocation();
   const frontPageState = location.state || {};
-  const character = frontPageState.character;
-  const map = frontPageState.map;
 
-  const [characterState, setCharacterState] = useState({});
-  const [mapState, setMapState] = useState({});
+  // Default UI states
+  const [characterUIState, setCharacterUIState] = useState({});
+  const [mapState, setMapState] = useState(frontPageState.map);
+  const [clickedState, setClickedState] = useState(null);
+  const [gridCenterCoordinates, setGridCenterCoordinates] = useState([]);
+  const [selectedCharacter, setSelectedCharacter] = useState("Alfonse");
 
-  const characterSetup = useCallback(() => {
-    if (!character) {
-      return {};
-    }
+  const characterNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
 
-    const { charName, level, stats, weapon } = character;
-    const { hp, atk, spd, def, res } = stats || {};
-    const wpn = weapon?.name || '';
-    const wpnIconUrl = weapon?.icon ? `${publicFolder}${weapon.icon}` : '';
+  const [characters, setCharacters] = useState(
+    characterNames.reduce((acc, name) => {
+      acc[name] = characterData(name);
+      return acc;
+    }, {})
+  );
 
-    return {
-      charName: charName || '',
-      level: level || 0,
-      wpn,
-      wpnIconUrl,
-      hp: hp || 0,
-      atk: atk || 0,
-      spd: spd || 0,
-      def: def || 0,
-      res: res || 0,
-    };
-  }, [character]);
-  const mapSetup = useCallback(() => {
-    if (!map) {
-      return {};
-    }
+  const handleGridCenterCoordinates = useCallback((gridCenterCoordinates) => {
+    setGridCenterCoordinates(gridCenterCoordinates);
+  }, [mapState]);
 
-    const name = map.name || '';
-    const imageUrl = map.image ? `${publicFolder}${map.image}` : `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
-    return { name, imageUrl };
-  }, [map]);
+  function rowColNumToGridCoord (rowNum, colNum) {
+    return gridCenterCoordinates[`${rowNum}-${colNum}`];
+  };
 
   useEffect(() => {
-    setCharacterState(characterSetup());
-    setMapState(mapSetup());
-  }, [characterSetup, mapSetup]);
+    if (selectedCharacter) {
+      const selectedCharData = characters[selectedCharacter];
 
-  const mapImage = mapState.imageUrl || `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
+      setCharacterUIState({
+        charName: selectedCharacter,
+        level: selectedCharData.level,
+        wpn: selectedCharData.wpn,
+        hp: selectedCharData.hp,
+        atk: selectedCharData.atk,
+        spd: selectedCharData.spd,
+        def: selectedCharData.def,
+        res: selectedCharData.res
+      });
+    }
+  }, [selectedCharacter, setCharacterUIState]);
 
-  const handleGridClick = useCallback((gridX, gridY) => {
-    // Implement your grid click handling logic here.
-    console.log(`Grid clicked at X: ${gridX}, Y: ${gridY}`);
-    // Example:  Make an API call to update game state based on the clicked grid.
-    // fetch(`/api/game/update?x=${gridX}&y=${gridY}`, {method: 'POST'})
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     // Update UI based on API response
-    //   })
-    //   .catch(error => {
-    //     console.error('Error updating game state:', error);
-    //   });
-
-  }, []);
-
-
+  // Update UI State after click
+  const handleGridClick = useCallback((gridY, gridX) => {
+    setClickedState({ gridY, gridX });    
+    console.log('Clicked grid cell:', gridY, gridX, ' at ', rowColNumToGridCoord(gridY, gridX));    
+  }, [setClickedState, rowColNumToGridCoord]);
+  
   return (
     <div className={styles['game-container']}>
       <div className={styles['content-wrapper']}>
         <CharacterStatUI
-          charName={characterState.charName}
-          level={characterState.level}
-          wpn={characterState.wpn}
-          hp={characterState.hp}
-          atk={characterState.atk}
-          spd={characterState.spd}
-          def={characterState.def}
-          res={characterState.res}
+          charName={characterUIState.charName || ''}
+          level={characterUIState.level || 0}
+          wpn={characterUIState.wpn || ''}
+          hp={characterUIState.hp || 0}
+          atk={characterUIState.atk || 0}
+          spd={characterUIState.spd || 0}
+          def={characterUIState.def || 0}
+          res={characterUIState.res || 0}
         />
         <div className={styles['map-container']}>
           <GameMap
-              onGridClick={handleGridClick}
+            onGridClick={handleGridClick}
+            onGridCenterCoordinates={handleGridCenterCoordinates}
           />
         </div>
+
+        {Object.keys(characters).map((charName) => (
+          <MapCharacter
+            key={charName}
+            characterName={charName}
+          />
+        ))}
         <div className={styles['actionButtonsContainer']}>
           <div className={styles['button-group']}>
             <div className={styles['leftAlignedButtons']}>

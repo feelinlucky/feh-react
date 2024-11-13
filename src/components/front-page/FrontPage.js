@@ -37,7 +37,7 @@ export default function FrontPage() {
           weapon: { name: 'Levin Sword', icon: '/path/to/weapon-icon.png' }
         },
         map: {
-          image: '/assets/images/map/Map_S0001.jpg',
+          image: `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`,
           name: 'Map_S0001'
         }
       },

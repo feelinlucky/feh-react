@@ -7,13 +7,17 @@
 }
 
 .content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   background-color: #ffffff;
   border-radius: 15px;
   padding: 20px;
   margin: 20px;
   box-shadow: 0px 10px 30px rgba(153, 153, 153, 0.3);
-  width: calc(100% - 40px);
-  max-width: 800px;
+  width: 100%;
+  max-width: 800px; /* Or your desired maximum width */
+  margin: 0 auto;
 }
 
 .character-info {
@@ -39,9 +43,15 @@
 }
 
 .map-container {
+  width: 100%; /* Will match CharacterStatUI width */
+  margin: 1rem 0;
+}
+
+
+/* .map-container {
   flex-grow: 1;
   overflow: hidden;
-}
+} */
 
 .map-image {
   width: 100%;

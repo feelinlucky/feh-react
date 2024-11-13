@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRef, useEffect } from 'react';
 import styles from './CharacterStatUI.module.css';
 import Sprite from '../sprite/Sprite';
 import SingleCharacterStatUI from '../single-character-stat-ui/SingleCharacterStatUI';
@@ -29,8 +30,18 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
 
     const characterStatsSlice1 = characterStats.slice(0, 4);
     const characterStatsSlice2 = characterStats.slice(4);
+
+    const statUIRef = useRef(null);
+    
+    useEffect(() => {
+        if (statUIRef.current) {
+            // You can expose this width through a prop or context if needed
+            const width = statUIRef.current.offsetWidth;
+        }
+    }, []);
+
     return (
-        <div className={styles.characterTable}>
+        <div ref={statUIRef} className={styles.characterTable}>
             <div className={styles.characterCell}>
                 <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
                     <Sprite spriteName="PortraitAlfonse" />
