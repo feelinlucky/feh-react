@@ -32,11 +32,18 @@ const GameUI = () => {
     }, {})
   );
 
+  const [characterPositions, setCharacterPositions] = useState({
+    Alfonse: { row: 0, col: 0 },
+    Sharena: { row: 0, col: 1 },
+    Anna: { row: 0, col: 2 },
+    Fjorm: { row: 0, col: 3 }
+  });
+
   const handleGridCenterCoordinates = useCallback((gridCenterCoordinates) => {
     setGridCenterCoordinates(gridCenterCoordinates);
   }, [mapState]);
 
-  function rowColNumToGridCoord (rowNum, colNum) {
+  function rowColNumToGridCoord(rowNum, colNum) {
     return gridCenterCoordinates[`${rowNum}-${colNum}`];
   };
 
@@ -59,10 +66,10 @@ const GameUI = () => {
 
   // Update UI State after click
   const handleGridClick = useCallback((gridY, gridX) => {
-    setClickedState({ gridY, gridX });    
-    console.log('Clicked grid cell:', gridY, gridX, ' at ', rowColNumToGridCoord(gridY, gridX));    
+    setClickedState({ gridY, gridX });
+    console.log('Clicked grid cell:', gridY, gridX, ' at ', rowColNumToGridCoord(gridY, gridX));
   }, [setClickedState, rowColNumToGridCoord]);
-  
+
   return (
     <div className={styles['game-container']}>
       <div className={styles['content-wrapper']}>
@@ -83,12 +90,26 @@ const GameUI = () => {
           />
         </div>
 
-        {Object.keys(characters).map((charName) => (
-          <MapCharacter
-            key={charName}
-            characterName={charName}
-          />
-        ))}
+        {Object.keys(characters).map((charName) => {
+          const pos = characterPositions[charName];
+          const coordinates = gridCenterCoordinates[`${pos.row}-${pos.col}`];
+          console.log('Character:', charName, 'Coordinates:', coordinates);
+          return coordinates && (
+            <div
+              key={charName}
+              className={styles['character-overlay']}
+              style={{
+                left: `${coordinates.x}px`,
+                top: `${coordinates.y}px`
+              }}
+            >
+              <MapCharacter
+                characterName={charName}
+              />
+            </div>
+          );
+        })}
+
         <div className={styles['actionButtonsContainer']}>
           <div className={styles['button-group']}>
             <div className={styles['leftAlignedButtons']}>
