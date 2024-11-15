@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import styles from './GameUI.module.css';
 import { useLocation } from 'react-router-dom';
 import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
@@ -22,6 +22,9 @@ const GameUI = () => {
   const [clickedState, setClickedState] = useState(null);
   const [gridCenterCoordinates, setGridCenterCoordinates] = useState([]);
   const [selectedCharacter, setSelectedCharacter] = useState("Alfonse");
+  const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
+  const mapContainerRef = useRef(null);
+  const [gridCenterAdjustment, setGridCenterAdjustment] = useState({ x: 0, y: 0 });
 
   const characterNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
 
@@ -39,12 +42,52 @@ const GameUI = () => {
     Fjorm: { row: 0, col: 3 }
   });
 
+  // Grab grid center coordinates from GameMap
   const handleGridCenterCoordinates = useCallback((gridCenterCoordinates) => {
     setGridCenterCoordinates(gridCenterCoordinates);
   }, [mapState]);
 
+  // Grab the current position of upper left corner of the map-container component 
+  useEffect(() => {
+    const updateMapPosition = () => {
+      if (mapContainerRef.current) {
+        const rect = mapContainerRef.current.getBoundingClientRect();
+        setMapPosition({ x: rect.left, y: rect.top });
+      }
+    };
+
+    // Initial position update
+    updateMapPosition();
+
+    // Set up an observer to detect when the element is fully rendered
+    const observer = new ResizeObserver(() => {
+      updateMapPosition();
+    });
+
+    if (mapContainerRef.current) {
+      observer.observe(mapContainerRef.current);
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', updateMapPosition);
+
+    return () => {
+      window.removeEventListener('resize', updateMapPosition);
+      observer.disconnect();
+    };
+  }, []); // Empty dependency array since we're using ref
+
+  // Log position changes in a separate effect
+  useEffect(() => {
+    setGridCenterAdjustment({ x: mapPosition.x, y: mapPosition.y });
+  }, [mapPosition]);
+
+  // Add the position of map-container to adjust grid center coordinates
   function rowColNumToGridCoord(rowNum, colNum) {
-    return gridCenterCoordinates[`${rowNum}-${colNum}`];
+    const currentGridCenterCoordinate = { ...gridCenterCoordinates[`${rowNum}-${colNum}`] };
+    currentGridCenterCoordinate.x = currentGridCenterCoordinate.x + gridCenterAdjustment.x;
+    currentGridCenterCoordinate.y = currentGridCenterCoordinate.y + gridCenterAdjustment.y;
+    return currentGridCenterCoordinate;
   };
 
   useEffect(() => {
@@ -83,7 +126,7 @@ const GameUI = () => {
           def={characterUIState.def || 0}
           res={characterUIState.res || 0}
         />
-        <div className={styles['map-container']}>
+        <div ref={mapContainerRef} className={styles['map-container']}>
           <GameMap
             onGridClick={handleGridClick}
             onGridCenterCoordinates={handleGridCenterCoordinates}
@@ -92,7 +135,7 @@ const GameUI = () => {
 
         {Object.keys(characters).map((charName) => {
           const pos = characterPositions[charName];
-          const coordinates = gridCenterCoordinates[`${pos.row}-${pos.col}`];
+          const coordinates = rowColNumToGridCoord(pos.row, pos.col);
           console.log('Character:', charName, 'Coordinates:', coordinates);
           return coordinates && (
             <div
