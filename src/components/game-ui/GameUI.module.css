@@ -113,3 +113,15 @@
   transform: translate(-50%, -100%); /* Center horizontally and align bottom */
   pointer-events: none; /* Allows clicking through to the map */
 }
+
+.debug-display {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  z-index: 1000;
+}
