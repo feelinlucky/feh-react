@@ -20,7 +20,7 @@ const GameUI = () => {
   const [characterUIState, setCharacterUIState] = useState({});
   const [mapState, setMapState] = useState(frontPageState.map);
   const [clickedState, setClickedState] = useState(null);
-  const [gridCenterCoordinates, setGridCenterCoordinates] = useState([]);
+  const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState([]);
   const [selectedCharacter, setSelectedCharacter] = useState("Alfonse");
   const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef(null);
@@ -43,8 +43,8 @@ const GameUI = () => {
   });
 
   // Grab grid center coordinates from GameMap
-  const handleGridCenterCoordinates = useCallback((gridCenterCoordinates) => {
-    setGridCenterCoordinates(gridCenterCoordinates);
+  const handlegridAnchorCoordinates = useCallback((gridAnchorCoordinates) => {
+    setgridAnchorCoordinates(gridAnchorCoordinates);
   }, [mapState]);
 
   // Grab the current position of upper left corner of the map-container component 
@@ -84,7 +84,7 @@ const GameUI = () => {
 
   // Add the position of map-container to adjust grid center coordinates
   function rowColNumToGridCoord(rowNum, colNum) {
-    const currentGridCenterCoordinate = { ...gridCenterCoordinates[`${rowNum}-${colNum}`] };
+    const currentGridCenterCoordinate = { ...gridAnchorCoordinates[`${rowNum}-${colNum}`] };
     currentGridCenterCoordinate.x = currentGridCenterCoordinate.x + gridCenterAdjustment.x;
     currentGridCenterCoordinate.y = currentGridCenterCoordinate.y + gridCenterAdjustment.y;
     return currentGridCenterCoordinate;
@@ -129,7 +129,7 @@ const GameUI = () => {
         <div ref={mapContainerRef} className={styles['map-container']}>
           <GameMap
             onGridClick={handleGridClick}
-            onGridCenterCoordinates={handleGridCenterCoordinates}
+            ongridAnchorCoordinates={handlegridAnchorCoordinates}
           />
         </div>
 

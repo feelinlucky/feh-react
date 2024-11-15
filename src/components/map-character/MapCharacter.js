@@ -11,11 +11,9 @@ const MapCharacter = ({ characterName }) => {
             style={{
                 display: 'flex',
                 alignItems: 'center',
-                height: '40px',
-                width: 'auto',
+                height: 'auto',
+                width: `${720 * 0.2}px`,  // based on the width of 'CharacterStatUI'
                 backgroundColor: 'transparent',
-                minWidth: `${720 * 0.2}px`, // based on the width of 'CharacterStatUI'
-                minHeight: `${1280 * 0.16}px`,
             }}
         />
     );

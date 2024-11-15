@@ -9,12 +9,12 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
 
 // TODO: Implement other maps.
 
-const GameMap = ({ onGridClick, onGridCenterCoordinates }) => {
+const GameMap = ({ onGridClick, ongridAnchorCoordinates }) => {
     const mapImage = `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
     const imgRef = useRef(null);
     const mapImageWidthRef = useRef(0);
     const gridSize = { rows: 6, cols: 8 };
-    const [gridCenterCoordinates, setGridCenterCoordinates] = useState([]);
+    const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState([]);
     useEffect(() => {
         if (imgRef.current) {
             mapImageWidthRef.current = imgRef.current.offsetWidth;
@@ -22,7 +22,7 @@ const GameMap = ({ onGridClick, onGridCenterCoordinates }) => {
     }, []);
 
     // Calculate center coordinates for each grid cell
-    const calculateGridCenterCoordinates = () => {
+    const calculategridAnchorCoordinates = () => {
         if (imgRef.current) {
         const cellWidth = mapImageWidthRef.current / gridSize.cols;
         const cellHeight = imgRef.current.offsetHeight / gridSize.rows;
@@ -30,19 +30,19 @@ const GameMap = ({ onGridClick, onGridCenterCoordinates }) => {
         for (let row = 0; row < gridSize.rows; row++) {
             for (let col = 0; col < gridSize.cols; col++) {
                 const centerX = col * cellWidth + cellWidth / 2;
-                const centerY = row * cellHeight + cellHeight / 2;
-                    coordinates[`${row}-${col}`] = { x: centerX, y: centerY };
+                const bottomY = row * cellHeight + cellHeight;
+                    coordinates[`${row}-${col}`] = { x: centerX, y: bottomY };
             }
         }
-            setGridCenterCoordinates(coordinates);
-            if (typeof onGridCenterCoordinates === 'function') {
-                onGridCenterCoordinates(coordinates);
+            setgridAnchorCoordinates(coordinates);
+            if (typeof ongridAnchorCoordinates === 'function') {
+                ongridAnchorCoordinates(coordinates);
             }
         }
     };
 
     useEffect(() => {
-        calculateGridCenterCoordinates();
+        calculategridAnchorCoordinates();
     }, [mapImageWidthRef.current]);
 
     const handleGridClick = (row, col) => {
@@ -82,7 +82,7 @@ const GameMap = ({ onGridClick, onGridCenterCoordinates }) => {
 
 GameMap.propTypes = {
     onGridClick: PropTypes.func.isRequired,
-    onGridCenterCoordinates: PropTypes.func,
+    ongridAnchorCoordinates: PropTypes.func,
 };
 
 export default GameMap;
