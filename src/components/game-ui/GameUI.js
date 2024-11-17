@@ -105,6 +105,17 @@ const GameUI = () => {
         def: selectedCharData.def,
         res: selectedCharData.res
       });
+    } else {
+      setCharacterUIState({
+        charName: '',
+        level: 0,
+        wpn: '',
+        hp: 0,
+        atk: 0,
+        spd: 0,
+        def: 0,
+        res: 0
+      });
     }
   }, [selectedCharacter, setCharacterUIState]);
 
@@ -116,7 +127,10 @@ const GameUI = () => {
     for (const [charName, position] of Object.entries(characterPositions)) {
       if (position.row === gridY && position.col === gridX) {
         newState.characterName = charName;
+        setSelectedCharacter(charName);  
         break;
+      } else {
+        setSelectedCharacter(null);  
       }
     }
 
@@ -126,7 +140,7 @@ const GameUI = () => {
       return newHistory;
     });
     console.log('Clicked grid cell:', gridY, gridX, ' at ', rowColNumToGridCoord(gridY, gridX));
-  }, [setClickedState, rowColNumToGridCoord, characterPositions]);
+  }, [setClickedState, rowColNumToGridCoord, characterPositions, setSelectedCharacter]);
 
   // Handle clicks outside of GameMap
   const handleContainerClick = useCallback((event) => {
@@ -144,11 +158,12 @@ const GameUI = () => {
     };
 
     setClickedState(newState);
+    setSelectedCharacter(null);  
     setClickedStateHistory(prev => {
       const newHistory = [newState, ...prev].slice(0, 5);
       return newHistory;
     });
-  }, [setClickedState]);
+  }, [setClickedState, setSelectedCharacter]);
 
   return (
     <div className={styles['game-container']} onClick={handleContainerClick}>
