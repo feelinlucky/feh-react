@@ -111,13 +111,22 @@ const GameUI = () => {
   // Update UI State after click
   const handleGridClick = useCallback((gridY, gridX) => {
     const newState = { gridY, gridX };
+
+    // Check if any character is at the clicked position
+    for (const [charName, position] of Object.entries(characterPositions)) {
+      if (position.row === gridY && position.col === gridX) {
+        newState.characterName = charName;
+        break;
+      }
+    }
+
     setClickedState(newState);
     setClickedStateHistory(prev => {
       const newHistory = [newState, ...prev].slice(0, 5);
       return newHistory;
     });
     console.log('Clicked grid cell:', gridY, gridX, ' at ', rowColNumToGridCoord(gridY, gridX));
-  }, [setClickedState, rowColNumToGridCoord]);
+  }, [setClickedState, rowColNumToGridCoord, characterPositions]);
 
   return (
     <div className={styles['game-container']}>
@@ -141,7 +150,8 @@ const GameUI = () => {
 
         {/* Debug display for clickedState */}
         <div className={styles['debug-display']}>
-          <div>Current: {clickedState ? `Row: ${clickedState.gridY}, Col: ${clickedState.gridX}` : 'None'}</div>
+          <div>Current Grid: {clickedState ? `Row: ${clickedState.gridY}, Col: ${clickedState.gridX}` : 'None'}</div>
+          <div>Current Character: {clickedState ? `${clickedState.characterName}` : 'None'}</div>
           <div>History:</div>
           {clickedStateHistory.map((state, index) => (
             <div key={index} style={{ opacity: 1 - index * 0.2 }}>
