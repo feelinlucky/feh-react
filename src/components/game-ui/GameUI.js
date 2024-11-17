@@ -106,6 +106,9 @@ const GameUI = () => {
         def: selectedCharData.def,
         res: selectedCharData.res
       });
+
+      // Load shared properties
+      const selectedCharProps = sharedProps[selectedCharData.type];
     } else {
       setCharacterUIState({
         charName: '',
@@ -201,7 +204,8 @@ const GameUI = () => {
         {Object.keys(characters).map((charName) => {
           const pos = characterPositions[charName];
           const coordinates = rowColNumToGridCoord(pos.row, pos.col);
-          console.log('Character:', charName, 'Coordinates:', coordinates);
+          const dist = sharedProps.moveTypes[characters[charName].type].distance;
+          console.log('Character:', charName, 'Coordinates:', coordinates, 'Distance:', dist);
           return coordinates && (
             <div
               key={charName}
