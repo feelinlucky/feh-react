@@ -110,8 +110,8 @@ const GameUI = () => {
 
   // Update UI State after click
   const handleGridClick = useCallback((gridY, gridX) => {
-    const newState = { gridY, gridX };
-
+    const newState = { gridY, gridX, isMapGrid: true };
+    
     // Check if any character is at the clicked position
     for (const [charName, position] of Object.entries(characterPositions)) {
       if (position.row === gridY && position.col === gridX) {
@@ -128,8 +128,30 @@ const GameUI = () => {
     console.log('Clicked grid cell:', gridY, gridX, ' at ', rowColNumToGridCoord(gridY, gridX));
   }, [setClickedState, rowColNumToGridCoord, characterPositions]);
 
+  // Handle clicks outside of GameMap
+  const handleContainerClick = useCallback((event) => {
+    // If the click is inside map-container, do nothing
+    if (event.target.closest(`.${styles['map-container']}`)) {
+      return;
+    }
+
+    // Set placeholder state for clicks outside GameMap
+    const newState = {
+      gridY: null,
+      gridX: null,
+      isMapGrid: false,
+      characterName: null
+    };
+
+    setClickedState(newState);
+    setClickedStateHistory(prev => {
+      const newHistory = [newState, ...prev].slice(0, 5);
+      return newHistory;
+    });
+  }, [setClickedState]);
+
   return (
-    <div className={styles['game-container']}>
+    <div className={styles['game-container']} onClick={handleContainerClick}>
       <div className={styles['content-wrapper']}>
         <CharacterStatUI
           charName={characterUIState.charName || ''}
