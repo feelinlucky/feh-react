@@ -4,6 +4,7 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
 
 const charData = {
     "Alfonse": {
+        type: "infantry",
         level: 40,
         wpn: "Folkvangr",
         wpnType: "Red Sword",
@@ -14,6 +15,7 @@ const charData = {
         res: 30
     },
     "Sharena": {
+        type: "infantry",
         level: 40,
         wpn: "Fensalir",
         wpnType: "Blue Lance",
@@ -24,6 +26,7 @@ const charData = {
         res: 30
     },
     "Anna": {
+        type: "infantry",
         level: 40,
         wpn: "Noatun",
         wpnType: "Green Axe",
@@ -34,6 +37,7 @@ const charData = {
         res: 30
     },
     "Fjorm": {
+        type: "infantry",
         level: 40,
         wpn: "Leiptr",
         wpnType: "Blue Lance",
@@ -44,6 +48,7 @@ const charData = {
         res: 30
     },
     Default: {
+        type: "",
         level: 0,
         wpn: '',
         wpnType: '',
@@ -54,6 +59,23 @@ const charData = {
         res: 0,
     }
 };
+
+export const sharedProps = {
+    moveTypes: {
+        infantry: {
+            icon: `${publicFolder}/assets/images/infantry.png`,
+            distance: 2,
+        },
+        cavalry: {
+            icon: `${publicFolder}/assets/images/cavalry.png`,
+            distance: 3,
+        },
+        flier: {
+            icon: `${publicFolder}/assets/images/flier.png`,
+            distance: 2,
+        },
+    }
+}
 
 export function characterData(characterName) {
     if (!characterName) {

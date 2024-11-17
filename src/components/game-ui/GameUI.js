@@ -6,7 +6,7 @@ import Sprite from '../sprite/Sprite';
 import GameMap from '../game-map/GameMap';
 
 // TODO make frontPageState.character setting connected to characterData  
-import { characterData } from '../character-data/CharacterData';
+import { sharedProps, characterData } from '../character-data/CharacterData';
 import MapCharacter from '../map-character/MapCharacter';
 
 const publicFolder = `${process.env.PUBLIC_URL}`;
@@ -29,6 +29,7 @@ const GameUI = () => {
 
   const characterNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
 
+  // Set character base properties
   const [characters, setCharacters] = useState(
     characterNames.reduce((acc, name) => {
       acc[name] = characterData(name);
