@@ -41,6 +41,13 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
         }
     }, []);
 
+    // Debug log for highlightedCells
+    useEffect(() => {
+        if (highlightedCells) {
+            console.log('Received highlightedCells:', highlightedCells);
+        }
+    }, [highlightedCells]);
+
     // Calculate center coordinates for each grid cell
     const calculategridAnchorCoordinates = () => {
         if (imgRef.current) {
@@ -82,6 +89,10 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                 const isHighlighted = highlightedCells && highlightedCells.some(cell => 
                     cell.row === row && cell.col === col
                 );
+                
+                if (isHighlighted) {
+                    console.log(`Cell [${row},${col}] is highlighted`);
+                }
                 
                 grid.push(
                     <div

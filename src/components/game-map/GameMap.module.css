@@ -29,12 +29,13 @@
     /* Invisible */
 }
 
-.grid-cell-highlighted {
-    background: rgba(0, 255, 255, 0.3);
+/* Make highlighted state specific */
+.grid-cell.grid-cell-highlighted {
+    background: rgb(0, 0, 255, 0.2);;
     /* Light blue for highlighted cells */
 }
 
-/* Make clicked state more specific to ensure it takes precedence */
+/* Make clicked state specific */
 .grid-cell.grid-cell-clicked {
     background: rgba(0, 0, 255, 0.4);
     z-index: 1; /* Ensure clicked cells appear above highlighted cells */
