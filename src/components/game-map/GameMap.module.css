@@ -28,3 +28,8 @@
     background: rgba(255, 255, 255, 0);
     /* Invisible */
 }
+
+.grid-cell-highlighted {
+    background: rgba(0, 0, 255, 0.3);
+    /* Semi-transparent blue */
+}

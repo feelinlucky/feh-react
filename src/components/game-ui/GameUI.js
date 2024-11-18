@@ -182,10 +182,11 @@ const GameUI = () => {
           def={characterUIState.def || 0}
           res={characterUIState.res || 0}
         />
-        <div ref={mapContainerRef} className={styles['map-container']}>
-          <GameMap
-            onGridClick={handleGridClick}
+        <div className={styles['map-container']} ref={mapContainerRef}>
+          <GameMap 
+            onGridClick={handleGridClick} 
             ongridAnchorCoordinates={handlegridAnchorCoordinates}
+            clickedState={clickedState}
           />
         </div>
 

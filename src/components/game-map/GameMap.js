@@ -9,7 +9,7 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
 
 // TODO: Implement other maps.
 
-const GameMap = ({ onGridClick, ongridAnchorCoordinates }) => {
+const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState }) => {
     const mapImage = `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
     const imgRef = useRef(null);
     const mapImageWidthRef = useRef(0);
@@ -58,10 +58,11 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates }) => {
 
         for (let row = 0; row < gridSize.rows; row++) {
             for (let col = 0; col < gridSize.cols; col++) {
+                const isHighlighted = clickedState && clickedState.gridY === row && clickedState.gridX === col;
                 grid.push(
                     <div
                         key={`${row}-${col}`}
-                        className={styles['grid-cell']}
+                        className={`${styles['grid-cell']} ${isHighlighted ? styles['grid-cell-highlighted'] : ''}`}
                         onClick={() => handleGridClick(row, col)}
                     />
                 );
@@ -83,6 +84,12 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates }) => {
 GameMap.propTypes = {
     onGridClick: PropTypes.func.isRequired,
     ongridAnchorCoordinates: PropTypes.func,
+    clickedState: PropTypes.shape({
+        gridY: PropTypes.number,
+        gridX: PropTypes.number,
+        isMapGrid: PropTypes.bool,
+        characterName: PropTypes.string
+    })
 };
 
 export default GameMap;
