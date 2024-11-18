@@ -9,12 +9,32 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
 
 // TODO: Implement other maps.
 
-const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState }) => {
+const gridSize = { rows: 6, cols: 8 };
+
+// Utility function to calculate cells within a radius
+export const calculateCellsInRadius = (centerRow, centerCol, radius) => {
+    const cells = [];
+    
+    // Check each cell in a square area around the center
+    for (let row = Math.max(0, centerRow - radius); row <= Math.min(gridSize.rows - 1, centerRow + radius); row++) {
+        for (let col = Math.max(0, centerCol - radius); col <= Math.min(gridSize.cols - 1, centerCol + radius); col++) {
+            // For orthogonal movement (like in Fire Emblem), use Manhattan distance
+            const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
+            if (distance <= radius) {
+                cells.push({ row, col });
+            }
+        }
+    }
+    
+    return cells;
+};
+
+const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlightedCells }) => {
     const mapImage = `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
     const imgRef = useRef(null);
     const mapImageWidthRef = useRef(0);
-    const gridSize = { rows: 6, cols: 8 };
     const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState([]);
+
     useEffect(() => {
         if (imgRef.current) {
             mapImageWidthRef.current = imgRef.current.offsetWidth;
@@ -58,11 +78,17 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState }) => {
 
         for (let row = 0; row < gridSize.rows; row++) {
             for (let col = 0; col < gridSize.cols; col++) {
-                const isHighlighted = clickedState && clickedState.gridY === row && clickedState.gridX === col;
+                const isClicked = clickedState && clickedState.gridY === row && clickedState.gridX === col;
+                const isHighlighted = highlightedCells && highlightedCells.some(cell => 
+                    cell.row === row && cell.col === col
+                );
+                
                 grid.push(
                     <div
                         key={`${row}-${col}`}
-                        className={`${styles['grid-cell']} ${isHighlighted ? styles['grid-cell-highlighted'] : ''}`}
+                        className={`${styles['grid-cell']} 
+                            ${isClicked ? styles['grid-cell-clicked'] : ''} 
+                            ${isHighlighted ? styles['grid-cell-highlighted'] : ''}`}
                         onClick={() => handleGridClick(row, col)}
                     />
                 );
@@ -89,7 +115,12 @@ GameMap.propTypes = {
         gridX: PropTypes.number,
         isMapGrid: PropTypes.bool,
         characterName: PropTypes.string
-    })
+    }),
+    highlightedCells: PropTypes.arrayOf(PropTypes.shape({
+        row: PropTypes.number.isRequired,
+        col: PropTypes.number.isRequired
+    }))
 };
 
+// Make GameMap the default export
 export default GameMap;

@@ -3,7 +3,7 @@ import styles from './GameUI.module.css';
 import { useLocation } from 'react-router-dom';
 import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
 import Sprite from '../sprite/Sprite';
-import GameMap from '../game-map/GameMap';
+import GameMap, { calculateCellsInRadius } from '../game-map/GameMap';
 
 // TODO make frontPageState.character setting connected to characterData  
 import { sharedProps, characterData } from '../character-data/CharacterData';
@@ -187,6 +187,15 @@ const GameUI = () => {
             onGridClick={handleGridClick} 
             ongridAnchorCoordinates={handlegridAnchorCoordinates}
             clickedState={clickedState}
+            highlightedCells={
+              clickedState && clickedState.characterName && characters[clickedState.characterName] 
+                ? calculateCellsInRadius(
+                    clickedState.gridY, 
+                    clickedState.gridX, 
+                    sharedProps.moveTypes[characters[clickedState.characterName].type].distance
+                  ) 
+                : null
+            }
           />
         </div>
 
@@ -194,6 +203,23 @@ const GameUI = () => {
         <div className={styles['debug-display']}>
           <div>Current Grid: {clickedState ? `Row: ${clickedState.gridY}, Col: ${clickedState.gridX}` : 'None'}</div>
           <div>Current Character: {clickedState ? `${clickedState.characterName}` : 'None'}</div>
+          <div>calculateCellsInRadius inputs:</div>
+          <div>- centerRow: {clickedState ? clickedState.gridY : 'None'}</div>
+          <div>- centerCol: {clickedState ? clickedState.gridX : 'None'}</div>
+          <div>- radius: {
+            clickedState && clickedState.characterName && characters[clickedState.characterName] 
+              ? sharedProps.moveTypes[characters[clickedState.characterName].type].distance
+              : 'None'
+          }</div>
+          <div>Highlighted Cells: {
+            clickedState && clickedState.characterName && characters[clickedState.characterName]
+              ? calculateCellsInRadius(
+                  clickedState.gridY,
+                  clickedState.gridX,
+                  sharedProps.moveTypes[characters[clickedState.characterName].type].distance
+                ).map(cell => `[${cell.row},${cell.col}]`).join(', ')
+              : 'None'
+          }</div>
           <div>History:</div>
           {clickedStateHistory.map((state, index) => (
             <div key={index} style={{ opacity: 1 - index * 0.2 }}>

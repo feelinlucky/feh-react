@@ -30,6 +30,13 @@
 }
 
 .grid-cell-highlighted {
-    background: rgba(0, 0, 255, 0.3);
-    /* Semi-transparent blue */
+    background: rgba(0, 255, 255, 0.3);
+    /* Light blue for highlighted cells */
+}
+
+/* Make clicked state more specific to ensure it takes precedence */
+.grid-cell.grid-cell-clicked {
+    background: rgba(0, 0, 255, 0.4);
+    z-index: 1; /* Ensure clicked cells appear above highlighted cells */
+    /* Darker blue for clicked cell */
 }
