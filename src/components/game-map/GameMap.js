@@ -29,7 +29,30 @@ export const calculateCellsInRadius = (centerRow, centerCol, radius) => {
     return cells;
 };
 
-const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlightedCells }) => {
+// Terrain types enum
+export const TerrainType = {
+    PLAIN: 'plain',
+    FOREST: 'forest',
+    MOUNTAIN: 'mountain',
+    WATER: 'water',
+    WALL: 'wall'
+};
+
+/*
+terrainData should be a 2D array matching the dimensions defined in the gridSize constant (6 rows × 8 columns), e.g.:
+
+const terrainData = [
+    // 8 columns per row
+    [TerrainType.PLAIN,  TerrainType.PLAIN,   TerrainType.FOREST,  TerrainType.FOREST,  TerrainType.MOUNTAIN, TerrainType.MOUNTAIN, TerrainType.PLAIN,  TerrainType.PLAIN],  // Row 0
+    [TerrainType.PLAIN,  TerrainType.FOREST,  TerrainType.FOREST,  TerrainType.MOUNTAIN, TerrainType.WATER,   TerrainType.MOUNTAIN, TerrainType.PLAIN,  TerrainType.PLAIN],  // Row 1
+    [TerrainType.WATER,  TerrainType.WATER,   TerrainType.PLAIN,   TerrainType.PLAIN,    TerrainType.PLAIN,   TerrainType.WALL,    TerrainType.WALL,   TerrainType.PLAIN],  // Row 2
+    [TerrainType.PLAIN,  TerrainType.WATER,   TerrainType.PLAIN,   TerrainType.FOREST,   TerrainType.PLAIN,   TerrainType.WALL,    TerrainType.PLAIN,  TerrainType.PLAIN],  // Row 3
+    [TerrainType.PLAIN,  TerrainType.PLAIN,   TerrainType.MOUNTAIN, TerrainType.FOREST,  TerrainType.FOREST,  TerrainType.PLAIN,   TerrainType.PLAIN,  TerrainType.FOREST], // Row 4
+    [TerrainType.PLAIN,  TerrainType.MOUNTAIN, TerrainType.MOUNTAIN, TerrainType.PLAIN,  TerrainType.PLAIN,   TerrainType.PLAIN,   TerrainType.FOREST, TerrainType.FOREST]  // Row 5
+];
+*/
+
+const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlightedCells, terrainData }) => {
     const mapImage = `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
     const imgRef = useRef(null);
     const mapImageWidthRef = useRef(0);
@@ -89,6 +112,7 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                 const isHighlighted = highlightedCells && highlightedCells.some(cell => 
                     cell.row === row && cell.col === col
                 );
+                const terrainType = terrainData?.[row]?.[col] || TerrainType.PLAIN;
                 
                 if (isHighlighted) {
                     console.log(`Cell [${row},${col}] is highlighted`);
@@ -98,9 +122,11 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                     <div
                         key={`${row}-${col}`}
                         className={`${styles['grid-cell']} 
+                            ${styles[`terrain-${terrainType}`]}
                             ${isClicked ? styles['grid-cell-clicked'] : ''} 
                             ${isHighlighted ? styles['grid-cell-highlighted'] : ''}`}
                         onClick={() => handleGridClick(row, col)}
+                        data-terrain={terrainType}
                     />
                 );
             }
@@ -130,7 +156,12 @@ GameMap.propTypes = {
     highlightedCells: PropTypes.arrayOf(PropTypes.shape({
         row: PropTypes.number.isRequired,
         col: PropTypes.number.isRequired
-    }))
+    })),
+    terrainData: PropTypes.arrayOf(
+        PropTypes.arrayOf(
+            PropTypes.oneOf(Object.values(TerrainType))
+        )
+    )
 };
 
 // Make GameMap the default export

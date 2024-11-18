@@ -41,3 +41,37 @@
     z-index: 1; /* Ensure clicked cells appear above highlighted cells */
     /* Darker blue for clicked cell */
 }
+
+/* Terrain type styles */
+.terrain-plain {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.terrain-forest {
+    background: rgba(34, 139, 34, 0.2);
+    /* Forest green with transparency */
+}
+
+.terrain-mountain {
+    background: rgba(139, 69, 19, 0.2);
+    /* Brown with transparency */
+}
+
+.terrain-water {
+    background: rgba(0, 191, 255, 0.2);
+    /* Light blue with transparency */
+}
+
+.terrain-wall {
+    background: rgba(128, 128, 128, 0.3);
+    /* Gray with transparency */
+}
+
+/* Ensure terrain types are visible even when highlighted/clicked */
+.grid-cell.grid-cell-highlighted[data-terrain] {
+    background-blend-mode: overlay;
+}
+
+.grid-cell.grid-cell-clicked[data-terrain] {
+    background-blend-mode: multiply;
+}
