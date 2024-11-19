@@ -46,6 +46,60 @@ const stringToTerrainType = Object.entries(TerrainType).reduce((acc, [key, value
 }, {});
 
 /**
+ * Helper function to visualize terrain grid in ASCII format
+ * @param {Array<Array<string>>} grid - 2D array of terrain types
+ * @returns {string} ASCII representation of the grid
+ * 
+ * Legend:
+ * P - Plain
+ * F - Forest
+ * M - Mountain
+ * W - Water
+ * X - Wall
+ * 
+ * Example output:
+ * ┌─────────┐
+ * │FFFPPPPP│
+ * │FFFMMMMM│
+ * │PPPWWWPP│
+ * │PPPWWWPP│
+ * │PPPMMMPP│
+ * │PPPXXXPP│
+ * └─────────┘
+ */
+export const visualizeTerrainGrid = (grid) => {
+    if (!Array.isArray(grid) || !Array.isArray(grid[0])) {
+        return 'Invalid grid format';
+    }
+
+    const terrainToChar = {
+        [TerrainType.PLAIN]: 'P',
+        [TerrainType.FOREST]: 'F',
+        [TerrainType.MOUNTAIN]: 'M',
+        [TerrainType.WATER]: 'W',
+        [TerrainType.WALL]: 'X'
+    };
+
+    const rows = grid.length;
+    const cols = grid[0].length;
+    const horizontalBorder = '─'.repeat(cols);
+
+    let output = `┌${horizontalBorder}┐\n`;
+
+    for (let row = 0; row < rows; row++) {
+        output += '│';
+        for (let col = 0; col < cols; col++) {
+            const terrain = grid[row][col];
+            output += terrainToChar[terrain] || '?';
+        }
+        output += '│\n';
+    }
+
+    output += `└${horizontalBorder}┘`;
+    return output;
+};
+
+/**
  * Utility function to define terrain in a more convenient way using rectangular coordinates
  * @param {Array<Array<number, number, number, number, string>>} rectangles - Array of [upperLeftX, upperLeftY, lowerRightX, lowerRightY, terrainType]
  * @returns {Array<Array<string>>} 2D array of terrain types compatible with GameMap's terrainData prop

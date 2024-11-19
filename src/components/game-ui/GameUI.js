@@ -3,7 +3,7 @@ import styles from './GameUI.module.css';
 import { useLocation } from 'react-router-dom';
 import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
 import Sprite from '../sprite/Sprite';
-import GameMap, { calculateCellsInRadius, defineTerrainGrid } from '../game-map/GameMap';
+import GameMap, { calculateCellsInRadius, defineTerrainGrid, visualizeTerrainGrid } from '../game-map/GameMap';
 
 // TODO make frontPageState.character setting connected to characterData  
 import { sharedProps, characterData } from '../character-data/CharacterData';
@@ -21,7 +21,7 @@ const GameUI = () => {
   const [mapState, setMapState] = useState(frontPageState.map);
   const [clickedState, setClickedState] = useState(null);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
-  const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState([]);
+  const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState({});
   const [selectedCharacter, setSelectedCharacter] = useState("Alfonse");
   const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef(null);
@@ -169,6 +169,15 @@ const GameUI = () => {
     });
   }, [setClickedState, setSelectedCharacter]);
 
+  // Define terrain data
+  const terrainData = defineTerrainGrid([
+    // Format: [upperLeftX, upperLeftY, lowerRightX, lowerRightY, terrainType]
+    [0, 0, 2, 2, 'forest'],     // Forest in top-left 3x3 area
+    [3, 0, 5, 1, 'mountain'],   // Mountains in top-right area
+    [1, 3, 3, 4, 'water'],      // Water in middle area
+    [6, 4, 7, 5, 'wall'],       // Wall in bottom-right corner
+  ]);
+
   return (
     <div className={styles['game-container']} onClick={handleContainerClick}>
       <div className={styles['content-wrapper']}>
@@ -196,22 +205,20 @@ const GameUI = () => {
                 )
                 : null
             }
-            terrainData={
-              defineTerrainGrid([
-                // Format: [upperLeftX, upperLeftY, lowerRightX, lowerRightY, terrainType]
-                [0, 0, 2, 2, 'forest'],     // Forest in top-left 3x3 area
-                [3, 0, 5, 1, 'mountain'],   // Mountains in top-right area
-                [1, 3, 3, 4, 'water'],      // Water in middle area
-                [6, 4, 7, 5, 'wall'],       // Wall in bottom-right corner
-              ])
-            }
+            terrainData={terrainData}
           />
         </div>
 
         {/* Debug display for clickedState */}
         <div className={styles['debug-display']}>
-          <div>Current Grid: {clickedState ? `Row: ${clickedState.gridY}, Col: ${clickedState.gridX}` : 'None'}</div>
+          <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
           <div>Current Character: {clickedState ? `${clickedState.characterName}` : 'None'}</div>
+          <div>Terrain Type: {
+            clickedState && 
+            typeof clickedState.gridY === 'number' && 
+            typeof clickedState.gridX === 'number' && 
+            terrainData[clickedState.gridY]?.[clickedState.gridX] || 'None'
+          }</div>
           <div>calculateCellsInRadius inputs:</div>
           <div>- centerRow: {clickedState ? clickedState.gridY : 'None'}</div>
           <div>- centerCol: {clickedState ? clickedState.gridX : 'None'}</div>
@@ -232,9 +239,13 @@ const GameUI = () => {
           <div>History:</div>
           {clickedStateHistory.map((state, index) => (
             <div key={index} style={{ opacity: 1 - index * 0.2 }}>
-              {index + 1}: Row: {state.gridY}, Col: {state.gridX}
+              {`${index + 1}. [${state.gridY},${state.gridX}] ${state.characterName || ''}`}
             </div>
           ))}
+          <pre>
+            Terrain Map:
+            {terrainData && visualizeTerrainGrid(terrainData)}
+          </pre>
         </div>
 
         {Object.keys(characters).map((charName) => {
