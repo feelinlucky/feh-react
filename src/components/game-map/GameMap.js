@@ -14,7 +14,7 @@ const gridSize = { rows: 6, cols: 8 };
 // Utility function to calculate cells within a radius
 export const calculateCellsInRadius = (centerRow, centerCol, radius) => {
     const cells = [];
-    
+
     // Check each cell in a square area around the center
     for (let row = Math.max(0, centerRow - radius); row <= Math.min(gridSize.rows - 1, centerRow + radius); row++) {
         for (let col = Math.max(0, centerCol - radius); col <= Math.min(gridSize.cols - 1, centerCol + radius); col++) {
@@ -25,7 +25,7 @@ export const calculateCellsInRadius = (centerRow, centerCol, radius) => {
             }
         }
     }
-    
+
     return cells;
 };
 
@@ -36,6 +36,64 @@ export const TerrainType = {
     MOUNTAIN: 'mountain',
     WATER: 'water',
     WALL: 'wall'
+};
+
+// Create a reverse mapping for string to TerrainType conversion
+const stringToTerrainType = Object.entries(TerrainType).reduce((acc, [key, value]) => {
+    acc[value] = value;  // Use the string value directly
+    acc[key.toLowerCase()] = value;  // Allow lowercase enum key
+    return acc;
+}, {});
+
+/**
+ * Utility function to define terrain in a more convenient way using rectangular coordinates
+ * @param {Array<Array<number, number, number, number, string>>} rectangles - Array of [upperLeftX, upperLeftY, lowerRightX, lowerRightY, terrainType]
+ * @returns {Array<Array<string>>} 2D array of terrain types compatible with GameMap's terrainData prop
+ * 
+ * Example usage:
+ * const terrainData = defineTerrainGrid([
+ *   [0, 0, 2, 2, 'forest'],      // Can use string 'forest'
+ *   [3, 0, 5, 1, 'mountain'],    // Can use string 'mountain'
+ *   [1, 3, 3, 4, TerrainType.WATER], // Can still use TerrainType enum
+ *   [6, 4, 7, 5, 'wall'],       // Can use string 'wall'
+ * ]);
+ */
+export const defineTerrainGrid = (rectangles) => {
+    // Initialize grid with PLAIN terrain
+    const grid = Array(gridSize.rows).fill(null)
+        .map(() => Array(gridSize.cols).fill(TerrainType.PLAIN));
+
+    // Process each rectangle
+    rectangles.forEach(([x1, y1, x2, y2, terrainType]) => {
+        // Validate coordinates
+        if (x1 < 0 || x2 >= gridSize.cols || y1 < 0 || y2 >= gridSize.rows) {
+            console.warn(`Invalid coordinates in rectangle [${x1},${y1},${x2},${y2}]. Skipping.`);
+            return;
+        }
+        
+        // Convert string to valid terrain type
+        const normalizedTerrainType = typeof terrainType === 'string' 
+            ? terrainType.toLowerCase() 
+            : terrainType;
+        
+        const validTerrainType = stringToTerrainType[normalizedTerrainType];
+        
+        if (!validTerrainType) {
+            console.warn(`Invalid terrain type: ${terrainType}. Using PLAIN instead.`);
+            terrainType = TerrainType.PLAIN;
+        } else {
+            terrainType = validTerrainType;
+        }
+        
+        // Fill the rectangle with the specified terrain
+        for (let y = y1; y <= y2; y++) {
+            for (let x = x1; x <= x2; x++) {
+                grid[y][x] = terrainType;
+            }
+        }
+    });
+    
+    return grid;
 };
 
 /*
@@ -74,16 +132,16 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
     // Calculate center coordinates for each grid cell
     const calculategridAnchorCoordinates = () => {
         if (imgRef.current) {
-        const cellWidth = mapImageWidthRef.current / gridSize.cols;
-        const cellHeight = imgRef.current.offsetHeight / gridSize.rows;
+            const cellWidth = mapImageWidthRef.current / gridSize.cols;
+            const cellHeight = imgRef.current.offsetHeight / gridSize.rows;
             const coordinates = {};
-        for (let row = 0; row < gridSize.rows; row++) {
-            for (let col = 0; col < gridSize.cols; col++) {
-                const centerX = col * cellWidth + cellWidth / 2;
-                const bottomY = row * cellHeight + cellHeight;
+            for (let row = 0; row < gridSize.rows; row++) {
+                for (let col = 0; col < gridSize.cols; col++) {
+                    const centerX = col * cellWidth + cellWidth / 2;
+                    const bottomY = row * cellHeight + cellHeight;
                     coordinates[`${row}-${col}`] = { x: centerX, y: bottomY };
+                }
             }
-        }
             setgridAnchorCoordinates(coordinates);
             if (typeof ongridAnchorCoordinates === 'function') {
                 ongridAnchorCoordinates(coordinates);
@@ -109,15 +167,15 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
         for (let row = 0; row < gridSize.rows; row++) {
             for (let col = 0; col < gridSize.cols; col++) {
                 const isClicked = clickedState && clickedState.gridY === row && clickedState.gridX === col;
-                const isHighlighted = highlightedCells && highlightedCells.some(cell => 
+                const isHighlighted = highlightedCells && highlightedCells.some(cell =>
                     cell.row === row && cell.col === col
                 );
                 const terrainType = terrainData?.[row]?.[col] || TerrainType.PLAIN;
-                
+
                 if (isHighlighted) {
                     console.log(`Cell [${row},${col}] is highlighted`);
                 }
-                
+
                 grid.push(
                     <div
                         key={`${row}-${col}`}
