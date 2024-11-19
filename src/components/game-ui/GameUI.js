@@ -3,7 +3,12 @@ import styles from './GameUI.module.css';
 import { useLocation } from 'react-router-dom';
 import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
 import Sprite from '../sprite/Sprite';
-import GameMap, { calculateCellsInRadius, defineTerrainGrid, TerrainType, gridSize, visualizeTerrainGrid } from '../game-map/GameMap';
+import GameMap, {
+  visualizeTerrainGrid,
+  defineTerrainGrid, 
+  TerrainType, 
+  calculateMovementRange
+} from '../game-map/GameMap';
 
 // TODO make frontPageState.character setting connected to characterData  
 import { sharedProps, characterData } from '../character-data/CharacterData';
@@ -26,6 +31,7 @@ const GameUI = () => {
   const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef(null);
   const [gridCenterAdjustment, setGridCenterAdjustment] = useState({ x: 0, y: 0 });
+  const [highlightedCells, setHighlightedCells] = useState([]);
 
   const characterNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
 
@@ -123,19 +129,42 @@ const GameUI = () => {
     }
   }, [selectedCharacter, setCharacterUIState]);
 
+  // Define terrain data
+  const terrainData = defineTerrainGrid([
+    // Format: [upperLeftX, upperLeftY, lowerRightX, lowerRightY, terrainType]
+    [0, 0, 1, 2, 'forest'],     // Forest in top-left 3x3 area
+    [1, 0, 2, 2, 'plain'],
+    [3, 0, 5, 1, 'mountain'],   // Mountains in top-right area
+    [1, 3, 3, 4, 'water'],      // Water in middle area
+    [6, 4, 7, 5, 'wall'],       // Wall in bottom-right corner
+  ]);
+
   // Update UI State after click
   const handleGridClick = useCallback((gridY, gridX) => {
     const newState = { gridY, gridX, isMapGrid: true };
 
     // Check if any character is at the clicked position
-    for (const [charName, position] of Object.entries(characterPositions)) {
-      if (position.row === gridY && position.col === gridX) {
-        newState.characterName = charName;
-        setSelectedCharacter(charName);
-        break;
-      } else {
-        setSelectedCharacter(null);
-      }
+    const characterAtPosition = Object.entries(characterPositions).find(
+      ([_, pos]) => pos.row === gridY && pos.col === gridX
+    );
+
+    if (characterAtPosition) {
+      const [charName, _] = characterAtPosition;
+      const char = characterData(charName);
+      newState.characterName = charName;
+      setSelectedCharacter(charName);
+
+      // Calculate movement range with terrain costs
+      const movementRange = calculateMovementRange(
+        gridY,
+        gridX,
+        sharedProps.moveTypes[char.type].distance,
+        char.type,
+        terrainData
+      );
+      setHighlightedCells(movementRange);
+    } else {
+      setHighlightedCells([]);
     }
 
     setClickedState(newState);
@@ -143,8 +172,7 @@ const GameUI = () => {
       const newHistory = [newState, ...prev].slice(0, 5);
       return newHistory;
     });
-    console.log('Clicked grid cell:', gridY, gridX, ' at ', rowColNumToGridCoord(gridY, gridX));
-  }, [setClickedState, rowColNumToGridCoord, characterPositions, setSelectedCharacter]);
+  }, [characterPositions, setSelectedCharacter, terrainData]);
 
   // Handle clicks outside of GameMap
   const handleContainerClick = useCallback((event) => {
@@ -169,34 +197,6 @@ const GameUI = () => {
     });
   }, [setClickedState, setSelectedCharacter]);
 
-  // Define terrain data
-  const terrainData = defineTerrainGrid([
-    // Format: [upperLeftX, upperLeftY, lowerRightX, lowerRightY, terrainType]
-    [0, 0, 2, 2, 'forest'],     // Forest in top-left 3x3 area
-    [3, 0, 5, 1, 'mountain'],   // Mountains in top-right area
-    [1, 3, 3, 4, 'water'],      // Water in middle area
-    [6, 4, 7, 5, 'wall'],       // Wall in bottom-right corner
-  ]);
-
-  // Get invalid cells based on terrain type
-  const getInvalidCells = useCallback((moveType) => {
-    const invalidCells = [];
-    
-    // Check each cell in the grid
-    for (let row = 0; row < gridSize.rows; row++) {
-      for (let col = 0; col < gridSize.cols; col++) {
-        const terrain = terrainData[row][col];
-        // For now, consider water and walls as invalid for all units
-        // This can be expanded based on movement type later
-        if (terrain === TerrainType.WATER || terrain === TerrainType.WALL) {
-          invalidCells.push({ row, col });
-        }
-      }
-    }
-    
-    return invalidCells;
-  }, [terrainData]);
-
   return (
     <div className={styles['game-container']} onClick={handleContainerClick}>
       <div className={styles['content-wrapper']}>
@@ -215,16 +215,7 @@ const GameUI = () => {
             onGridClick={handleGridClick}
             ongridAnchorCoordinates={handlegridAnchorCoordinates}
             clickedState={clickedState}
-            highlightedCells={
-              clickedState && clickedState.characterName && characters[clickedState.characterName]
-                ? calculateCellsInRadius(
-                  clickedState.gridY,
-                  clickedState.gridX,
-                  sharedProps.moveTypes[characters[clickedState.characterName].type].distance,
-                  getInvalidCells(characters[clickedState.characterName].type)
-                )
-                : null
-            }
+            highlightedCells={highlightedCells}
             terrainData={terrainData}
           />
         </div>
@@ -248,14 +239,7 @@ const GameUI = () => {
               : 'None'
           }</div>
           <div>Highlighted Cells: {
-            clickedState && clickedState.characterName && characters[clickedState.characterName]
-              ? calculateCellsInRadius(
-                clickedState.gridY,
-                clickedState.gridX,
-                sharedProps.moveTypes[characters[clickedState.characterName].type].distance,
-                getInvalidCells(characters[clickedState.characterName].type)
-              ).map(cell => `[${cell.row},${cell.col}]`).join(', ')
-              : 'None'
+            highlightedCells.map(cell => `[${cell.row},${cell.col}]`).join(', ')
           }</div>
           <div>History:</div>
           {clickedStateHistory.map((state, index) => (

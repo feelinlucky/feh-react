@@ -165,6 +165,112 @@ export const defineTerrainGrid = (rectangles) => {
     return grid;
 };
 
+// Movement costs for different terrain types based on movement type
+export const TerrainCost = {
+  [TerrainType.PLAIN]: {
+    infantry: 1,
+    cavalry: 1,
+    armored: 1,
+    flying: 1
+  },
+  [TerrainType.FOREST]: {
+    infantry: 2,
+    cavalry: 3,
+    armored: 2,
+    flying: 1
+  },
+  [TerrainType.MOUNTAIN]: {
+    infantry: 2,
+    cavalry: 999, // Impassable
+    armored: 3,
+    flying: 1
+  },
+  [TerrainType.WATER]: {
+    infantry: 999, // Impassable
+    cavalry: 999, // Impassable
+    armored: 999, // Impassable
+    flying: 1
+  },
+  [TerrainType.WALL]: {
+    infantry: 999, // Impassable
+    cavalry: 999, // Impassable
+    armored: 999, // Impassable
+    flying: 999  // Impassable
+  }
+};
+
+/**
+ * Calculates cells within movement range considering terrain costs
+ * @param {number} centerRow - Starting row coordinate
+ * @param {number} centerCol - Starting column coordinate
+ * @param {number} movementPoints - Total movement points available
+ * @param {string} moveType - Type of movement (infantry, cavalry, etc.)
+ * @param {Array<Array<string>>} terrainGrid - Grid of terrain types
+ * @returns {Array<{row: number, col: number}>} Array of reachable cells
+ */
+export const calculateMovementRange = (centerRow, centerCol, movementPoints, moveType, terrainGrid) => {
+  const reachableCells = new Set();
+  const visited = new Set();
+  const queue = [{
+    row: centerRow,
+    col: centerCol,
+    remainingPoints: movementPoints
+  }];
+
+  // Helper to create a unique key for a cell
+  const cellKey = (row, col) => `${row},${col}`;
+
+  while (queue.length > 0) {
+    const { row, col, remainingPoints } = queue.shift();
+    const key = cellKey(row, col);
+
+    // Skip if we've been here with more movement points
+    if (visited.has(key)) continue;
+    visited.add(key);
+
+    // Add current cell to reachable cells
+    reachableCells.add(key);
+
+    // Check adjacent cells (orthogonal movement)
+    const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    for (const [dRow, dCol] of directions) {
+      const newRow = row + dRow;
+      const newCol = col + dCol;
+
+      // Check bounds
+      if (newRow < 0 || newRow >= gridSize.rows || 
+          newCol < 0 || newCol >= gridSize.cols) {
+        continue;
+      }
+
+      // Get terrain cost
+      const terrainType = terrainGrid[newRow][newCol];
+      const moveCost = TerrainCost[terrainType][moveType] || 999;
+
+      // Skip impassable terrain or if not enough movement points
+      if (moveCost === 999 || moveCost > remainingPoints) {
+        continue;
+      }
+
+      // Add to queue if we have enough movement points
+      const newRemainingPoints = remainingPoints - moveCost;
+      if (newRemainingPoints >= 0) {
+        queue.push({
+          row: newRow,
+          col: newCol,
+          remainingPoints: newRemainingPoints
+        });
+      }
+    }
+  }
+
+  // Convert Set of keys back to array of coordinates
+  return Array.from(reachableCells).map(key => {
+    const [row, col] = key.split(',').map(Number);
+    return { row, col };
+  });
+};
+
 /*
 terrainData should be a 2D array matching the dimensions defined in the gridSize constant (6 rows × 8 columns), e.g.:
 
