@@ -3,7 +3,7 @@ import styles from './GameUI.module.css';
 import { useLocation } from 'react-router-dom';
 import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
 import Sprite from '../sprite/Sprite';
-import GameMap, { calculateCellsInRadius, defineTerrainGrid, visualizeTerrainGrid } from '../game-map/GameMap';
+import GameMap, { calculateCellsInRadius, defineTerrainGrid, TerrainType, gridSize, visualizeTerrainGrid } from '../game-map/GameMap';
 
 // TODO make frontPageState.character setting connected to characterData  
 import { sharedProps, characterData } from '../character-data/CharacterData';
@@ -178,6 +178,25 @@ const GameUI = () => {
     [6, 4, 7, 5, 'wall'],       // Wall in bottom-right corner
   ]);
 
+  // Get invalid cells based on terrain type
+  const getInvalidCells = useCallback((moveType) => {
+    const invalidCells = [];
+    
+    // Check each cell in the grid
+    for (let row = 0; row < gridSize.rows; row++) {
+      for (let col = 0; col < gridSize.cols; col++) {
+        const terrain = terrainData[row][col];
+        // For now, consider water and walls as invalid for all units
+        // This can be expanded based on movement type later
+        if (terrain === TerrainType.WATER || terrain === TerrainType.WALL) {
+          invalidCells.push({ row, col });
+        }
+      }
+    }
+    
+    return invalidCells;
+  }, [terrainData]);
+
   return (
     <div className={styles['game-container']} onClick={handleContainerClick}>
       <div className={styles['content-wrapper']}>
@@ -201,7 +220,8 @@ const GameUI = () => {
                 ? calculateCellsInRadius(
                   clickedState.gridY,
                   clickedState.gridX,
-                  sharedProps.moveTypes[characters[clickedState.characterName].type].distance
+                  sharedProps.moveTypes[characters[clickedState.characterName].type].distance,
+                  getInvalidCells(characters[clickedState.characterName].type)
                 )
                 : null
             }
@@ -232,7 +252,8 @@ const GameUI = () => {
               ? calculateCellsInRadius(
                 clickedState.gridY,
                 clickedState.gridX,
-                sharedProps.moveTypes[characters[clickedState.characterName].type].distance
+                sharedProps.moveTypes[characters[clickedState.characterName].type].distance,
+                getInvalidCells(characters[clickedState.characterName].type)
               ).map(cell => `[${cell.row},${cell.col}]`).join(', ')
               : 'None'
           }</div>

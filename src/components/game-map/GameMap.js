@@ -9,23 +9,38 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
 
 // TODO: Implement other maps.
 
-const gridSize = { rows: 6, cols: 8 };
+export const gridSize = { rows: 6, cols: 8 };
 
-// Utility function to calculate cells within a radius
-export const calculateCellsInRadius = (centerRow, centerCol, radius) => {
+// Utility function to calculate cells within a radius, excluding invalid terrain
+/**
+ * Utility function to calculate cells within a radius, excluding invalid terrain
+ * @param {number} centerRow - Center row coordinate
+ * @param {number} centerCol - Center column coordinate
+ * @param {number} radius - Movement radius
+ * @param {Array<{row: number, col: number}>} [invalidCells=[]] - Array of coordinates to exclude
+ * @returns {Array<{row: number, col: number}>} Array of valid cell coordinates within radius
+ */
+export const calculateCellsInRadius = (centerRow, centerCol, radius, invalidCells = []) => {
     const cells = [];
+    
+    // Create a Set of invalid coordinates for O(1) lookup
+    const invalidSet = new Set(
+        invalidCells.map(cell => `${cell.row},${cell.col}`)
+    );
 
     // Check each cell in a square area around the center
     for (let row = Math.max(0, centerRow - radius); row <= Math.min(gridSize.rows - 1, centerRow + radius); row++) {
         for (let col = Math.max(0, centerCol - radius); col <= Math.min(gridSize.cols - 1, centerCol + radius); col++) {
             // For orthogonal movement (like in Fire Emblem), use Manhattan distance
             const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
-            if (distance <= radius) {
+            
+            // Check if the cell is within radius AND not in invalid cells
+            if (distance <= radius && !invalidSet.has(`${row},${col}`)) {
                 cells.push({ row, col });
             }
         }
     }
-
+    
     return cells;
 };
 
