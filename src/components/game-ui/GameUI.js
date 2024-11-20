@@ -144,6 +144,16 @@ const GameUI = () => {
     return highlightedCells.some(cell => cell.row === row && cell.col === col);
   }, [highlightedCells]);
 
+  // Helper function to check if a cell is occupied by any character
+  const isOccupiedCell = useCallback((row, col) => {
+    return Object.values(characterPositions).some(pos => pos.row === row && pos.col === col);
+  }, [characterPositions]);
+
+  // Helper function to filter out occupied cells from movement range
+  const filterOccupiedCells = useCallback((movementRange) => {
+    return movementRange.filter(cell => !isOccupiedCell(cell.row, cell.col));
+  }, [isOccupiedCell]);
+
   // Update UI State after click
   const handleGridClick = useCallback((gridY, gridX) => {
     const newState = { gridY, gridX, isMapGrid: true };
@@ -182,7 +192,13 @@ const GameUI = () => {
         char.type,
         terrainData
       );
-      setHighlightedCells(movementRange);
+      
+      // Filter out cells occupied by other characters
+      const validMovementRange = filterOccupiedCells(movementRange).filter(
+        cell => !(cell.row === gridY && cell.col === gridX) // Also exclude the current character's position
+      );
+      
+      setHighlightedCells(validMovementRange);
     } else if (!isCellHighlighted(gridY, gridX)) {
       // Only clear selection if clicking a non-highlighted cell
       setHighlightedCells([]);
@@ -194,7 +210,7 @@ const GameUI = () => {
       const newHistory = [newState, ...prev].slice(0, 5);
       return newHistory;
     });
-  }, [characterPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter]);
+  }, [characterPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, filterOccupiedCells]);
 
   // Handle clicks outside of GameMap
   const handleContainerClick = useCallback((event) => {
