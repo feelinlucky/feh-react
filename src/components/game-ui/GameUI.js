@@ -139,9 +139,29 @@ const GameUI = () => {
     [6, 4, 7, 5, 'wall'],       // Wall in bottom-right corner
   ]);
 
+  // Helper function to check if a cell is in highlightedCells
+  const isCellHighlighted = useCallback((row, col) => {
+    return highlightedCells.some(cell => cell.row === row && cell.col === col);
+  }, [highlightedCells]);
+
   // Update UI State after click
   const handleGridClick = useCallback((gridY, gridX) => {
     const newState = { gridY, gridX, isMapGrid: true };
+
+    // Check if clicking a highlighted cell and we have a selected character
+    if (isCellHighlighted(gridY, gridX) && selectedCharacter) {
+      // Update character position
+      setCharacterPositions(prev => ({
+        ...prev,
+        [selectedCharacter]: { row: gridY, col: gridX }
+      }));
+      
+      // Reset states after movement
+      setHighlightedCells([]);
+      setSelectedCharacter(null);
+      setClickedState(null);
+      return;
+    }
 
     // Check if any character is at the clicked position
     const characterAtPosition = Object.entries(characterPositions).find(
@@ -163,8 +183,10 @@ const GameUI = () => {
         terrainData
       );
       setHighlightedCells(movementRange);
-    } else {
+    } else if (!isCellHighlighted(gridY, gridX)) {
+      // Only clear selection if clicking a non-highlighted cell
       setHighlightedCells([]);
+      setSelectedCharacter(null);
     }
 
     setClickedState(newState);
@@ -172,7 +194,7 @@ const GameUI = () => {
       const newHistory = [newState, ...prev].slice(0, 5);
       return newHistory;
     });
-  }, [characterPositions, setSelectedCharacter, terrainData]);
+  }, [characterPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter]);
 
   // Handle clicks outside of GameMap
   const handleContainerClick = useCallback((event) => {
