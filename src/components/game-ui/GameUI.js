@@ -13,8 +13,38 @@ import GameMap, {
 // TODO make frontPageState.character setting connected to characterData  
 import { sharedProps, characterData } from '../character-data/CharacterData';
 import MapCharacter from '../map-character/MapCharacter';
+import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 
 const publicFolder = `${process.env.PUBLIC_URL}`;
+
+const DraggableCharacter = ({ charName, coordinates, isSelected }) => {
+  const overlayRef = useRef(null);
+
+  useEffect(() => {
+    const el = overlayRef.current;
+    if (el && isSelected) {
+      return draggable({
+        element: el,
+      });
+    }
+  }, [isSelected]);
+
+  return (
+    <div
+      ref={overlayRef}
+      className={styles['character-overlay']}
+      style={{
+        left: `${coordinates.x}px`,
+        top: `${coordinates.y}px`,
+        cursor: isSelected ? 'grab' : 'pointer'
+      }}
+    >
+      <MapCharacter
+        characterName={charName}
+      />
+    </div>
+  );
+};
 
 const GameUI = () => {
   // Get setup from FrontPage
@@ -294,21 +324,13 @@ const GameUI = () => {
         {Object.keys(characters).map((charName) => {
           const pos = characterPositions[charName];
           const coordinates = rowColNumToGridCoord(pos.row, pos.col);
-          const dist = sharedProps.moveTypes[characters[charName].type].distance;
-          console.log('Character:', charName, 'Coordinates:', coordinates, 'Distance:', dist);
           return coordinates && (
-            <div
+            <DraggableCharacter
               key={charName}
-              className={styles['character-overlay']}
-              style={{
-                left: `${coordinates.x}px`,
-                top: `${coordinates.y}px`
-              }}
-            >
-              <MapCharacter
-                characterName={charName}
-              />
-            </div>
+              charName={charName}
+              coordinates={coordinates}
+              isSelected={selectedCharacter === charName}
+            />
           );
         })}
 
