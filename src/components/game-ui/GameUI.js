@@ -19,6 +19,7 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
 
 const DraggableCharacter = ({ charName, coordinates, isSelected }) => {
   const overlayRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const el = overlayRef.current;
@@ -27,7 +28,9 @@ const DraggableCharacter = ({ charName, coordinates, isSelected }) => {
         element: el,
         data: {
           character: charName,
-        }
+        },
+        onDragStart: () => setIsDragging(true),
+        onDrop: () => setIsDragging(false),
       });
     }
   }, [isSelected, charName]);
@@ -42,6 +45,7 @@ const DraggableCharacter = ({ charName, coordinates, isSelected }) => {
         cursor: isSelected ? 'grab' : 'pointer',
         userSelect: 'none'
       }}
+      data-dragging={isDragging}
     >
       <MapCharacter
         characterName={charName}

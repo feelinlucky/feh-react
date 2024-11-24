@@ -46,6 +46,8 @@
   width: 100%; /* Will match CharacterStatUI width */
   margin: 1rem 0;
   position: relative;
+  /* Establish a new stacking context */
+  z-index: 0;
 }
 
 .map-image {
@@ -112,6 +114,12 @@
   position: absolute;
   transform: translate(-50%, -100%); /* Center horizontally and align bottom */
   pointer-events: none; /* Allows clicking through to the map */
+  /* High z-index to stay above grid cells */
+  z-index: 1000;
+  /* Ensure the dragging state stays on top */
+  &[data-dragging="true"] {
+    z-index: 1001;
+  }
 }
 
 .debug-display {
