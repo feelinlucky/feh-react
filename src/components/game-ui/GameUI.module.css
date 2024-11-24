@@ -113,9 +113,10 @@
 .character-overlay {
   position: absolute;
   transform: translate(-50%, -100%); /* Center horizontally and align bottom */
-  pointer-events: none; /* Allows clicking through to the map */
-  /* High z-index to stay above grid cells */
   z-index: 1000;
+  /* Remove pointer-events: none to allow dragging */
+  pointer-events: auto;
+  
   /* Ensure the dragging state stays on top */
   &[data-dragging="true"] {
     z-index: 1001;

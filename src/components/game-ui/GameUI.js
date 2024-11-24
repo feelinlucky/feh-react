@@ -31,6 +31,7 @@ const DraggableCharacter = ({ charName, coordinates, isSelected }) => {
         },
         onDragStart: () => setIsDragging(true),
         onDrop: () => setIsDragging(false),
+        onDragEnd: () => setIsDragging(false),
       });
     }
   }, [isSelected, charName]);
@@ -43,13 +44,16 @@ const DraggableCharacter = ({ charName, coordinates, isSelected }) => {
         left: `${coordinates.x}px`,
         top: `${coordinates.y}px`,
         cursor: isSelected ? 'grab' : 'pointer',
-        userSelect: 'none'
+        userSelect: 'none',
+        pointerEvents: isSelected ? 'auto' : 'none'
       }}
       data-dragging={isDragging}
     >
-      <MapCharacter
-        characterName={charName}
-      />
+      <div style={{ pointerEvents: 'none' }}>
+        <MapCharacter
+          characterName={charName}
+        />
+      </div>
     </div>
   );
 };
