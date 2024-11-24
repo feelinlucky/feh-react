@@ -42,6 +42,13 @@
     /* Darker blue for clicked cell */
 }
 
+/* Make drag-over state specific */
+.grid-cell.grid-cell-dragged-over {
+    opacity: 0.8;
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+}
+
 /* Terrain type styles */
 .terrain-plain {
     background: rgba(255, 255, 255, 0.1);

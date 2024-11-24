@@ -25,9 +25,12 @@ const DraggableCharacter = ({ charName, coordinates, isSelected }) => {
     if (el && isSelected) {
       return draggable({
         element: el,
+        data: {
+          character: charName,
+        }
       });
     }
-  }, [isSelected]);
+  }, [isSelected, charName]);
 
   return (
     <div
@@ -36,7 +39,8 @@ const DraggableCharacter = ({ charName, coordinates, isSelected }) => {
       style={{
         left: `${coordinates.x}px`,
         top: `${coordinates.y}px`,
-        cursor: isSelected ? 'grab' : 'pointer'
+        cursor: isSelected ? 'grab' : 'pointer',
+        userSelect: 'none'
       }}
     >
       <MapCharacter

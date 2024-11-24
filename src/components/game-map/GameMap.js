@@ -4,6 +4,7 @@ import styles from './GameMap.module.css';
 import { useLocation } from 'react-router-dom';
 import Sprite from '../sprite/Sprite';
 import MockChild from '../mock-child/MockChild';
+import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
@@ -271,6 +272,39 @@ export const calculateMovementRange = (centerRow, centerCol, movementPoints, mov
   });
 };
 
+const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick }) => {
+    const ref = useRef(null);
+    const [isDraggedOver, setIsDraggedOver] = useState(false);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (el && isHighlighted) {
+            return dropTargetForElements({
+                element: el,
+                onDragEnter: () => setIsDraggedOver(true),
+                onDragLeave: () => setIsDraggedOver(false),
+                onDrop: () => {
+                    setIsDraggedOver(false);
+                    onClick();
+                },
+            });
+        }
+    }, [isHighlighted, onClick]);
+
+    return (
+        <div
+            ref={ref}
+            className={`${styles['grid-cell']} 
+                ${styles[`terrain-${terrainType}`]}
+                ${isClicked ? styles['grid-cell-clicked'] : ''} 
+                ${isHighlighted ? styles['grid-cell-highlighted'] : ''}
+                ${isDraggedOver ? styles['grid-cell-dragged-over'] : ''}`}
+            onClick={onClick}
+            data-terrain={terrainType}
+        />
+    );
+};
+
 /*
 terrainData should be a 2D array matching the dimensions defined in the gridSize constant (6 rows × 8 columns), e.g.:
 
@@ -352,14 +386,14 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                 }
 
                 grid.push(
-                    <div
+                    <DroppableCell
                         key={`${row}-${col}`}
-                        className={`${styles['grid-cell']} 
-                            ${styles[`terrain-${terrainType}`]}
-                            ${isClicked ? styles['grid-cell-clicked'] : ''} 
-                            ${isHighlighted ? styles['grid-cell-highlighted'] : ''}`}
+                        row={row}
+                        col={col}
+                        isClicked={isClicked}
+                        isHighlighted={isHighlighted}
+                        terrainType={terrainType}
                         onClick={() => handleGridClick(row, col)}
-                        data-terrain={terrainType}
                     />
                 );
             }
