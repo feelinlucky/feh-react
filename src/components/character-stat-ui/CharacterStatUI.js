@@ -31,7 +31,7 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
 
     const characterStatsSlice1 = characterStats.slice(0, 4);
     const characterStatsSlice2 = characterStats.slice(4);
-    
+
     const statUIRef = useRef(null);
 
     useEffect(() => {
@@ -47,8 +47,16 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
         return (
             <div ref={statUIRef} className={styles.characterTable}>
                 <div className={styles.characterCell}>
-                    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-                        <Sprite spriteName="PortraitAlfonse" />
+                    <div style={{
+                        height: 'calc(var(--stat-cell-height) * var(--stat-cell-count))',
+                        width: 'auto',
+                        paddingRight: '50%',
+                        objectFit: 'contain',
+                        scale: '0.7',
+                    }}>
+                        <Sprite
+                            spriteName="PortraitAlfonse"
+                        />
                     </div>
                 </div>
                 <div className={styles.characterCell}>
@@ -72,7 +80,7 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
                     ))}
                 </div>
             </div>
-    
+
         );
     }
 };
