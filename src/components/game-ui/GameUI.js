@@ -75,7 +75,10 @@ const GameUI = () => {
   const [gridCenterAdjustment, setGridCenterAdjustment] = useState({ x: 0, y: 0 });
   const [highlightedCells, setHighlightedCells] = useState([]);
 
-  const characterNames = ["Alfonse", "Sharena", "Anna", "Fjorm","FighterSword"];
+  const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
+  const foeNames = ["FighterSword"];
+
+  const characterNames = [...allyNames, ...foeNames];
 
   // Set character base properties
   const [characters, setCharacters] = useState(
