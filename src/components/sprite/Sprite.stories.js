@@ -33,6 +33,11 @@ CharPortraitFjorm.args = {
   spriteName: "PortraitFjorm",
 };
 
+export const CharPortraitFighterSword = Template.bind({});
+CharPortraitFighterSword.args = {
+  spriteName: "PortraitFighterSword",
+};
+
 export const ButtonBgDefault = Template.bind({});
 ButtonBgDefault.args = {
   spriteName: "ButtonBg1",

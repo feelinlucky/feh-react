@@ -1,5 +1,3 @@
-import { Default } from "../character-stat-ui/CharacterStatUI.stories";
-
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
 const charData = {
@@ -41,6 +39,17 @@ const charData = {
         level: 40,
         wpn: "Leiptr",
         wpnType: "Blue Lance",
+        hp: 50,
+        atk: 50,
+        spd: 50,
+        def: 30,
+        res: 30
+    },
+    "FighterSword": {
+        type: "infantry",
+        level: 40,
+        wpn: "Sword",
+        wpnType: "Red Sword",
         hp: 50,
         atk: 50,
         spd: 50,

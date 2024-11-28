@@ -13,6 +13,7 @@ const Sprite = ({ spriteName, children }) => {
     PortraitAnna: `${process.env.PUBLIC_URL}/assets/images/portrait/Anna.png`,
     PortraitFjorm: `${process.env.PUBLIC_URL}/assets/images/portrait/Fjorm.png`,
     PortraitSharena: `${process.env.PUBLIC_URL}/assets/images/portrait/Sharena.png`,
+    PortraitFighterSword: `${process.env.PUBLIC_URL}/assets/images/portrait/FighterMelee.png`,
     UiStatBg: `${process.env.PUBLIC_URL}/assets/images/ui/Common_Window.png`,
     ButtonBg1: `${process.env.PUBLIC_URL}/assets/images/ui/UnitEdit.png`,
   };
@@ -36,6 +37,10 @@ const Sprite = ({ spriteName, children }) => {
     },
     PortraitFjorm: {
       position: { x: 6652, y: 2212 },
+      dimension: { width: 472, height: 308 },
+    },
+    PortraitFighterSword: {
+      position: { x: 200, y: 0 },
       dimension: { width: 472, height: 308 },
     },
     UiStatBg: {

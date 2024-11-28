@@ -75,7 +75,7 @@ const GameUI = () => {
   const [gridCenterAdjustment, setGridCenterAdjustment] = useState({ x: 0, y: 0 });
   const [highlightedCells, setHighlightedCells] = useState([]);
 
-  const characterNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
+  const characterNames = ["Alfonse", "Sharena", "Anna", "Fjorm","FighterSword"];
 
   // Set character base properties
   const [characters, setCharacters] = useState(
@@ -89,7 +89,8 @@ const GameUI = () => {
     Alfonse: { row: 0, col: 0 },
     Sharena: { row: 0, col: 1 },
     Anna: { row: 0, col: 2 },
-    Fjorm: { row: 0, col: 3 }
+    Fjorm: { row: 0, col: 3 },
+    FighterSword: { row: 0, col: 4 }
   });
 
   // Grab grid center coordinates from GameMap
