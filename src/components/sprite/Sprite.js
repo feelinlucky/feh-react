@@ -9,7 +9,10 @@ const Sprite = ({ spriteName, children }) => {
 
   const spriteSheet = {
     Weapon1: `${process.env.PUBLIC_URL}/assets/images/ui/UnitEdit.png`,
-    PortraitAlfonse: `${process.env.PUBLIC_URL}/assets/images/portrait/87754.png`,
+    PortraitAlfonse: `${process.env.PUBLIC_URL}/assets/images/portrait/Alfonse.png`,
+    PortraitAnna: `${process.env.PUBLIC_URL}/assets/images/portrait/Anna.png`,
+    PortraitFjorm: `${process.env.PUBLIC_URL}/assets/images/portrait/Fjorm.png`,
+    PortraitSharena: `${process.env.PUBLIC_URL}/assets/images/portrait/Sharena.png`,
     UiStatBg: `${process.env.PUBLIC_URL}/assets/images/ui/Common_Window.png`,
     ButtonBg1: `${process.env.PUBLIC_URL}/assets/images/ui/UnitEdit.png`,
   };
@@ -21,6 +24,18 @@ const Sprite = ({ spriteName, children }) => {
     },
     PortraitAlfonse: {
       position: { x: 5044, y: 7674 },
+      dimension: { width: 472, height: 308 },
+    },
+    PortraitAnna: {
+      position: { x: 8250, y: 2212 },
+      dimension: { width: 472, height: 308 },
+    },
+    PortraitSharena: {
+      position: { x: 1800, y: 9600 },
+      dimension: { width: 472, height: 308 },
+    },
+    PortraitFjorm: {
+      position: { x: 6652, y: 2212 },
       dimension: { width: 472, height: 308 },
     },
     UiStatBg: {

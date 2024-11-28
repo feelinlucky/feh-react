@@ -18,6 +18,21 @@ CharPortraitDefault.args = {
   spriteName: "PortraitAlfonse",
 };
 
+export const CharPortraitAnna = Template.bind({});
+CharPortraitAnna.args = {
+  spriteName: "PortraitAnna",
+};
+
+export const CharPortraitSharena = Template.bind({});
+CharPortraitSharena.args = {
+  spriteName: "PortraitSharena",
+};
+
+export const CharPortraitFjorm = Template.bind({});
+CharPortraitFjorm.args = {
+  spriteName: "PortraitFjorm",
+};
+
 export const ButtonBgDefault = Template.bind({});
 ButtonBgDefault.args = {
   spriteName: "ButtonBg1",

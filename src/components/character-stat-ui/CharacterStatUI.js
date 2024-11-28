@@ -55,7 +55,7 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
                         scale: '0.7',
                     }}>
                         <Sprite
-                            spriteName="PortraitAlfonse"
+                            spriteName={`Portrait${charName}`}
                         />
                     </div>
                 </div>
