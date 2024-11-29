@@ -58,6 +58,25 @@ const DraggableCharacter = ({ charName, coordinates, isSelected }) => {
   );
 };
 
+/**
+ * Calculates the grid distance between two characters using Manhattan distance
+ * @param {string} char1Name - Name of the first character
+ * @param {string} char2Name - Name of the second character
+ * @param {Object} positions - Object containing character positions
+ * @returns {number} The grid distance between the two characters
+ */
+const calculateGridDistance = (char1Name, char2Name, positions) => {
+  const char1Pos = positions[char1Name];
+  const char2Pos = positions[char2Name];
+  
+  if (!char1Pos || !char2Pos) {
+    return null;
+  }
+  
+  // Calculate Manhattan distance (|x1 - x2| + |y1 - y2|)
+  return Math.abs(char1Pos.row - char2Pos.row) + Math.abs(char1Pos.col - char2Pos.col);
+};
+
 const GameUI = () => {
   // Get setup from FrontPage
   const location = useLocation();
