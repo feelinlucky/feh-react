@@ -77,6 +77,52 @@ const calculateGridDistance = (char1Name, char2Name, positions) => {
   return Math.abs(char1Pos.row - char2Pos.row) + Math.abs(char1Pos.col - char2Pos.col);
 };
 
+/**
+ * Finds the nearest empty grid position to a target grid that's closest to the cursor
+ * @param {Object} draggedOverGrid - The grid position being dragged over {row, col}
+ * @param {Object} cursorPos - Current cursor position {x, y}
+ * @param {Object} gridAnchors - Grid anchor coordinates for each cell
+ * @param {Object} invalidPositions - Currently invalid grid positions to move to
+ * @returns {Object} The nearest empty grid position {row, col}
+ */
+const findNearestEmptyGridPosition = (draggedOverGrid, cursorPos, gridAnchors, invalidPositions) => {
+  // Get adjacent cells (up, right, down, left)
+  const adjacentCells = [
+    { row: draggedOverGrid.row - 1, col: draggedOverGrid.col }, // up
+    { row: draggedOverGrid.row, col: draggedOverGrid.col + 1 }, // right
+    { row: draggedOverGrid.row + 1, col: draggedOverGrid.col }, // down
+    { row: draggedOverGrid.row, col: draggedOverGrid.col - 1 }  // left
+  ].filter(pos => {
+    // Filter out positions outside the grid
+    return pos.row >= 0 && pos.row < 6 && pos.col >= 0 && pos.col < 8 &&
+           // Filter invalid grid positions to move to
+           !Object.values(invalidPositions).some(occPos => 
+             occPos.row === pos.row && occPos.col === pos.col
+           );
+  });
+
+  if (adjacentCells.length === 0) return null;
+
+  // Find the position closest to the cursor
+  return adjacentCells.reduce((closest, current) => {
+    const currentAnchor = gridAnchors[`${current.row},${current.col}`];
+    const closestAnchor = gridAnchors[`${closest.row},${closest.col}`];
+    
+    if (!currentAnchor || !closestAnchor) return closest;
+
+    const currentDist = Math.hypot(
+      currentAnchor.x - cursorPos.x,
+      currentAnchor.y - cursorPos.y
+    );
+    const closestDist = Math.hypot(
+      closestAnchor.x - cursorPos.x,
+      closestAnchor.y - cursorPos.y
+    );
+
+    return currentDist < closestDist ? current : closest;
+  }, adjacentCells[0]);
+};
+
 const GameUI = () => {
   // Get setup from FrontPage
   const location = useLocation();
