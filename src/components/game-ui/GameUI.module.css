@@ -125,12 +125,20 @@
 
 .debug-display {
   position: fixed;
-  bottom: 10px;
-  left: 10px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #00ff00;
   padding: 10px;
-  border-radius: 4px;
+  border-radius: 5px;
   font-family: monospace;
+  font-size: 12px;
   z-index: 1000;
+  max-width: 300px;
+  overflow-wrap: break-word;
+}
+
+.debug-display pre {
+  margin: 0;
+  white-space: pre-wrap;
 }

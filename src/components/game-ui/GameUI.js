@@ -17,24 +17,53 @@ import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
-const DraggableCharacter = ({ charName, coordinates, isSelected }) => {
+const DraggableCharacter = ({ charName, coordinates, isSelected, onDragUpdate }) => {
   const overlayRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const el = overlayRef.current;
     if (el && isSelected) {
-      return draggable({
+      const handleDrag = (event) => {
+        if (isDragging && onDragUpdate) {
+          onDragUpdate({
+            cursorX: event.clientX,
+            cursorY: event.clientY
+          });
+        }
+      };
+
+      document.addEventListener('mousemove', handleDrag);
+
+      const cleanup = draggable({
         element: el,
         data: {
           character: charName,
         },
-        onDragStart: () => setIsDragging(true),
-        onDrop: () => setIsDragging(false),
-        onDragEnd: () => setIsDragging(false),
+        onDragStart: (event) => {
+          setIsDragging(true);
+          // Use the event object provided by the drag handler
+          onDragUpdate?.({
+            cursorX: event.clientX,
+            cursorY: event.clientY
+          });
+        },
+        onDrop: () => {
+          setIsDragging(false);
+          onDragUpdate?.(null);
+        },
+        onDragEnd: () => {
+          setIsDragging(false);
+          onDragUpdate?.(null);
+        },
       });
+
+      return () => {
+        document.removeEventListener('mousemove', handleDrag);
+        cleanup?.();
+      };
     }
-  }, [isSelected, charName]);
+  }, [isSelected, charName, isDragging, onDragUpdate]);
 
   return (
     <div
@@ -139,6 +168,9 @@ const GameUI = () => {
   const mapContainerRef = useRef(null);
   const [gridCenterAdjustment, setGridCenterAdjustment] = useState({ x: 0, y: 0 });
   const [highlightedCells, setHighlightedCells] = useState([]);
+  const [debugInfo, setDebugInfo] = useState(null);
+  const [dragDebugInfo, setDragDebugInfo] = useState(null);
+  const [draggedOverCell, setDraggedOverCell] = useState(null);
 
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
   const foeNames = ["FighterSword"];
@@ -346,6 +378,18 @@ const GameUI = () => {
     });
   }, [setClickedState, setSelectedCharacter]);
 
+  const handleDragUpdate = (dragInfo) => {
+    setDragDebugInfo(dragInfo);
+    // Clear dragged over cell when drag ends
+    if (!dragInfo) {
+      setDraggedOverCell(null);
+    }
+  };
+
+  const handleGridCellDragOver = (row, col) => {
+    setDraggedOverCell({ row, col });
+  };
+
   return (
     <div className={styles['game-container']} onClick={handleContainerClick}>
       <div className={styles['content-wrapper']}>
@@ -365,55 +409,53 @@ const GameUI = () => {
             ongridAnchorCoordinates={handlegridAnchorCoordinates}
             clickedState={clickedState}
             highlightedCells={highlightedCells}
-            terrainData={terrainData}
+            terrainData={mapState}
+            onCellDragOver={handleGridCellDragOver}
           />
+          {characterNames.map((charName) => {
+            const gridPos = characterPositions[charName];
+            const gridAnchor = gridAnchorCoordinates[`${gridPos.row}-${gridPos.col}`];
+            return gridAnchor ? (
+              <DraggableCharacter
+                key={charName}
+                charName={charName}
+                coordinates={{
+                  x: gridAnchor.x - 32,
+                  y: gridAnchor.y - 64
+                }}
+                isSelected={selectedCharacter === charName}
+                onDragUpdate={handleDragUpdate}
+              />
+            ) : null;
+          })}
         </div>
-
-        {/* Debug display for clickedState */}
-        <div className={styles['debug-display']}>
-          <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
-          <div>Current Character: {clickedState ? `${clickedState.characterName}` : 'None'}</div>
-          <div>Terrain Type: {
-            clickedState && 
-            typeof clickedState.gridY === 'number' && 
-            typeof clickedState.gridX === 'number' && 
-            terrainData[clickedState.gridY]?.[clickedState.gridX] || 'None'
-          }</div>
-          <div>calculateCellsInRadius inputs:</div>
-          <div>- centerRow: {clickedState ? clickedState.gridY : 'None'}</div>
-          <div>- centerCol: {clickedState ? clickedState.gridX : 'None'}</div>
-          <div>- radius: {
-            clickedState && clickedState.characterName && characters[clickedState.characterName]
-              ? sharedProps.moveTypes[characters[clickedState.characterName].type].distance
-              : 'None'
-          }</div>
-          <div>Highlighted Cells: {
-            highlightedCells.map(cell => `[${cell.row},${cell.col}]`).join(', ')
-          }</div>
-          <div>History:</div>
-          {clickedStateHistory.map((state, index) => (
-            <div key={index} style={{ opacity: 1 - index * 0.2 }}>
-              {`${index + 1}. [${state.gridY},${state.gridX}] ${state.characterName || ''}`}
-            </div>
-          ))}
-          <pre>
-            Terrain Map:
-            {terrainData && visualizeTerrainGrid(terrainData)}
-          </pre>
-        </div>
-
-        {Object.keys(characters).map((charName) => {
-          const pos = characterPositions[charName];
-          const coordinates = rowColNumToGridCoord(pos.row, pos.col);
-          return coordinates && (
-            <DraggableCharacter
-              key={charName}
-              charName={charName}
-              coordinates={coordinates}
-              isSelected={selectedCharacter === charName}
-            />
-          );
-        })}
+        
+        {/* Debug displays - only show drag debug when active */}
+        {(dragDebugInfo || draggedOverCell) ? (
+          <div className={styles['debug-display']}>
+            <pre>
+              {JSON.stringify({
+                cursor: dragDebugInfo ? {
+                  x: dragDebugInfo.cursorX,
+                  y: dragDebugInfo.cursorY
+                } : null,
+                draggedOverCell: draggedOverCell || 'none'
+              }, null, 2)}
+            </pre>
+          </div>
+        ) : (
+          /* Only show regular debug info when not dragging */
+          <div className={styles['debug-display']}>
+            <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
+            <div>Selected Character: {selectedCharacter || 'None'}</div>
+            <div>Clicked Character: {clickedState?.characterName || 'None'}</div>
+            <div>Is Map Grid: {clickedState?.isMapGrid ? 'Yes' : 'No'}</div>
+            <div>History:</div>
+            <pre>
+              {JSON.stringify(clickedStateHistory, null, 2)}
+            </pre>
+          </div>
+        )}
 
         <div className={styles['actionButtonsContainer']}>
           <div className={styles['button-group']}>

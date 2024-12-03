@@ -272,7 +272,7 @@ export const calculateMovementRange = (centerRow, centerCol, movementPoints, mov
   });
 };
 
-const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick }) => {
+const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick, onDragOver }) => {
     const ref = useRef(null);
     const [isDraggedOver, setIsDraggedOver] = useState(false);
 
@@ -281,15 +281,20 @@ const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClic
         if (el && isHighlighted) {
             return dropTargetForElements({
                 element: el,
-                onDragEnter: () => setIsDraggedOver(true),
-                onDragLeave: () => setIsDraggedOver(false),
+                onDragEnter: () => {
+                    setIsDraggedOver(true);
+                    onDragOver?.(row, col);
+                },
+                onDragLeave: () => {
+                    setIsDraggedOver(false);
+                },
                 onDrop: () => {
                     setIsDraggedOver(false);
                     onClick();
                 },
             });
         }
-    }, [isHighlighted, onClick]);
+    }, [isHighlighted, onClick, onDragOver, row, col]);
 
     return (
         <div
@@ -319,7 +324,7 @@ const terrainData = [
 ];
 */
 
-const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlightedCells, terrainData }) => {
+const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlightedCells, terrainData, onCellDragOver }) => {
     const mapImage = `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
     const imgRef = useRef(null);
     const mapImageWidthRef = useRef(0);
@@ -381,10 +386,6 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                 );
                 const terrainType = terrainData?.[row]?.[col] || TerrainType.PLAIN;
 
-                if (isHighlighted) {
-                    console.log(`Cell [${row},${col}] is highlighted`);
-                }
-
                 grid.push(
                     <DroppableCell
                         key={`${row}-${col}`}
@@ -394,6 +395,7 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                         isHighlighted={isHighlighted}
                         terrainType={terrainType}
                         onClick={() => handleGridClick(row, col)}
+                        onDragOver={onCellDragOver}
                     />
                 );
             }
@@ -415,20 +417,17 @@ GameMap.propTypes = {
     onGridClick: PropTypes.func.isRequired,
     ongridAnchorCoordinates: PropTypes.func,
     clickedState: PropTypes.shape({
-        gridY: PropTypes.number,
         gridX: PropTypes.number,
+        gridY: PropTypes.number,
         isMapGrid: PropTypes.bool,
         characterName: PropTypes.string
     }),
     highlightedCells: PropTypes.arrayOf(PropTypes.shape({
-        row: PropTypes.number.isRequired,
-        col: PropTypes.number.isRequired
+        row: PropTypes.number,
+        col: PropTypes.number
     })),
-    terrainData: PropTypes.arrayOf(
-        PropTypes.arrayOf(
-            PropTypes.oneOf(Object.values(TerrainType))
-        )
-    )
+    terrainData: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
+    onCellDragOver: PropTypes.func
 };
 
 // Make GameMap the default export
