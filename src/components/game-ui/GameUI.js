@@ -24,17 +24,6 @@ const DraggableCharacter = ({ charName, coordinates, isSelected, onDragUpdate })
   useEffect(() => {
     const el = overlayRef.current;
     if (el && isSelected) {
-      const handleDrag = (event) => {
-        if (isDragging && onDragUpdate) {
-          onDragUpdate({
-            cursorX: event.clientX,
-            cursorY: event.clientY
-          });
-        }
-      };
-
-      document.addEventListener('mousemove', handleDrag);
-
       const cleanup = draggable({
         element: el,
         data: {
@@ -42,28 +31,32 @@ const DraggableCharacter = ({ charName, coordinates, isSelected, onDragUpdate })
         },
         onDragStart: (event) => {
           setIsDragging(true);
-          // Use the event object provided by the drag handler
-          onDragUpdate?.({
+          onDragUpdate({
+            cursorX: event.clientX,
+            cursorY: event.clientY
+          });
+        },
+        onDragUpdate: (event) => {
+          onDragUpdate({
             cursorX: event.clientX,
             cursorY: event.clientY
           });
         },
         onDrop: () => {
           setIsDragging(false);
-          onDragUpdate?.(null);
+          onDragUpdate(null);
         },
         onDragEnd: () => {
           setIsDragging(false);
-          onDragUpdate?.(null);
+          onDragUpdate(null);
         },
       });
 
       return () => {
-        document.removeEventListener('mousemove', handleDrag);
         cleanup?.();
       };
     }
-  }, [isSelected, charName, isDragging, onDragUpdate]);
+  }, [isSelected, charName, onDragUpdate]);
 
   return (
     <div
@@ -378,13 +371,20 @@ const GameUI = () => {
     });
   }, [setClickedState, setSelectedCharacter]);
 
-  const handleDragUpdate = (dragInfo) => {
-    setDragDebugInfo(dragInfo);
-    // Clear dragged over cell when drag ends
-    if (!dragInfo) {
+  const handleDragUpdate = useCallback((dragInfo) => {
+    if (dragInfo === null) {
+      setDragDebugInfo(null);
       setDraggedOverCell(null);
+    } else {
+      const { cursorX, cursorY } = dragInfo;
+      if (typeof cursorX === 'number' && typeof cursorY === 'number') {
+        setDragDebugInfo({
+          cursorX,
+          cursorY
+        });
+      }
     }
-  };
+  }, []);
 
   const handleGridCellDragOver = (row, col) => {
     setDraggedOverCell({ row, col });
@@ -431,14 +431,15 @@ const GameUI = () => {
         </div>
         
         {/* Debug displays - only show drag debug when active */}
-        {(dragDebugInfo || draggedOverCell) ? (
+        {dragDebugInfo || draggedOverCell ? (
           <div className={styles['debug-display']}>
             <pre>
+              Drag Debug Info:
               {JSON.stringify({
                 cursor: dragDebugInfo ? {
                   x: dragDebugInfo.cursorX,
                   y: dragDebugInfo.cursorY
-                } : null,
+                } : "not dragging",
                 draggedOverCell: draggedOverCell || 'none'
               }, null, 2)}
             </pre>
