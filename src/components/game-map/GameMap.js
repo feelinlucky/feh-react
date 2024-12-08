@@ -278,7 +278,7 @@ const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClic
 
     useEffect(() => {
         const el = ref.current;
-        if (el && isHighlighted) {
+        if (el) {
             return dropTargetForElements({
                 element: el,
                 onDragEnter: () => {
@@ -290,11 +290,14 @@ const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClic
                 },
                 onDrop: () => {
                     setIsDraggedOver(false);
-                    onClick();
+                    // Only trigger click for highlighted cells
+                    if (isHighlighted) {
+                        onClick();
+                    }
                 },
             });
         }
-    }, [isHighlighted, onClick, onDragOver, row, col]);
+    }, [onClick, onDragOver, row, col, isHighlighted]);
 
     return (
         <div
