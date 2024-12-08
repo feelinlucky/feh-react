@@ -54,6 +54,7 @@ const DraggableCharacter = ({ charName, coordinates, isSelected, onDragUpdate })
           }
         },
         onDrag: (event) => {
+          setIsDragging(true);
           if (event.clientX !== undefined && event.clientY !== undefined) {
             onDragUpdate({
               cursorX: event.clientX,
@@ -98,7 +99,8 @@ const DraggableCharacter = ({ charName, coordinates, isSelected, onDragUpdate })
         top: `${coordinates.y}px`,
         cursor: isSelected ? 'grab' : 'pointer',
         userSelect: 'none',
-        pointerEvents: isSelected ? 'auto' : 'none'
+        pointerEvents: isSelected ? 'auto' : 'none',
+        opacity: isDragging ? 0.7 : 1,
       }}
       data-dragging={isDragging}
     >
@@ -189,7 +191,6 @@ const GameUI = () => {
   const [gridCenterAdjustment, setGridCenterAdjustment] = useState({ x: 0, y: 0 }); // Grid centering adjustments
   const [highlightedCells, setHighlightedCells] = useState([]); // Cells to highlight on the map
   const [debugInfo, setDebugInfo] = useState(null); // Debugging information
-  const [dragDebugInfo, setDragDebugInfo] = useState(null); // Drag-related debug info
   const [draggedOverCell, setDraggedOverCell] = useState(null); // Currently dragged-over cell
 
   // Define character teams
@@ -453,16 +454,11 @@ const GameUI = () => {
    */
   const handleDragUpdate = useCallback((dragInfo) => {
     if (!dragInfo) {
-      setDragDebugInfo(null);
       setDraggedOverCell(null);
       return;
     }
 
     const { cursorX, cursorY } = dragInfo;
-    setDragDebugInfo({
-      cursorX: cursorX,
-      cursorY: cursorY
-    });
   }, []);
 
   /**
@@ -521,15 +517,11 @@ const GameUI = () => {
         </div>
         
         {/* Debug information display */}
-        {dragDebugInfo || draggedOverCell ? (
+        {draggedOverCell ? (
           <div className={styles['debug-display']}>
             <pre>
               Drag Debug Info:
               {JSON.stringify({
-                cursor: dragDebugInfo ? {
-                  x: Math.round(dragDebugInfo.cursorX),
-                  y: Math.round(dragDebugInfo.cursorY)
-                } : "not dragging",
                 draggedOverCell: draggedOverCell || 'none'
               }, null, 2)}
             </pre>
