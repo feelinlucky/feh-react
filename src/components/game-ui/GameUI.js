@@ -30,9 +30,9 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
  * @param {string} props.charName - Character's name identifier
  * @param {Object} props.coordinates - X and Y coordinates for character position
  * @param {boolean} props.isSelected - Whether the character is currently selected
- * @param {function} props.onDragUpdate - Callback for drag position updates
+ * @param {function} props.setParentIsDragging - Callback to set parent's isDragging state
  */
-const DraggableCharacter = ({ charName, coordinates, isSelected, onDragUpdate }) => {
+const DraggableCharacter = ({ charName, coordinates, isSelected, setParentIsDragging }) => {
   const overlayRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -46,49 +46,28 @@ const DraggableCharacter = ({ charName, coordinates, isSelected, onDragUpdate })
         },
         onDragStart: (event) => {
           setIsDragging(true);
-          if (event.clientX !== undefined && event.clientY !== undefined) {
-            onDragUpdate({
-              cursorX: event.clientX,
-              cursorY: event.clientY
-            });
-          }
+          setParentIsDragging(true);
         },
         onDrag: (event) => {
-          setIsDragging(true);
-          if (event.clientX !== undefined && event.clientY !== undefined) {
-            onDragUpdate({
-              cursorX: event.clientX,
-              cursorY: event.clientY
-            });
+          if (isDragging) {
+            // TODO: add function to calculate nearest grid edge based on cursor position
           }
         },
         onDrop: () => {
           setIsDragging(false);
-          onDragUpdate(null);
+          setParentIsDragging(false);
         },
         onDragEnd: () => {
           setIsDragging(false);
-          onDragUpdate(null);
+          setParentIsDragging(false);
         },
       });
 
-      const handleMouseMove = (event) => {
-        if (isDragging) {
-          onDragUpdate({
-            cursorX: event.clientX,
-            cursorY: event.clientY
-          });
-        }
-      };
-
-      document.addEventListener('mousemove', handleMouseMove);
-
       return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
         cleanup?.();
       };
     }
-  }, [isSelected, charName, isDragging, onDragUpdate]);
+  }, [isSelected, charName, isDragging, setParentIsDragging]);
 
   return (
     <div
@@ -192,6 +171,9 @@ const GameUI = () => {
   const [highlightedCells, setHighlightedCells] = useState([]); // Cells to highlight on the map
   const [debugInfo, setDebugInfo] = useState(null); // Debugging information
   const [draggedOverCell, setDraggedOverCell] = useState(null); // Currently dragged-over cell
+  const [currentCursorPos, setCurrentCursorPos] = useState(null); // Track cursor position for edge detection
+  const [isDragging, setIsDragging] = useState(false); // Track dragging state
+  const [isCursorObserverActive, setIsCursorObserverActive] = useState(false); // Toggle for cursor observer
 
   // Define character teams
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
@@ -455,10 +437,12 @@ const GameUI = () => {
   const handleDragUpdate = useCallback((dragInfo) => {
     if (!dragInfo) {
       setDraggedOverCell(null);
+      setIsDragging(false);
       return;
     }
 
     const { cursorX, cursorY } = dragInfo;
+    setIsDragging(true);
   }, []);
 
   /**
@@ -469,6 +453,35 @@ const GameUI = () => {
    */
   const handleGridCellDragOver = (row, col) => {
     setDraggedOverCell({ row, col });
+  };
+
+  // Cursor position observer
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      if (isCursorObserverActive) {
+        setCurrentCursorPos({
+          x: Math.round(event.clientX),
+          y: Math.round(event.clientY)
+        });
+      }
+    };
+
+    if (isCursorObserverActive) {
+      window.addEventListener('mousemove', handleMouseMove);
+      console.log('Cursor observer activated');
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [isCursorObserverActive]);
+
+  // Toggle cursor observer
+  const toggleCursorObserver = () => {
+    setIsCursorObserverActive(!isCursorObserverActive);
+    if (!isCursorObserverActive) {
+      setCurrentCursorPos(null); // Reset cursor position when turning off
+    }
   };
 
   // Main component render
@@ -510,7 +523,7 @@ const GameUI = () => {
                   y: gridAnchor.y - 64  // Offset to align with grid
                 }}
                 isSelected={selectedCharacter === charName}
-                onDragUpdate={handleDragUpdate}
+                setParentIsDragging={setIsDragging}
               />
             ) : null;
           })}
@@ -519,15 +532,59 @@ const GameUI = () => {
         {/* Debug information display */}
         {draggedOverCell ? (
           <div className={styles['debug-display']}>
+            <div>
+              <button 
+                onClick={toggleCursorObserver}
+                style={{
+                  padding: '5px 10px',
+                  marginBottom: '10px',
+                  backgroundColor: isCursorObserverActive ? '#4CAF50' : '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
+              </button>
+            </div>
             <pre>
               Drag Debug Info:
               {JSON.stringify({
-                draggedOverCell: draggedOverCell || 'none'
+                cursorObserver: {
+                  active: isCursorObserverActive,
+                  position: currentCursorPos || 'none'
+                },
+                draggedOverCell: draggedOverCell || 'none',
+                nearestEdge: currentCursorPos && draggedOverCell ? 
+                  findNearestEmptyGridPosition(draggedOverCell, currentCursorPos, gridAnchorCoordinates) : 'none',
+                inputVariables: {
+                  draggedOverGrid: draggedOverCell,
+                  cursorPos: currentCursorPos || 'none',
+                  relevantGridAnchor: draggedOverCell ? 
+                    gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`] : null
+                }
               }, null, 2)}
             </pre>
           </div>
         ) : (
           <div className={styles['debug-display']}>
+            <div>
+              <button 
+                onClick={toggleCursorObserver}
+                style={{
+                  padding: '5px 10px',
+                  marginBottom: '10px',
+                  backgroundColor: isCursorObserverActive ? '#4CAF50' : '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
+              </button>
+            </div>
             <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
             <div>Selected Character: {selectedCharacter || 'None'}</div>
             <div>Clicked Character: {clickedState?.characterName || 'None'}</div>
