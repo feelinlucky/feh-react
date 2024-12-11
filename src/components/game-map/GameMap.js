@@ -332,19 +332,54 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
     const imgRef = useRef(null);
     const mapImageWidthRef = useRef(0);
     const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState([]);
+    const [currentMouseGridPosition, setCurrentMouseGridPosition] = useState(null);
+
+    // Global mouse tracking for grid cell detection
+    useEffect(() => {
+        const handleMouseMove = (event) => {
+            if (imgRef.current) {
+                const rect = imgRef.current.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                const cellWidth = mapImageWidthRef.current / gridSize.cols;
+                const cellHeight = imgRef.current.offsetHeight / gridSize.rows;
+
+                const col = Math.floor(x / cellWidth);
+                const row = Math.floor(y / cellHeight);
+
+                if (row >= 0 && row < gridSize.rows && col >= 0 && col < gridSize.cols) {
+                    const newGridPosition = { row, col };
+                    
+                    // Only update if grid position changed
+                    if (!currentMouseGridPosition || 
+                        currentMouseGridPosition.row !== row || 
+                        currentMouseGridPosition.col !== col) {
+                        setCurrentMouseGridPosition(newGridPosition);
+                        
+                        // Call onCellDragOver if provided
+                        if (typeof onCellDragOver === 'function') {
+                            onCellDragOver(row, col);
+                        }
+                    }
+                }
+            }
+        };
+
+        const mapContainer = imgRef.current?.parentElement;
+        if (mapContainer) {
+            mapContainer.addEventListener('mousemove', handleMouseMove);
+            return () => {
+                mapContainer.removeEventListener('mousemove', handleMouseMove);
+            };
+        }
+    }, [onCellDragOver, currentMouseGridPosition]);
 
     useEffect(() => {
         if (imgRef.current) {
             mapImageWidthRef.current = imgRef.current.offsetWidth;
         }
     }, []);
-
-    // Debug log for highlightedCells
-    useEffect(() => {
-        if (highlightedCells) {
-            console.log('Received highlightedCells:', highlightedCells);
-        }
-    }, [highlightedCells]);
 
     // Calculate center coordinates for each grid cell
     const calculategridAnchorCoordinates = () => {
