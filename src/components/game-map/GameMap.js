@@ -390,8 +390,8 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
             for (let row = 0; row < gridSize.rows; row++) {
                 for (let col = 0; col < gridSize.cols; col++) {
                     const centerX = col * cellWidth + cellWidth / 2;
-                    const bottomY = row * cellHeight + cellHeight;
-                    coordinates[`${row}-${col}`] = { x: centerX, y: bottomY };
+                    const centerY = row * cellHeight + cellHeight / 2;
+                    coordinates[`${row}-${col}`] = { x: centerX, y: centerY };
                 }
             }
             setgridAnchorCoordinates(coordinates);

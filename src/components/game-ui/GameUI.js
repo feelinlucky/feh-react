@@ -118,7 +118,7 @@ const calculateGridDistance = (char1Name, char2Name, positions) => {
  * @param {Object} gridAnchors - Grid anchor coordinates for each cell
  * @returns {string} The nearest edge direction ('up', 'right', 'down', 'left')
  */
-const findNearestEmptyGridPosition = (draggedOverGrid, cursorPos, gridAnchors) => {
+const findNearestGridEdgeToCursor = (draggedOverGrid, cursorPos, gridAnchors) => {
   // Get the center coordinates of the current grid cell
   const currentGridAnchor = gridAnchors[`${draggedOverGrid.row}-${draggedOverGrid.col}`];
   
@@ -134,7 +134,7 @@ const findNearestEmptyGridPosition = (draggedOverGrid, cursorPos, gridAnchors) =
   const absX = Math.abs(relativeX);
   const absY = Math.abs(relativeY);
 
-  // Determine nearest edge by comparing relative positions
+  // Determine nearest edge by comparing relative positions and magnitudes
   if (absX > absY) {
     // Horizontal edges are closer
     return relativeX > 0 ? 'right' : 'left';
@@ -174,6 +174,7 @@ const GameUI = () => {
   const [currentCursorPos, setCurrentCursorPos] = useState(null); // Track cursor position for edge detection
   const [isDragging, setIsDragging] = useState(false); // Track dragging state
   const [isCursorObserverActive, setIsCursorObserverActive] = useState(false); // Toggle for cursor observer
+  const [isNearestEdgeDisplayActive, setIsNearestEdgeDisplayActive] = useState(false); // Toggle for nearest edge display
 
   // Define character teams
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
@@ -484,6 +485,11 @@ const GameUI = () => {
     }
   };
 
+  // Toggle nearest edge display
+  const toggleNearestEdgeDisplay = () => {
+    setIsNearestEdgeDisplayActive(!isNearestEdgeDisplayActive);
+  };
+
   // Main component render
   return (
     <div className={styles['game-container']} onClick={handleContainerClick}>
@@ -519,8 +525,8 @@ const GameUI = () => {
                 key={charName}
                 charName={charName}
                 coordinates={{
-                  x: gridAnchor.x - 32, // Offset to center character sprite
-                  y: gridAnchor.y - 64  // Offset to align with grid
+                  x: gridAnchor.x - 0, // Offset to center character sprite
+                  y: gridAnchor.y + 64  // Offset to align with grid
                 }}
                 isSelected={selectedCharacter === charName}
                 setParentIsDragging={setIsDragging}
@@ -532,12 +538,11 @@ const GameUI = () => {
         {/* Debug information display */}
         {draggedOverCell ? (
           <div className={styles['debug-display']}>
-            <div>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
               <button 
                 onClick={toggleCursorObserver}
                 style={{
                   padding: '5px 10px',
-                  marginBottom: '10px',
                   backgroundColor: isCursorObserverActive ? '#4CAF50' : '#f44336',
                   color: 'white',
                   border: 'none',
@@ -546,6 +551,19 @@ const GameUI = () => {
                 }}
               >
                 Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
+              </button>
+              <button 
+                onClick={toggleNearestEdgeDisplay}
+                style={{
+                  padding: '5px 10px',
+                  backgroundColor: isNearestEdgeDisplayActive ? '#4CAF50' : '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Nearest Edge: {isNearestEdgeDisplayActive ? 'ON' : 'OFF'}
               </button>
             </div>
             <pre>
@@ -556,8 +574,8 @@ const GameUI = () => {
                   position: currentCursorPos || 'none'
                 },
                 draggedOverCell: draggedOverCell || 'none',
-                nearestEdge: currentCursorPos && draggedOverCell ? 
-                  findNearestEmptyGridPosition(draggedOverCell, currentCursorPos, gridAnchorCoordinates) : 'none',
+                nearestEdge: (isNearestEdgeDisplayActive && currentCursorPos && draggedOverCell) ? 
+                  findNearestGridEdgeToCursor(draggedOverCell, currentCursorPos, gridAnchorCoordinates) : 'none',
                 inputVariables: {
                   draggedOverGrid: draggedOverCell,
                   cursorPos: currentCursorPos || 'none',
@@ -569,12 +587,11 @@ const GameUI = () => {
           </div>
         ) : (
           <div className={styles['debug-display']}>
-            <div>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
               <button 
                 onClick={toggleCursorObserver}
                 style={{
                   padding: '5px 10px',
-                  marginBottom: '10px',
                   backgroundColor: isCursorObserverActive ? '#4CAF50' : '#f44336',
                   color: 'white',
                   border: 'none',
@@ -583,6 +600,19 @@ const GameUI = () => {
                 }}
               >
                 Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
+              </button>
+              <button 
+                onClick={toggleNearestEdgeDisplay}
+                style={{
+                  padding: '5px 10px',
+                  backgroundColor: isNearestEdgeDisplayActive ? '#4CAF50' : '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Nearest Edge: {isNearestEdgeDisplayActive ? 'ON' : 'OFF'}
               </button>
             </div>
             <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
