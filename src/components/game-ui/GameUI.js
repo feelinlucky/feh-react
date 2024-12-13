@@ -111,37 +111,75 @@ const calculateGridDistance = (char1Name, char2Name, positions) => {
   return Math.abs(char1Pos.row - char2Pos.row) + Math.abs(char1Pos.col - char2Pos.col);
 };
 
-/**
- * Finds the nearest edge of the current grid cell relative to cursor position
- * @param {Object} draggedOverGrid - The grid position being dragged over {row, col}
- * @param {Object} cursorPos - Current cursor position {x, y}
- * @param {Object} gridAnchors - Grid anchor coordinates for each cell
- * @returns {string} The nearest edge direction ('up', 'right', 'down', 'left')
- */
-const findNearestGridEdgeToCursor = (draggedOverGrid, cursorPos, gridAnchors) => {
+const findNearestGridEdgeToCursor = (draggedOverGrid, cursorPos, gridAnchorCoordinates) => {
   // Get the center coordinates of the current grid cell
-  const currentGridAnchor = gridAnchors[`${draggedOverGrid.row}-${draggedOverGrid.col}`];
+  const currentGridAnchor = gridAnchorCoordinates[`${draggedOverGrid.row}-${draggedOverGrid.col}`];
+  
+  if (!currentGridAnchor) {
+      return null;
+  }
+
+  // Calculate distances from cursor to each edge of the grid cell
+  // Assuming each grid cell is roughly 64x64 pixels (standard FEH grid size)
+  const CELL_SIZE = 64;
+  const halfCell = CELL_SIZE / 2;
+
+  // Calculate distances to each edge from the cursor
+  const distanceToTop = Math.abs(cursorPos.x - (currentGridAnchor.x - halfCell));
+  const distanceToBottom = Math.abs(cursorPos.x - (currentGridAnchor.x + halfCell));
+  const distanceToLeft = Math.abs(cursorPos.y - (currentGridAnchor.y - halfCell));
+  const distanceToRight = Math.abs(cursorPos.y - (currentGridAnchor.y + halfCell));
+
+  // Find the minimum distance
+  const minDistance = Math.min(distanceToTop, distanceToBottom, distanceToLeft, distanceToRight);
+
+  // Return the edge with the minimum distance
+  if (minDistance === distanceToTop) return 'up';
+  if (minDistance === distanceToBottom) return 'down';
+  if (minDistance === distanceToLeft) return 'left';
+  if (minDistance === distanceToRight) return 'right';
+
+  return null; // Fallback
+};
+
+/**
+ * Calculates the four corner coordinates of a specific grid cell
+ * @param {Object} draggedOverGrid - The grid position being dragged over {row, col}
+ * @param {Object} gridAnchorCoordinates - Grid anchor coordinates for each cell
+ * @returns {Object|null} Object containing top-left, top-right, bottom-left, and bottom-right coordinates
+ */
+const calculateGridCellCoordinates = (draggedOverGrid, gridAnchorCoordinates) => {
+  // Get the center coordinates of the current grid cell
+  const currentGridAnchor = gridAnchorCoordinates[`${draggedOverGrid.row}-${draggedOverGrid.col}`];
   
   if (!currentGridAnchor) {
     return null;
   }
 
-  // Calculate relative position of cursor from grid center
-  const relativeX = cursorPos.x - currentGridAnchor.x;
-  const relativeY = cursorPos.y - currentGridAnchor.y;
+  // Assuming each grid cell is roughly 64x64 pixels (standard FEH grid size)
+  const CELL_SIZE = 64;
+  const halfCell = CELL_SIZE / 2;
 
-  // Use absolute values for comparison
-  const absX = Math.abs(relativeX);
-  const absY = Math.abs(relativeY);
-
-  // Determine nearest edge by comparing relative positions and magnitudes
-  if (absX > absY) {
-    // Horizontal edges are closer
-    return relativeX > 0 ? 'right' : 'left';
-  } else {
-    // Vertical edges are closer
-    return relativeY > 0 ? 'down' : 'up';
-  }
+  // Calculate corner coordinates
+  return {
+    topLeft: {
+      x: currentGridAnchor.x - halfCell,
+      y: currentGridAnchor.y - halfCell
+    },
+    topRight: {
+      x: currentGridAnchor.x + halfCell,
+      y: currentGridAnchor.y - halfCell
+    },
+    bottomLeft: {
+      x: currentGridAnchor.x - halfCell,
+      y: currentGridAnchor.y + halfCell
+    },
+    bottomRight: {
+      x: currentGridAnchor.x + halfCell,
+      y: currentGridAnchor.y + halfCell
+    },
+    center: currentGridAnchor
+  };
 };
 
 /**
@@ -583,6 +621,10 @@ const GameUI = () => {
                     gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`] : null
                 }
               }, null, 2)}
+            </pre>
+            <pre>
+              Grid Cell Coordinates:
+              {JSON.stringify(calculateGridCellCoordinates(draggedOverCell, gridAnchorCoordinates), null, 2)}
             </pre>
           </div>
         ) : (
