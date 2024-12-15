@@ -111,12 +111,23 @@ const calculateGridDistance = (char1Name, char2Name, positions) => {
   return Math.abs(char1Pos.row - char2Pos.row) + Math.abs(char1Pos.col - char2Pos.col);
 };
 
-const findNearestGridEdgeToCursor = (draggedOverGrid, cursorPos, gridAnchorCoordinates) => {
+const findNearestGridEdgeToCursor = (
+  draggedOverGrid, 
+  cursorPos, 
+  gridAnchorCoordinates, 
+  gameUIPosition = { x: 0, y: 0 }
+) => {
+  // Adjust cursor position relative to GameUI component's position
+  const adjustedCursorPos = {
+    x: cursorPos.x - gameUIPosition.x,
+    y: cursorPos.y - gameUIPosition.y
+  };
+
   // Get the center coordinates of the current grid cell
   const currentGridAnchor = gridAnchorCoordinates[`${draggedOverGrid.row}-${draggedOverGrid.col}`];
   
   if (!currentGridAnchor) {
-      return null;
+    return null;
   }
 
   // Calculate distances from cursor to each edge of the grid cell
@@ -125,10 +136,10 @@ const findNearestGridEdgeToCursor = (draggedOverGrid, cursorPos, gridAnchorCoord
   const halfCell = CELL_SIZE / 2;
 
   // Calculate distances to each edge from the cursor
-  const distanceToTop = Math.abs(cursorPos.x - (currentGridAnchor.x - halfCell));
-  const distanceToBottom = Math.abs(cursorPos.x - (currentGridAnchor.x + halfCell));
-  const distanceToLeft = Math.abs(cursorPos.y - (currentGridAnchor.y - halfCell));
-  const distanceToRight = Math.abs(cursorPos.y - (currentGridAnchor.y + halfCell));
+  const distanceToTop = Math.abs(adjustedCursorPos.x - (currentGridAnchor.x - halfCell));
+  const distanceToBottom = Math.abs(adjustedCursorPos.x - (currentGridAnchor.x + halfCell));
+  const distanceToLeft = Math.abs(adjustedCursorPos.y - (currentGridAnchor.y - halfCell));
+  const distanceToRight = Math.abs(adjustedCursorPos.y - (currentGridAnchor.y + halfCell));
 
   // Find the minimum distance
   const minDistance = Math.min(distanceToTop, distanceToBottom, distanceToLeft, distanceToRight);
@@ -613,12 +624,17 @@ const GameUI = () => {
                 },
                 draggedOverCell: draggedOverCell || 'none',
                 nearestEdge: (isNearestEdgeDisplayActive && currentCursorPos && draggedOverCell) ? 
-                  findNearestGridEdgeToCursor(draggedOverCell, currentCursorPos, gridAnchorCoordinates) : 'none',
+                  findNearestGridEdgeToCursor(draggedOverCell, currentCursorPos, gridAnchorCoordinates, mapPosition) : 'none',
                 inputVariables: {
                   draggedOverGrid: draggedOverCell,
-                  cursorPos: currentCursorPos || 'none',
-                  relevantGridAnchor: draggedOverCell ? 
-                    gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`] : null
+                  cursorPos: currentCursorPos ? {
+                    original: currentCursorPos,
+                    adjusted: {
+                      x: currentCursorPos.x - mapPosition.x,
+                      y: currentCursorPos.y - mapPosition.y
+                    }
+                  } : 'none',
+                  mapPosition: mapPosition
                 }
               }, null, 2)}
             </pre>
