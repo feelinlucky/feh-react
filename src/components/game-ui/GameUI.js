@@ -394,11 +394,58 @@ const findNearestGridEdgeToCursor = (
 
       // Check if clicking a highlighted cell and we have a selected character
       if (isCellHighlighted(gridY, gridX) && selectedCharacter) {
-        // Update character position
-        setCharacterPositions(prev => ({
-          ...prev,
-          [selectedCharacter]: { row: gridY, col: gridX }
-        }));
+        // If the cell is occupied by other draggableCharacter, search for nearest empty cell using findNearestGridEdgeToCursor function.
+        if (isOccupiedCell(gridY, gridX)) {
+          // Use a fallback cursor position if not available
+          const fallbackCursorPos = currentCursorPos || {
+            x: gridAnchorCoordinates[`${gridY}-${gridX}`]?.x || 0,
+            y: gridAnchorCoordinates[`${gridY}-${gridX}`]?.y || 0
+          };
+
+          const nearestGridNeigborToCursor = findNearestGridEdgeToCursor(
+            { row: gridY, col: gridX }, 
+            fallbackCursorPos, 
+            gridAnchorCoordinates, 
+            mapPosition
+          );
+
+          if (!nearestGridNeigborToCursor) return;
+          const selectedCharGridPos = characterPositions[selectedCharacter];
+          let selectedNeighborGrid = [selectedCharGridPos.row, selectedCharGridPos.col];
+
+          switch (nearestGridNeigborToCursor) {
+            case 'top':
+              selectedNeighborGrid = [selectedCharGridPos.row - 1, selectedCharGridPos.col];
+              break;
+            case 'bottom':
+              selectedNeighborGrid = [selectedCharGridPos.row + 1, selectedCharGridPos.col];
+              break;
+            case 'left':
+              selectedNeighborGrid = [selectedCharGridPos.row, selectedCharGridPos.col - 1];
+              break;
+            case 'right':
+              selectedNeighborGrid = [selectedCharGridPos.row, selectedCharGridPos.col + 1];
+              break;
+          }
+
+          // Update character position to the neighbor grid
+          setCharacterPositions(prev => ({
+            ...prev,
+            [selectedCharacter]: { 
+              row: selectedNeighborGrid[0], 
+              col: selectedNeighborGrid[1] 
+            }
+          }));
+
+          // Trigger character interaction event
+          console.log(`CharInteract: ${selectedCharacter} interacting with character at grid (${gridY}, ${gridX})`);
+        } else {
+          // Update character position
+          setCharacterPositions(prev => ({
+            ...prev,
+            [selectedCharacter]: { row: gridY, col: gridX }
+          }));
+        }
 
         // Reset states after movement
         setHighlightedCells([]);
@@ -439,7 +486,7 @@ const findNearestGridEdgeToCursor = (
         const newHistory = [newState, ...prev].slice(0, 5);
         return newHistory;
       });
-    }, [characterPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter]);
+    }, [characterPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition]);
 
     /**
      * Handles clicks outside the game map
