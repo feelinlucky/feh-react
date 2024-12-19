@@ -442,7 +442,7 @@ const findNearestGridEdgeToCursor = (
           cell => !(cell.row === gridY && cell.col === gridX) // Also exclude the current character's position
         );
 
-        setHighlightedCells(validMovementRange);
+        setHighlightedCells(movementRange);
       } else if (!isCellHighlighted(gridY, gridX)) {
         // Only clear selection if clicking a non-highlighted cell
         setHighlightedCells([]);

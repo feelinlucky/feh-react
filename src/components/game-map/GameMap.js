@@ -281,23 +281,26 @@ const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClic
         if (el) {
             return dropTargetForElements({
                 element: el,
-                onDragEnter: () => {
+                onDragEnter: (event) => {
                     setIsDraggedOver(true);
+                    // Pass grid position to the drag event
+                    event.location = {
+                        ...(event.location || {}),
+                        gridPosition: { row, col }
+                    };
                     onDragOver?.(row, col);
                 },
                 onDragLeave: () => {
                     setIsDraggedOver(false);
                 },
-                onDrop: () => {
+                onDrop: (event) => {
                     setIsDraggedOver(false);
-                    // Only trigger click for highlighted cells
-                    if (isHighlighted) {
-                        onClick();
-                    }
+                    // Always allow dropping, remove isHighlighted check
+                    onClick?.(event);
                 },
             });
         }
-    }, [onClick, onDragOver, row, col, isHighlighted]);
+    }, [onClick, onDragOver, row, col]);
 
     return (
         <div
