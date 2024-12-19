@@ -384,16 +384,6 @@ const findNearestGridEdgeToCursor = (
     }, [characterPositions]);
 
     /**
-     * Filters out occupied cells from a movement range
-     * Ensures characters can't move to positions occupied by others
-     * @param {Array} movementRange - Array of possible movement positions
-     * @returns {Array} Filtered array of valid movement positions
-     */
-    const filterOccupiedCells = useCallback((movementRange) => {
-      return movementRange.filter(cell => !isOccupiedCell(cell.row, cell.col));
-    }, [isOccupiedCell]);
-
-    /**
      * Handles grid click events for character selection and movement
      * Manages character selection, movement range calculation, and position updates
      * @param {number} gridY - Clicked grid row
@@ -437,11 +427,6 @@ const findNearestGridEdgeToCursor = (
           terrainData
         );
 
-        // Filter out cells occupied by other characters
-        const validMovementRange = filterOccupiedCells(movementRange).filter(
-          cell => !(cell.row === gridY && cell.col === gridX) // Also exclude the current character's position
-        );
-
         setHighlightedCells(movementRange);
       } else if (!isCellHighlighted(gridY, gridX)) {
         // Only clear selection if clicking a non-highlighted cell
@@ -454,7 +439,7 @@ const findNearestGridEdgeToCursor = (
         const newHistory = [newState, ...prev].slice(0, 5);
         return newHistory;
       });
-    }, [characterPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, filterOccupiedCells]);
+    }, [characterPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter]);
 
     /**
      * Handles clicks outside the game map
