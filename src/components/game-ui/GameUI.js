@@ -93,50 +93,22 @@ const DraggableCharacter = ({ charName, coordinates, isSelected, setParentIsDrag
 };
 
 /**
- * Calculates the grid distance between two grids using Manhattan distance
+ * Calculates the grid distance between two characters using Manhattan distance
+ * @param {string} char1Name - Name of the first character
+ * @param {string} char2Name - Name of the second character
+ * @param {Object} positions - Object containing character positions
+ * @returns {number} The grid distance between the two characters
  */
-const calculateGridDistance = (pos1, pos2) => {
-  if (!pos1 || !pos2) {
+const calculateGridDistance = (char1Name, char2Name, positions) => {
+  const char1Pos = positions[char1Name];
+  const char2Pos = positions[char2Name];
+
+  if (!char1Pos || !char2Pos) {
     return null;
   }
 
   // Calculate Manhattan distance (|x1 - x2| + |y1 - y2|)
-  return Math.abs(pos1.row - pos2.row) + Math.abs(pos1.col - pos2.col);
-};
-
-/**
- * Calculates the neighboring grid cells for a given grid position
- * @param {number} row - Grid row
- * @param {number} col - Grid column
- * @returns {Object} Object with neighboring grid positions for each direction
- */
-const neighborGrids = (row, col) => ({
-  top: { row: row - 1, col },
-  bottom: { row: row + 1, col },
-  left: { row, col: col - 1 },
-  right: { row, col: col + 1 }
-});
-
-/**
- * Sorts neighboring grid cells based on their proximity to the cursor
- * @param {Object} characterPos - Current character position
- * @param {Object} targetPos - Target grid position
- * @returns {Array} Sorted array of neighboring grid positions
- */
-const sortNearestNeighborGrid = (characterPos, targetPos) => {
-  const neighborCells = [
-    { row: characterPos.row - 1, col: characterPos.col },     // Top
-    { row: characterPos.row + 1, col: characterPos.col },     // Bottom
-    { row: characterPos.row, col: characterPos.col - 1 },     // Left
-    { row: characterPos.row, col: characterPos.col + 1 }      // Right
-  ];
-
-  // Sort cells based on Manhattan distance to the target position
-  return neighborCells.sort((a, b) => {
-    const distanceA = Math.abs(a.row - targetPos.row) + Math.abs(a.col - targetPos.col);
-    const distanceB = Math.abs(b.row - targetPos.row) + Math.abs(b.col - targetPos.col);
-    return distanceA - distanceB;
-  });
+  return Math.abs(char1Pos.row - char2Pos.row) + Math.abs(char1Pos.col - char2Pos.col);
 };
 
 const findNearestGridEdgeToCursor = (
@@ -164,25 +136,24 @@ const findNearestGridEdgeToCursor = (
   };
 
   // Calculate distances from cursor to each edge of the grid cell
-  // Assuming each grid cell is roughly 64x64 pixels (standard FEH grid size)
   const CELL_SIZE = 64;
   const halfCell = CELL_SIZE / 2;
 
-  // Find the minimum distance
-  if (adjustedCursorPosToGrid.y > adjustedCursorPosToGrid.x && -adjustedCursorPosToGrid.y < adjustedCursorPosToGrid.x) {
-    return 'bottom';
-  }
-  if (adjustedCursorPosToGrid.y > adjustedCursorPosToGrid.x && -adjustedCursorPosToGrid.y > adjustedCursorPosToGrid.x) {
-    return 'left';
-  }
-  if (adjustedCursorPosToGrid.y < adjustedCursorPosToGrid.x && -adjustedCursorPosToGrid.y > adjustedCursorPosToGrid.x) {
-    return 'top';
-  }
-  if (adjustedCursorPosToGrid.y < adjustedCursorPosToGrid.x && -adjustedCursorPosToGrid.y < adjustedCursorPosToGrid.x) {
-    return 'right';
-  }
+  // Compute distances for each edge
+  const edgeDistances = {
+    top: Math.abs(adjustedCursorPosToGrid.y),
+    bottom: Math.abs(adjustedCursorPosToGrid.y - CELL_SIZE),
+    left: Math.abs(adjustedCursorPosToGrid.x),
+    right: Math.abs(adjustedCursorPosToGrid.x - CELL_SIZE)
+  };
 
-  return null; // Fallback
+  // Sort edges by distance
+  const sortedEdges = Object.entries(edgeDistances)
+    .sort((a, b) => a[1] - b[1])
+    .map(entry => entry[0]);
+
+  // Return the two nearest edges
+  return sortedEdges.slice(0, 2);
 };
 
 /**
@@ -424,32 +395,105 @@ const GameUI = () => {
     if (isCellHighlighted(gridY, gridX) && selectedCharacter) {
       // If the cell is occupied by other draggableCharacter, search for nearest empty cell using findNearestGridEdgeToCursor function.
       if (isOccupiedCell(gridY, gridX)) {
+        // Use a fallback cursor position if not available
+        const fallbackCursorPos = currentCursorPos || {
+          x: gridAnchorCoordinates[`${gridY}-${gridX}`]?.x || 0,
+          y: gridAnchorCoordinates[`${gridY}-${gridX}`]?.y || 0
+        };
+
         const nearestGridNeigborToCursor = findNearestGridEdgeToCursor(
           { row: gridY, col: gridX },
-          currentCursorPos,
+          fallbackCursorPos,
           gridAnchorCoordinates,
           mapPosition
         );
 
-        if (!nearestGridNeigborToCursor) return;
         const selectedCharGridPos = characterPositions[selectedCharacter];
         let selectedNeighborGrid = [selectedCharGridPos.row, selectedCharGridPos.col];
 
-        switch (nearestGridNeigborToCursor) {
-          case 'top':
-            selectedNeighborGrid = [selectedCharGridPos.row - 1, selectedCharGridPos.col];
-            break;
-          case 'bottom':
-            selectedNeighborGrid = [selectedCharGridPos.row + 1, selectedCharGridPos.col];
-            break;
-          case 'left':
-            selectedNeighborGrid = [selectedCharGridPos.row, selectedCharGridPos.col - 1];
-            break;
-          case 'right':
-            selectedNeighborGrid = [selectedCharGridPos.row, selectedCharGridPos.col + 1];
-            break;
-        }
+        // Verify if the neighborGrid is valid movement
+        const validMovementDirections = nearestGridNeigborToCursor.filter(direction => {
+          let potentialNeighborGrid;
+          switch (direction) {
+            case 'top':
+              potentialNeighborGrid = [selectedCharGridPos.row - 1, selectedCharGridPos.col];
+              break;
+            case 'bottom':
+              potentialNeighborGrid = [selectedCharGridPos.row + 1, selectedCharGridPos.col];
+              break;
+            case 'left':
+              potentialNeighborGrid = [selectedCharGridPos.row, selectedCharGridPos.col - 1];
+              break;
+            case 'right':
+              potentialNeighborGrid = [selectedCharGridPos.row, selectedCharGridPos.col + 1];
+              break;
+            default:
+              return false;
+          }
 
+          return calculateMovementRange(
+            characterPositions[selectedCharacter],
+            potentialNeighborGrid
+          ).some(movementRangeCell => 
+            movementRangeCell.row === potentialNeighborGrid[0] && 
+            movementRangeCell.col === potentialNeighborGrid[1]
+          );
+        });
+
+        // If no valid movement directions, return
+        if (validMovementDirections.length === 0) return;
+
+        // Use the first (closest) valid direction
+        const chosenDirection = validMovementDirections[0];
+
+        // select grid which is nearest to original destination, is valid, is not occupied, and is in the chosen direction
+        const potentialSelectedNeighborGrid = sortNearestNeighborGrid(
+          { row: movementRangeCell.row, col: movementRangeCell.col },
+          { row: gridY, col: gridX }
+        ).find(potentialGrid => 
+          potentialGrid[0] === chosenDirection[0] && 
+          potentialGrid[1] === chosenDirection[1] && 
+          !Object.values(characterPositions).some(
+            pos => pos.row === potentialGrid[0] && pos.col === potentialGrid[1]
+          )
+        );
+
+        // Filter potential grids based on multiple conditions
+        const validPotentialGrids = validMovementDirections.reduce((acc, direction) => {
+          const potentialGrid = potentialGrids[direction];
+          
+          // Check if the grid is within movement range
+          const isInMovementRange = calculateMovementRange(
+            characterPositions[selectedCharacter],
+            potentialGrid
+          ).some(movementRangeCell => 
+            movementRangeCell.row === potentialGrid[0] && 
+            movementRangeCell.col === potentialGrid[1]
+          );
+
+          // Check if the grid is not occupied
+          const isNotOccupied = !Object.values(characterPositions).some(
+            pos => pos.row === potentialGrid[0] && pos.col === potentialGrid[1]
+          );
+
+          if (isInMovementRange && isNotOccupied) {
+            acc.push({
+              direction,
+              grid: potentialGrid
+            });
+          }
+
+          return acc;
+        }, []);
+
+        // If no valid potential grids, return
+        if (validPotentialGrids.length === 0) return;
+
+        // Select the first (nearest) valid grid
+        const { grid: selectedNeighborGrid } = validPotentialGrids[0];
+
+        if (!selectedNeighborGrid) return;
+        
         // Update character position to the neighbor grid
         setCharacterPositions(prev => ({
           ...prev,
@@ -508,18 +552,7 @@ const GameUI = () => {
       const newHistory = [newState, ...prev].slice(0, 5);
       return newHistory;
     });
-  }, [
-    characterPositions,
-    setSelectedCharacter,
-    terrainData,
-    isCellHighlighted,
-    selectedCharacter,
-    currentCursorPos,
-    gridAnchorCoordinates,
-    mapPosition,
-    characterData,
-    sharedProps
-  ]);
+  }, [characterPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition]);
 
   /**
    * Handles clicks outside the game map
