@@ -4,9 +4,14 @@
  * Handles character positioning, movement, interactions, and game state management
  */
 
+/* #region Import frameworks */
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import styles from './GameUI.module.css';
 import { useLocation } from 'react-router-dom';
+import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+/* #endregion */
+
+/* #region Import components */
 import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
 import Sprite from '../sprite/Sprite';
 import GameMap, {
@@ -18,12 +23,12 @@ import GameMap, {
 
 import { sharedProps, characterData } from '../character-data/CharacterData';
 import MapCharacter from '../map-character/MapCharacter';
-import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+/* #endregion */
 
 // Define path to public assets folder
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
-/**
+/*
  * DraggableCharacter Component
  * Renders a draggable character sprite on the game map
  * @param {Object} props - Component props
@@ -32,6 +37,7 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
  * @param {boolean} props.isSelected - Whether the character is currently selected
  * @param {function} props.setParentIsDragging - Callback to set parent's isDragging state
  */
+/* #region DraggableCharacter component */
 const DraggableCharacter = ({ charName, coordinates, isSelected, setParentIsDragging }) => {
   const overlayRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -91,26 +97,47 @@ const DraggableCharacter = ({ charName, coordinates, isSelected, setParentIsDrag
     </div>
   );
 };
+/* #endregion */
 
-/**
+/*
  * Calculates the grid distance between two characters using Manhattan distance
- * @param {string} char1Name - Name of the first character
- * @param {string} char2Name - Name of the second character
+ * @param {String} charName1 - Name of the first character
+ * @param {String} charName2 - Name of the second character
+ * @param {Object} gridPos1 - grid row and column of the first position
+ * @param {Object} gridPos2 - grid row and column of the second position
  * @param {Object} positions - Object containing character positions
  * @returns {number} The grid distance between the two characters
  */
-const calculateGridDistance = (char1Name, char2Name, positions) => {
-  const char1Pos = positions[char1Name];
-  const char2Pos = positions[char2Name];
-
-  if (!char1Pos || !char2Pos) {
+/* #region calculateCharDistance & calculateGridDistance function */
+const calculateGridDistance = (gridPos1, gridPos2) => {
+  if (!gridPos1 || !gridPos2) {
     return null;
   }
 
   // Calculate Manhattan distance (|x1 - x2| + |y1 - y2|)
-  return Math.abs(char1Pos.row - char2Pos.row) + Math.abs(char1Pos.col - char2Pos.col);
+  return Math.abs(gridPos1.row - gridPos2.row) + Math.abs(gridPos1.col - gridPos2.col);
 };
 
+const calculateCharDistance = (positions, charName1, charName2) => {
+  const char1Pos = positions[charName1];
+  const char2Pos = positions[charName2];
+  return calculateGridDistance(char1Pos, char2Pos);
+}
+/* #endregion */
+
+/*
+ * Finds the two nearest edges of a grid cell to the current cursor position.
+ * This function adjusts the cursor position based on the GameUI's position 
+  * and calculates the distances from the cursor to each edge of the grid cell.
+ * 
+ * @param { Object } draggedOverGrid - The grid position being dragged over, containing { row, col }.
+ * @param { Object } cursorPos - The current position of the cursor in the viewport.
+ * @param { Object } gridAnchorCoordinates - Coordinates for each grid cell's center.
+  * @param { Object } [gameUIPosition = { x: 0, y: 0 }] - The position of the GameUI component, defaulting to { 0, 0 }.
+ * @returns { Array | null } An array containing the two nearest edges(e.g., ['top', 'left'])
+  * or null if the grid anchor is not found.
+ */
+/* #region findNearestGridEdgeToCursor function */
 const findNearestGridEdgeToCursor = (
   draggedOverGrid,
   cursorPos,
@@ -141,20 +168,20 @@ const findNearestGridEdgeToCursor = (
 
   // Compute distances for each edge
   const edgeDistances = {
-    top: Math.abs(adjustedCursorPosToGrid.y),
-    bottom: Math.abs(adjustedCursorPosToGrid.y - CELL_SIZE),
-    left: Math.abs(adjustedCursorPosToGrid.x),
-    right: Math.abs(adjustedCursorPosToGrid.x - CELL_SIZE)
+    top: Math.abs(adjustedCursorPosToGrid.y + halfCell),
+    bottom: Math.abs(adjustedCursorPosToGrid.y - halfCell),
+    left: Math.abs(adjustedCursorPosToGrid.x + halfCell),
+    right: Math.abs(adjustedCursorPosToGrid.x - halfCell)
   };
 
   // Sort edges by distance
   const sortedEdges = Object.entries(edgeDistances)
-    .sort((a, b) => a[1] - b[1])
-    .map(entry => entry[0]);
-
+    .sort(([, distA], [, distB]) => distA - distB)
+    .map(([edge]) => edge);
   // Return the two nearest edges
   return sortedEdges.slice(0, 2);
 };
+/* #endregion */
 
 /**
  * Calculates the four corner coordinates of a specific grid cell
@@ -162,6 +189,7 @@ const findNearestGridEdgeToCursor = (
  * @param {Object} gridAnchorCoordinates - Grid anchor coordinates for each cell
  * @returns {Object|null} Object containing top-left, top-right, bottom-left, and bottom-right coordinates
  */
+/* #region calculateGridCellCoordinates function  */
 const calculateGridCellCoordinates = (draggedOverGrid, gridAnchorCoordinates) => {
   // Get the center coordinates of the current grid cell
   const currentGridAnchor = gridAnchorCoordinates[`${draggedOverGrid.row}-${draggedOverGrid.col}`];
@@ -195,6 +223,7 @@ const calculateGridCellCoordinates = (draggedOverGrid, gridAnchorCoordinates) =>
     center: currentGridAnchor
   };
 };
+/* #endregion */
 
 /**
  * GameUI Component
@@ -210,7 +239,7 @@ const GameUI = () => {
   const location = useLocation();
   const frontPageState = location.state || {};
 
-  // State management for UI elements and game mechanics
+  /* #region State management for UI elements and game mechanics */
   const [characterUIState, setCharacterUIState] = useState({}); // Manages character UI properties
   const [mapState, setMapState] = useState(frontPageState.map); // Controls map state
   const [clickedState, setClickedState] = useState(null); // Tracks clicked positions
@@ -227,7 +256,9 @@ const GameUI = () => {
   const [isDragging, setIsDragging] = useState(false); // Track dragging state
   const [isCursorObserverActive, setIsCursorObserverActive] = useState(false); // Toggle for cursor observer
   const [isNearestEdgeDisplayActive, setIsNearestEdgeDisplayActive] = useState(false); // Toggle for nearest edge display
+  /* #endregion */
 
+  /* #region Character data and positioning */
   // Define character teams
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
   const foeNames = ["FighterSword"];
@@ -249,7 +280,9 @@ const GameUI = () => {
     Fjorm: { row: 0, col: 3 },
     FighterSword: { row: 0, col: 4 }
   });
+  /* #endregion */
 
+  /* #region Update map and grid coordinates */
   /**
    * Callback to receive and store grid anchor coordinates from GameMap
    * These coordinates are used for precise character positioning
@@ -299,6 +332,7 @@ const GameUI = () => {
   useEffect(() => {
     setGridCenterAdjustment({ x: mapPosition.x, y: mapPosition.y });
   }, [mapPosition]);
+  /* #endregion */
 
   /**
    * Converts grid row and column numbers to actual pixel coordinates
