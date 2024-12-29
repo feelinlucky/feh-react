@@ -239,7 +239,7 @@ const GameUI = () => {
   const location = useLocation();
   const frontPageState = location.state || {};
 
-  /* #region State management for UI elements and game mechanics */
+  /* #region state management for UI elements and game mechanics */
   const [characterUIState, setCharacterUIState] = useState({}); // Manages character UI properties
   const [mapState, setMapState] = useState(frontPageState.map); // Controls map state
   const [clickedState, setClickedState] = useState(null); // Tracks clicked positions
@@ -258,7 +258,7 @@ const GameUI = () => {
   const [isNearestEdgeDisplayActive, setIsNearestEdgeDisplayActive] = useState(false); // Toggle for nearest edge display
   /* #endregion */
 
-  /* #region Character data and positioning */
+  /* #region character data and positioning */
   // Define character teams
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
   const foeNames = ["FighterSword"];
@@ -282,7 +282,7 @@ const GameUI = () => {
   });
   /* #endregion */
 
-  /* #region Update map and grid coordinates */
+  /* #region update map and grid coordinates */
   /**
    * Callback to receive and store grid anchor coordinates from GameMap
    * These coordinates are used for precise character positioning
@@ -334,20 +334,7 @@ const GameUI = () => {
   }, [mapPosition]);
   /* #endregion */
 
-  /**
-   * Converts grid row and column numbers to actual pixel coordinates
-   * Adjusts coordinates based on map container position
-   * @param {number} rowNum - Grid row number
-   * @param {number} colNum - Grid column number
-   * @returns {Object} Adjusted x,y coordinates for the grid position
-   */
-  function rowColNumToGridCoord(rowNum, colNum) {
-    const currentGridCenterCoordinate = { ...gridAnchorCoordinates[`${rowNum}-${colNum}`] };
-    currentGridCenterCoordinate.x = currentGridCenterCoordinate.x + gridCenterAdjustment.x;
-    currentGridCenterCoordinate.y = currentGridCenterCoordinate.y + gridCenterAdjustment.y;
-    return currentGridCenterCoordinate;
-  };
-
+  /* #region character state and UI */
   /**
    * Effect hook to update character UI state when a character is selected
    * Loads and displays character stats and properties
@@ -383,6 +370,52 @@ const GameUI = () => {
       });
     }
   }, [selectedCharacter, setCharacterUIState]);
+  /* #endregion */
+
+  /* #region cursor position observer */
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      if (isCursorObserverActive) {
+        setCurrentCursorPos({
+          x: Math.round(event.clientX),
+          y: Math.round(event.clientY)
+        });
+      }
+    };
+
+    if (isCursorObserverActive) {
+      window.addEventListener('mousemove', handleMouseMove);
+      console.log('Cursor observer activated');
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [isCursorObserverActive]);
+
+  // Toggle cursor observer
+  const toggleCursorObserver = () => {
+    setIsCursorObserverActive(!isCursorObserverActive);
+    if (!isCursorObserverActive) {
+      setCurrentCursorPos(null); // Reset cursor position when turning off
+    }
+  };
+  /* #endregion */
+
+  /* #region check and maintain map state */
+  /**
+   * Converts grid row and column numbers to actual pixel coordinates
+   * Adjusts coordinates based on map container position
+   * @param {number} rowNum - Grid row number
+   * @param {number} colNum - Grid column number
+   * @returns {Object} Adjusted x,y coordinates for the grid position
+   */
+  function rowColNumToGridCoord(rowNum, colNum) {
+    const currentGridCenterCoordinate = { ...gridAnchorCoordinates[`${rowNum}-${colNum}`] };
+    currentGridCenterCoordinate.x = currentGridCenterCoordinate.x + gridCenterAdjustment.x;
+    currentGridCenterCoordinate.y = currentGridCenterCoordinate.y + gridCenterAdjustment.y;
+    return currentGridCenterCoordinate;
+  };
 
   // Define terrain layout for the game map
   const terrainData = defineTerrainGrid([
@@ -567,39 +600,11 @@ const GameUI = () => {
     setDraggedOverCell({ row, col });
   };
 
-  // Cursor position observer
-  useEffect(() => {
-    const handleMouseMove = (event) => {
-      if (isCursorObserverActive) {
-        setCurrentCursorPos({
-          x: Math.round(event.clientX),
-          y: Math.round(event.clientY)
-        });
-      }
-    };
-
-    if (isCursorObserverActive) {
-      window.addEventListener('mousemove', handleMouseMove);
-      console.log('Cursor observer activated');
-    }
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, [isCursorObserverActive]);
-
-  // Toggle cursor observer
-  const toggleCursorObserver = () => {
-    setIsCursorObserverActive(!isCursorObserverActive);
-    if (!isCursorObserverActive) {
-      setCurrentCursorPos(null); // Reset cursor position when turning off
-    }
-  };
-
   // Toggle nearest edge display
   const toggleNearestEdgeDisplay = () => {
     setIsNearestEdgeDisplayActive(!isNearestEdgeDisplayActive);
   };
+  /* #endregion */
 
   // Main component render
   return (
