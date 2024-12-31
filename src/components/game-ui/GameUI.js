@@ -256,6 +256,7 @@ const GameUI = () => {
   const [isDragging, setIsDragging] = useState(false); // Track dragging state
   const [isCursorObserverActive, setIsCursorObserverActive] = useState(false); // Toggle for cursor observer
   const [isNearestEdgeDisplayActive, setIsNearestEdgeDisplayActive] = useState(false); // Toggle for nearest edge display
+  const [isDebugDisplayVisible, setIsDebugDisplayVisible] = useState(true); // State to manage debug display visibility
   /* #endregion */
 
   /* #region character data and positioning */
@@ -402,7 +403,7 @@ const GameUI = () => {
   };
   /* #endregion */
 
-  /* #region check and maintain map state */
+  /* #region initialize map stats */
   /**
    * Converts grid row and column numbers to actual pixel coordinates
    * Adjusts coordinates based on map container position
@@ -426,7 +427,38 @@ const GameUI = () => {
     [1, 3, 3, 4, 'water'],      // Water in middle area
     [6, 4, 7, 5, 'wall'],       // Wall in bottom-right corner
   ]);
+  /* #endregion */
 
+  /* #region  handle clicks outside map */
+  /**
+   * Handles clicks outside the game map
+   * Manages deselection and UI state updates for off-map interactions
+   * @param {Event} event - Click event object
+   */
+  const handleContainerClick = useCallback((event) => {
+    // If the click is inside map-container, do nothing
+    if (event.target.closest(`.${styles['map-container']}`)) {
+      return;
+    }
+
+    // Set placeholder state for clicks outside GameMap
+    const newState = {
+      gridY: null,
+      gridX: null,
+      isMapGrid: false,
+      characterName: null
+    };
+
+    setClickedState(newState);
+    setSelectedCharacter(null);
+    setClickedStateHistory(prev => {
+      const newHistory = [newState, ...prev].slice(0, 5);
+      return newHistory;
+    });
+  }, [setClickedState, setSelectedCharacter]);
+  /* #endregion */
+
+  /* #region maintain and check map state during click and drag events */
   /**
    * Checks if a given cell position is currently highlighted
    * Used for movement range visualization
@@ -548,33 +580,6 @@ const GameUI = () => {
   }, [characterPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition]);
 
   /**
-   * Handles clicks outside the game map
-   * Manages deselection and UI state updates for off-map interactions
-   * @param {Event} event - Click event object
-   */
-  const handleContainerClick = useCallback((event) => {
-    // If the click is inside map-container, do nothing
-    if (event.target.closest(`.${styles['map-container']}`)) {
-      return;
-    }
-
-    // Set placeholder state for clicks outside GameMap
-    const newState = {
-      gridY: null,
-      gridX: null,
-      isMapGrid: false,
-      characterName: null
-    };
-
-    setClickedState(newState);
-    setSelectedCharacter(null);
-    setClickedStateHistory(prev => {
-      const newHistory = [newState, ...prev].slice(0, 5);
-      return newHistory;
-    });
-  }, [setClickedState, setSelectedCharacter]);
-
-  /**
    * Updates drag-related debug information
    * Tracks cursor position during character dragging
    * @param {Object|null} dragInfo - Contains cursor coordinates or null when drag ends
@@ -604,7 +609,11 @@ const GameUI = () => {
   const toggleNearestEdgeDisplay = () => {
     setIsNearestEdgeDisplayActive(!isNearestEdgeDisplayActive);
   };
-  /* #endregion */
+
+  // Toggle debug display visibility
+  const toggleDebugDisplay = () => {
+    setIsDebugDisplayVisible(!isDebugDisplayVisible);
+  };
 
   // Main component render
   return (
@@ -652,108 +661,128 @@ const GameUI = () => {
         </div>
 
         {/* Debug information display */}
-        {draggedOverCell ? (
-          <div className={styles['debug-display']}>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <button
-                onClick={toggleCursorObserver}
-                style={{
-                  padding: '5px 10px',
-                  backgroundColor: isCursorObserverActive ? '#4CAF50' : '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
-              </button>
-              <button
-                onClick={toggleNearestEdgeDisplay}
-                style={{
-                  padding: '5px 10px',
-                  backgroundColor: isNearestEdgeDisplayActive ? '#4CAF50' : '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Nearest Edge: {isNearestEdgeDisplayActive ? 'ON' : 'OFF'}
-              </button>
-            </div>
-            <pre>
-              Drag Debug Info:
-              {JSON.stringify({
-                cursorObserver: {
-                  active: isCursorObserverActive,
-                  position: currentCursorPos || 'none'
-                },
-                draggedOverCell: draggedOverCell || 'none',
-                nearestEdge: (isNearestEdgeDisplayActive && currentCursorPos && draggedOverCell) ?
-                  findNearestGridEdgeToCursor(draggedOverCell, currentCursorPos, gridAnchorCoordinates, mapPosition) : 'none',
-                inputVariables: {
-                  draggedOverGrid: draggedOverCell,
-                  cursorPos: currentCursorPos ? {
-                    original: currentCursorPos,
-                    adjusted: {
-                      x: currentCursorPos.x - mapPosition.x,
-                      y: currentCursorPos.y - mapPosition.y
-                    },
-                    adjustedToGrid: draggedOverCell && gridAnchorCoordinates ? {
-                      x: currentCursorPos.x - mapPosition.x - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].x,
-                      y: currentCursorPos.y - mapPosition.y - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].y
-                    } : 'none'
-                  } : 'none',
-                  mapPosition: mapPosition
-                }
-              }, null, 2)}
-            </pre>
-            <pre>
-              Grid Cell Coordinates:
-              {JSON.stringify(calculateGridCellCoordinates(draggedOverCell, gridAnchorCoordinates), null, 2)}
-            </pre>
-          </div>
-        ) : (
-          <div className={styles['debug-display']}>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <button
-                onClick={toggleCursorObserver}
-                style={{
-                  padding: '5px 10px',
-                  backgroundColor: isCursorObserverActive ? '#4CAF50' : '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
-              </button>
-              <button
-                onClick={toggleNearestEdgeDisplay}
-                style={{
-                  padding: '5px 10px',
-                  backgroundColor: isNearestEdgeDisplayActive ? '#4CAF50' : '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Nearest Edge: {isNearestEdgeDisplayActive ? 'ON' : 'OFF'}
-              </button>
-            </div>
-            <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
-            <div>Selected Character: {selectedCharacter || 'None'}</div>
-            <div>Clicked Character: {clickedState?.characterName || 'None'}</div>
-            <div>Is Map Grid: {clickedState?.isMapGrid ? 'Yes' : 'No'}</div>
-            <div>History:</div>
-            <pre>
-              {JSON.stringify(clickedStateHistory, null, 2)}
-            </pre>
-          </div>
-        )}
+        <div className={styles['debug-display']}>
+          <button
+            onClick={toggleDebugDisplay}
+            style={{
+              padding: '5px 10px',
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginBottom: '10px'
+            }}
+          >
+            {isDebugDisplayVisible ? 'Collapse Debug Info' : 'Expand Debug Info'}
+          </button>
+          {isDebugDisplayVisible && (
+            <>
+              {draggedOverCell ? (
+                <div>
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                    <button
+                      onClick={toggleCursorObserver}
+                      style={{
+                        padding: '5px 10px',
+                        backgroundColor: isCursorObserverActive ? '#4CAF50' : '#f44336',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
+                    </button>
+                    <button
+                      onClick={toggleNearestEdgeDisplay}
+                      style={{
+                        padding: '5px 10px',
+                        backgroundColor: isNearestEdgeDisplayActive ? '#4CAF50' : '#f44336',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Nearest Edge: {isNearestEdgeDisplayActive ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                  <pre>
+                    Drag Debug Info:
+                    {JSON.stringify({
+                      cursorObserver: {
+                        active: isCursorObserverActive,
+                        position: currentCursorPos || 'none'
+                      },
+                      draggedOverCell: draggedOverCell || 'none',
+                      nearestEdge: (isNearestEdgeDisplayActive && currentCursorPos && draggedOverCell) ?
+                        findNearestGridEdgeToCursor(draggedOverCell, currentCursorPos, gridAnchorCoordinates, mapPosition) : 'none',
+                      inputVariables: {
+                        draggedOverGrid: draggedOverCell,
+                        cursorPos: currentCursorPos ? {
+                          original: currentCursorPos,
+                          adjusted: {
+                            x: currentCursorPos.x - mapPosition.x,
+                            y: currentCursorPos.y - mapPosition.y
+                          },
+                          adjustedToGrid: draggedOverCell && gridAnchorCoordinates ? {
+                            x: currentCursorPos.x - mapPosition.x - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].x,
+                            y: currentCursorPos.y - mapPosition.y - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].y
+                          } : 'none'
+                        } : 'none',
+                        mapPosition: mapPosition
+                      }
+                    }, null, 2)}
+                  </pre>
+                  <pre>
+                    Grid Cell Coordinates:
+                    {JSON.stringify(calculateGridCellCoordinates(draggedOverCell, gridAnchorCoordinates), null, 2)}
+                  </pre>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                    <button
+                      onClick={toggleCursorObserver}
+                      style={{
+                        padding: '5px 10px',
+                        backgroundColor: isCursorObserverActive ? '#4CAF50' : '#f44336',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
+                    </button>
+                    <button
+                      onClick={toggleNearestEdgeDisplay}
+                      style={{
+                        padding: '5px 10px',
+                        backgroundColor: isNearestEdgeDisplayActive ? '#4CAF50' : '#f44336',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Nearest Edge: {isNearestEdgeDisplayActive ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                  <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
+                  <div>Selected Character: {selectedCharacter || 'None'}</div>
+                  <div>Clicked Character: {clickedState?.characterName || 'None'}</div>
+                  <div>Is Map Grid: {clickedState?.isMapGrid ? 'Yes' : 'No'}</div>
+                  <div>History:</div>
+                  <pre>
+                    {JSON.stringify(clickedStateHistory, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
         {/* Action buttons container */}
         <div className={styles['actionButtonsContainer']}>
