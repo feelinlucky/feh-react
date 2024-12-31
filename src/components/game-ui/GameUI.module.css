@@ -142,3 +142,31 @@
   margin: 0;
   white-space: pre-wrap;
 }
+
+.log-text-container {
+  border: 2px solid #0000FF; /* Blue border */
+  background-color: #000080; /* Dark blue background */
+  color: #FFFFFF; /* White text */
+  padding: 10px;
+  margin-top: 20px;
+  font-family: 'Press Start 2P', cursive; /* Retro pixel font */
+  font-size: 12px;
+  line-height: 1.5;
+  width: 100%; /* Match the width of map-container */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.log-text-header {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.log-text-content {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.log-text-item {
+  margin-bottom: 5px;
+}

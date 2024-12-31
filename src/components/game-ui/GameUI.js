@@ -257,7 +257,29 @@ const GameUI = () => {
   const [isCursorObserverActive, setIsCursorObserverActive] = useState(false); // Toggle for cursor observer
   const [isNearestEdgeDisplayActive, setIsNearestEdgeDisplayActive] = useState(false); // Toggle for nearest edge display
   const [isDebugDisplayVisible, setIsDebugDisplayVisible] = useState(true); // State to manage debug display visibility
+  const [logText, setLogText] = useState([
+    "Alfonse moved to (2, 3)",
+    "Sharena attacked FighterSword",
+    "Anna healed Fjorm",
+    "Fjorm used special skill"
+  ]);
   /* #endregion */
+
+  /**
+   * Helper function to update log text chronologically
+   * @param {string} newLog - New log entry to add
+   */
+  const updateLogText = (newLog) => {
+    setLogText((prevLogText) => {
+      const updatedLogText = [newLog, ...prevLogText];
+      return updatedLogText.slice(0, 6); // Keep only the latest 6 entries
+    });
+  };
+
+  // Example usage of updateLogText
+  useEffect(() => {
+    updateLogText("New log entry example");
+  }, []);
 
   /* #region character data and positioning */
   // Define character teams
@@ -784,30 +806,15 @@ const GameUI = () => {
           )}
         </div>
 
-        {/* Action buttons container */}
-        <div className={styles['actionButtonsContainer']}>
-          <div className={styles['button-group']}>
-            {/* Left-aligned action buttons */}
-            <div className={styles['leftAlignedButtons']}>
-              <Sprite spriteName="ButtonBg1">
-                <button className={styles['action-button']}>1</button>
-              </Sprite>
-              <Sprite spriteName="ButtonBg1">
-                <button className={styles['action-button']}>2</button>
-              </Sprite>
-              <Sprite spriteName="ButtonBg1">
-                <button className={styles['action-button']}>3</button>
-              </Sprite>
-            </div>
-            {/* Right-aligned action buttons */}
-            <div className={styles['rightAlignedButtons']}>
-              <Sprite spriteName="ButtonBg1">
-                <button className={styles['action-button']}>4</button>
-              </Sprite>
-              <Sprite spriteName="ButtonBg1">
-                <button className={styles['action-button']}>5</button>
-              </Sprite>
-            </div>
+        {/* Log text display container */}
+        <div className={styles['log-text-container']}>
+          <div className={styles['log-text-header']}>Log</div>
+          <div className={styles['log-text-content']}>
+            {logText.map((log, index) => (
+              <div key={index} className={styles['log-text-item']}>
+                {log}
+              </div>
+            ))}
           </div>
         </div>
       </div>
