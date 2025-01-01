@@ -37,27 +37,74 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
  * @param {Object} props.coordinates - X and Y coordinates for character position
  * @param {boolean} props.isSelected - Whether the character is currently selected
  * @param {function} props.setParentIsDragging - Callback to set parent's isDragging state
+ * @param {function} props.setSelectedCharacter - Function to set the selected character
+ * @param {function} props.setHighlightedCells - Function to set highlighted cells
+ * @param {function} props.setIsNearestEdgeDisplayActive - Function to toggle nearest edge display
+ * @param {function} props.setNearestGridEdges - Function to set nearest grid edges
+ * @param {Object} props.characterPositions - Object containing character positions
+ * @param {Object} props.gridAnchorCoordinates - Object containing grid anchor coordinates
+ * @param {Object} props.mapPosition - Object containing map position
+ * @param {Object} props.terrainData - Object containing terrain data
  */
-/* #region DraggableCharacter component */
-const DraggableCharacter = ({ charName, coordinates, isSelected, setParentIsDragging }) => {
+const DraggableCharacter = ({
+  charName,
+  coordinates,
+  isSelected,
+  setParentIsDragging,
+  setSelectedCharacter,
+  setHighlightedCells,
+  setIsNearestEdgeDisplayActive,
+  setNearestGridEdges,
+  characterPositions,
+  gridAnchorCoordinates,
+  mapPosition,
+  terrainData
+}) => {
   const overlayRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const el = overlayRef.current;
-    if (el && isSelected) {
+    if (el) {
       const cleanup = draggable({
         element: el,
         data: {
           character: charName,
         },
         onDragStart: (event) => {
-          setIsDragging(true);          
+          setIsDragging(true);
           setParentIsDragging(true);
+
+          // Ensure the character is selected and movement range is generated
+          if (!isSelected) {
+            setSelectedCharacter(charName);
+            const char = characterData(charName);
+            const gridPos = characterPositions[charName];
+            const movementRange = calculateMovementRange(
+              gridPos.row,
+              gridPos.col,
+              sharedProps.moveTypes[char.type].distance,
+              char.type,
+              terrainData
+            );
+            setHighlightedCells(movementRange);
+          }
+
+          // Automatically toggle nearest edge display to true
+          setIsNearestEdgeDisplayActive(true);
         },
         onDrag: (event) => {
           if (isDragging) {
-            // TODO: add function to calculate nearest grid edge based on cursor position
+            // Continuously update nearest edge display
+            const cursorPos = { x: event.clientX, y: event.clientY };
+            const gridPos = characterPositions[charName];
+            const nearestEdges = findNearestGridEdgeToCursor(
+              gridPos,
+              cursorPos,
+              gridAnchorCoordinates,
+              mapPosition
+            );
+            setNearestGridEdges(nearestEdges);
           }
         },
         onDrop: () => {
@@ -74,7 +121,20 @@ const DraggableCharacter = ({ charName, coordinates, isSelected, setParentIsDrag
         cleanup?.();
       };
     }
-  }, [isSelected, charName, isDragging, setParentIsDragging]);
+  }, [
+    isSelected,
+    charName,
+    isDragging,
+    setParentIsDragging,
+    setSelectedCharacter,
+    setHighlightedCells,
+    setIsNearestEdgeDisplayActive,
+    setNearestGridEdges,
+    characterPositions,
+    gridAnchorCoordinates,
+    mapPosition,
+    terrainData
+  ]);
 
   return (
     <div
@@ -258,6 +318,7 @@ const GameUI = () => {
   const [isCursorObserverActive, setIsCursorObserverActive] = useState(false); // Toggle for cursor observer
   const [isNearestEdgeDisplayActive, setIsNearestEdgeDisplayActive] = useState(false); // Toggle for nearest edge display
   const [isDebugDisplayVisible, setIsDebugDisplayVisible] = useState(true); // State to manage debug display visibility
+  const [nearestGridEdges, setNearestGridEdges] = useState([]); // State to manage nearest grid edges
   /* #endregion */
 
   /**
@@ -678,6 +739,14 @@ const GameUI = () => {
                 }}
                 isSelected={selectedCharacter === charName}
                 setParentIsDragging={setIsDragging}
+                setSelectedCharacter={setSelectedCharacter}
+                setHighlightedCells={setHighlightedCells}
+                setIsNearestEdgeDisplayActive={setIsNearestEdgeDisplayActive}
+                setNearestGridEdges={setNearestGridEdges}
+                characterPositions={characterPositions}
+                gridAnchorCoordinates={gridAnchorCoordinates}
+                mapPosition={mapPosition}
+                terrainData={terrainData}
               />
             ) : null;
           })}
