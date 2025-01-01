@@ -28,6 +28,7 @@ import MapCharacter from '../map-character/MapCharacter';
 // Define path to public assets folder
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
+
 /*
  * DraggableCharacter Component
  * Renders a draggable character sprite on the game map
@@ -51,7 +52,7 @@ const DraggableCharacter = ({ charName, coordinates, isSelected, setParentIsDrag
           character: charName,
         },
         onDragStart: (event) => {
-          setIsDragging(true);
+          setIsDragging(true);          
           setParentIsDragging(true);
         },
         onDrag: (event) => {
@@ -257,29 +258,26 @@ const GameUI = () => {
   const [isCursorObserverActive, setIsCursorObserverActive] = useState(false); // Toggle for cursor observer
   const [isNearestEdgeDisplayActive, setIsNearestEdgeDisplayActive] = useState(false); // Toggle for nearest edge display
   const [isDebugDisplayVisible, setIsDebugDisplayVisible] = useState(true); // State to manage debug display visibility
+  /* #endregion */
+
+  /**
+   * @param {string} newLog - New log entry to add
+   */
+  /* #region helper function to update log text chronologically */
   const [logText, setLogText] = useState([
     "Alfonse moved to (2, 3)",
     "Sharena attacked FighterSword",
     "Anna healed Fjorm",
     "Fjorm used special skill"
   ]);
-  /* #endregion */
 
-  /**
-   * Helper function to update log text chronologically
-   * @param {string} newLog - New log entry to add
-   */
   const updateLogText = (newLog) => {
     setLogText((prevLogText) => {
       const updatedLogText = [newLog, ...prevLogText];
       return updatedLogText.slice(0, 6); // Keep only the latest 6 entries
     });
   };
-
-  // Example usage of updateLogText
-  useEffect(() => {
-    updateLogText("New log entry example");
-  }, []);
+  /* #endregion */
 
   /* #region character data and positioning */
   // Define character teams
@@ -451,7 +449,7 @@ const GameUI = () => {
   ]);
   /* #endregion */
 
-  /* #region  handle clicks outside map */
+  /* #region handle clicks outside map */
   /**
    * Handles clicks outside the game map
    * Manages deselection and UI state updates for off-map interactions
@@ -626,7 +624,9 @@ const GameUI = () => {
   const handleGridCellDragOver = (row, col) => {
     setDraggedOverCell({ row, col });
   };
+  /* #endregion */
 
+  /* #region debug display toggles */
   // Toggle nearest edge display
   const toggleNearestEdgeDisplay = () => {
     setIsNearestEdgeDisplayActive(!isNearestEdgeDisplayActive);
@@ -636,6 +636,7 @@ const GameUI = () => {
   const toggleDebugDisplay = () => {
     setIsDebugDisplayVisible(!isDebugDisplayVisible);
   };
+  /* #endregion */
 
   // Main component render
   return (
