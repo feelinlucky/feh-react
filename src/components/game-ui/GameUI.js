@@ -45,6 +45,8 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
  * @param {Object} props.gridAnchorCoordinates - Object containing grid anchor coordinates
  * @param {Object} props.mapPosition - Object containing map position
  * @param {Object} props.terrainData - Object containing terrain data
+ * @param {function} props.isOccupiedCell - Function to check if a cell is occupied
+ * @param {function} props.setCharacterPositions - Function to set character positions
  */
 const DraggableCharacter = ({
   charName,
@@ -58,7 +60,9 @@ const DraggableCharacter = ({
   characterPositions,
   gridAnchorCoordinates,
   mapPosition,
-  terrainData
+  terrainData,
+  isOccupiedCell,
+  setCharacterPositions
 }) => {
   const overlayRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -107,9 +111,43 @@ const DraggableCharacter = ({
             setNearestGridEdges(nearestEdges);
           }
         },
-        onDrop: () => {
+        onDrop: (event) => {
           setIsDragging(false);
           setParentIsDragging(false);
+
+          // Determine the next valid move grid nearest to the cursor position
+          const cursorPos = { x: event.clientX, y: event.clientY };
+          const gridPos = characterPositions[charName];
+          const nearestEdges = findNearestGridEdgeToCursor(
+            gridPos,
+            cursorPos,
+            gridAnchorCoordinates,
+            mapPosition
+          );
+
+          // Find the nearest valid and unoccupied grid cell
+          const validNeighborGrids = nearestEdges.map(edge => {
+            switch (edge) {
+              case 'top':
+                return { row: gridPos.row - 1, col: gridPos.col };
+              case 'bottom':
+                return { row: gridPos.row + 1, col: gridPos.col };
+              case 'left':
+                return { row: gridPos.row, col: gridPos.col - 1 };
+              case 'right':
+                return { row: gridPos.row, col: gridPos.col + 1 };
+              default:
+                return null;
+            }
+          }).filter(pos => pos && !isOccupiedCell(pos.row, pos.col));
+
+          if (validNeighborGrids.length > 0) {
+            const selectedValidNeighborGrid = validNeighborGrids[0];
+            setCharacterPositions(prev => ({
+              ...prev,
+              [charName]: selectedValidNeighborGrid
+            }));
+          }
         },
         onDragEnd: () => {
           setIsDragging(false);
@@ -133,7 +171,9 @@ const DraggableCharacter = ({
     characterPositions,
     gridAnchorCoordinates,
     mapPosition,
-    terrainData
+    terrainData,
+    isOccupiedCell,
+    setCharacterPositions
   ]);
 
   return (
@@ -176,7 +216,7 @@ const calculateGridDistance = (gridPos1, gridPos2) => {
   }
 
   // Calculate Manhattan distance (|x1 - x2| + |y1 - y2|)
-  return Math.abs(gridPos1.row - gridPos2.row) + Math.abs(gridPos1.col - gridPos2.col);
+  return Math.abs(gridPos1.row - gridPos2.row) + Math.abs(gridPos2.col - gridPos2.col);
 };
 
 const calculateCharDistance = (positions, charName1, charName2) => {
@@ -747,6 +787,8 @@ const GameUI = () => {
                 gridAnchorCoordinates={gridAnchorCoordinates}
                 mapPosition={mapPosition}
                 terrainData={terrainData}
+                isOccupiedCell={isOccupiedCell}
+                setCharacterPositions={setCharacterPositions}
               />
             ) : null;
           })}
