@@ -28,9 +28,8 @@ import MapCharacter from '../map-character/MapCharacter';
 // Define path to public assets folder
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
-
+/* #region DraggableCharacter component */
 /*
- * DraggableCharacter Component
  * Renders a draggable character sprite on the game map
  * @param {Object} props - Component props
  * @param {string} props.charName - Character's name identifier
