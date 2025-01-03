@@ -610,6 +610,7 @@ const GameUI = () => {
   const handleGridClick = useCallback((gridY, gridX) => {
     const newState = { gridY, gridX, isMapGrid: true };
 
+    /* #region handle grid destination if DraggableCharacter is dragged and dropped on occupied cell */
     // Check if clicking a highlighted cell and we have a selected character
     if (isCellHighlighted(gridY, gridX) && selectedCharacter) {
       // If the cell is occupied by another character, find the nearest empty cell
@@ -650,7 +651,9 @@ const GameUI = () => {
             [selectedCharacter]: selectedValidNeighborGrid
           }));
         }
+        /* #endregion */
       } else {
+        /* #region handle grid destination if DraggableCharacter is dragged and dropped on empty cell */
         // Update character position
         setCharacterPositions(prev => ({
           ...prev,
@@ -663,6 +666,7 @@ const GameUI = () => {
       setSelectedCharacter(null);
       setClickedState(null);
       return;
+      /* #endregion */
     }
 
     // Check if any character is at the clicked position
