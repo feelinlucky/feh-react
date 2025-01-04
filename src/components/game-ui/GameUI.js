@@ -108,6 +108,7 @@ const DraggableCharacter = ({
               mapPosition
             );
             setNearestGridEdges(nearestEdges);
+            
           }
         },
         onDrop: (event) => {
