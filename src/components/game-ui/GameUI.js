@@ -375,6 +375,7 @@ const GameUI = () => {
   const [isNearestEdgeDisplayActive, setIsNearestEdgeDisplayActive] = useState(false); // Toggle for nearest edge display
   const [isDebugDisplayVisible, setIsDebugDisplayVisible] = useState(true); // State to manage debug display visibility
   const [nearestGridEdges, setNearestGridEdges] = useState([]); // State to manage nearest grid edges
+  const [errorLogging, setErrorLogging] = useState([]); // State to manage logging errors
   /* #endregion */
 
   /**
@@ -946,7 +947,23 @@ const GameUI = () => {
 
         {/* Log text display container */}
         <div className={styles['log-text-container']}>
-          <div className={styles['log-text-header']}>Log</div>
+          <div className={styles['log-text-header']}>
+            Log
+            <button
+              onClick={() => setErrorLogging(!errorLogging)}
+              style={{
+                float: 'right',
+                padding: '5px 10px',
+                backgroundColor: errorLogging ? '#f44336' : '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              {errorLogging ? 'Disable Error Logging' : 'Enable Error Logging'}
+            </button>
+          </div>
           <div className={styles['log-text-tabs']}>
             <button
               className={activeTab === "categorized" ? styles['active-tab'] : ""}
