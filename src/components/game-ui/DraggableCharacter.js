@@ -11,7 +11,8 @@ const DraggableCharacter = ({
   gridAnchorCoordinates,
   mapPosition,
   terrainData,
-  setIsDropTriggered
+  setIsDropTriggered,
+  updateLogText // Add updateLogText handler
 }) => {
   const overlayRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -88,7 +89,8 @@ const DraggableCharacter = ({
     gridAnchorCoordinates,
     mapPosition,
     terrainData,
-    setIsDropTriggered
+    setIsDropTriggered,
+    updateLogText // Add updateLogText handler
   ]);
 
   return (

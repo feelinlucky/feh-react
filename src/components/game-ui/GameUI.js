@@ -28,7 +28,6 @@ import MapCharacter from '../map-character/MapCharacter';
 // Define path to public assets folder
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
-/* #region DraggableCharacter component */
 /*
  * Renders a draggable character sprite on the game map
  * @param {Object} props - Component props
@@ -46,7 +45,9 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
  * @param {Object} props.terrainData - Object containing terrain data
  * @param {function} props.isOccupiedCell - Function to check if a cell is occupied
  * @param {function} props.setCharacterPositions - Function to set character positions
+ * @param {function} props.updateLogText - Function to update log text
  */
+/* #region DraggableCharacter component */
 const DraggableCharacter = ({
   charName,
   coordinates,
@@ -61,7 +62,8 @@ const DraggableCharacter = ({
   mapPosition,
   terrainData,
   isOccupiedCell,
-  setCharacterPositions
+  setCharacterPositions,
+  updateLogText
 }) => {
   const overlayRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -142,11 +144,24 @@ const DraggableCharacter = ({
           }).filter(pos => pos && !isOccupiedCell(pos.row, pos.col));
 
           if (validNeighborGrids.length > 0) {
+            // Sort valid grids based on proximity to the origin grid
+            validNeighborGrids.sort((a, b) => {
+              const distA = calculateGridDistance(gridPos, a);
+              const distB = calculateGridDistance(gridPos, b);
+              return distA - distB;
+            });
+
             const selectedValidNeighborGrid = validNeighborGrids[0];
             setCharacterPositions(prev => ({
               ...prev,
               [charName]: selectedValidNeighborGrid
             }));
+
+            // Trigger a placeholder log event
+            updateLogText(`${charName} moved to (${selectedValidNeighborGrid.row}, ${selectedValidNeighborGrid.col})`);
+          } else {
+            // Trigger a placeholder log event for invalid move
+            updateLogText(`${charName} could not move to an occupied grid`);
           }
         },
         onDragEnd: () => {
@@ -173,7 +188,8 @@ const DraggableCharacter = ({
     mapPosition,
     terrainData,
     isOccupiedCell,
-    setCharacterPositions
+    setCharacterPositions,
+    updateLogText
   ]);
 
   return (
@@ -366,18 +382,23 @@ const GameUI = () => {
    */
   /* #region helper function to update log text chronologically */
   const [logText, setLogText] = useState([
-    "Alfonse moved to (2, 3)",
-    "Sharena attacked FighterSword",
-    "Anna healed Fjorm",
-    "Fjorm used special skill"
+    { text: "Alfonse moved to (2, 3)", category: "movement" },
+    { text: "Sharena attacked FighterSword", category: "combat" },
+    { text: "Anna healed Fjorm", category: "healing" },
+    { text: "Fjorm used special skill", category: "skill" }
   ]);
 
-  const updateLogText = (newLog) => {
+  const [activeTab, setActiveTab] = useState("categorized");
+
+  const updateLogText = (newLog, category = "uncategorized") => {
     setLogText((prevLogText) => {
-      const updatedLogText = [newLog, ...prevLogText];
+      const updatedLogText = [{ text: newLog, category }, ...prevLogText];
       return updatedLogText.slice(0, 6); // Keep only the latest 6 entries
     });
   };
+
+  const categorizedLogs = logText.filter(log => log.category !== "uncategorized");
+  const uncategorizedLogs = logText.filter(log => log.category === "uncategorized");
   /* #endregion */
 
   /* #region character data and positioning */
@@ -793,6 +814,7 @@ const GameUI = () => {
                 terrainData={terrainData}
                 isOccupiedCell={isOccupiedCell}
                 setCharacterPositions={setCharacterPositions}
+                updateLogText={updateLogText}
               />
             ) : null;
           })}
@@ -925,12 +947,34 @@ const GameUI = () => {
         {/* Log text display container */}
         <div className={styles['log-text-container']}>
           <div className={styles['log-text-header']}>Log</div>
+          <div className={styles['log-text-tabs']}>
+            <button
+              className={activeTab === "categorized" ? styles['active-tab'] : ""}
+              onClick={() => setActiveTab("categorized")}
+            >
+              Categorized
+            </button>
+            <button
+              className={activeTab === "uncategorized" ? styles['active-tab'] : ""}
+              onClick={() => setActiveTab("uncategorized")}
+            >
+              Uncategorized
+            </button>
+          </div>
           <div className={styles['log-text-content']}>
-            {logText.map((log, index) => (
-              <div key={index} className={styles['log-text-item']}>
-                {log}
-              </div>
-            ))}
+            {activeTab === "categorized" ? (
+              categorizedLogs.map((log, index) => (
+                <div key={index} className={styles['log-text-item']}>
+                  {log.text}
+                </div>
+              ))
+            ) : (
+              uncategorizedLogs.map((log, index) => (
+                <div key={index} className={styles['log-text-item']}>
+                  {log.text}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
