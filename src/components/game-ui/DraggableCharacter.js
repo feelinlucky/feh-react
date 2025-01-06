@@ -1,3 +1,16 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { useLocation } from 'react-router-dom';
+import { sharedProps, characterData } from '../character-data/CharacterData';
+import {
+  findNearestGridEdgeToCursor,
+  calculateGridDistance,
+  calculateCharDistance,
+  calculateMovementRange,
+} from './helpers';
+import MapCharacter from '../map-character/MapCharacter'; // Corrected import path
+import styles from './DraggableCharacter.module.css';
+
 const DraggableCharacter = ({
   charName,
   coordinates,
@@ -115,3 +128,5 @@ const DraggableCharacter = ({
     </div>
   );
 };
+
+export default DraggableCharacter;
