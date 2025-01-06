@@ -67,6 +67,7 @@ const DraggableCharacter = ({
 }) => {
   const overlayRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [currentDraggedOverCell, setCurrentDraggedOverCell] = useState(null);
 
   useEffect(() => {
     const el = overlayRef.current;
@@ -110,7 +111,44 @@ const DraggableCharacter = ({
               mapPosition
             );
             setNearestGridEdges(nearestEdges);
-            
+
+            // Set the current dragged-over cell
+            const draggedOverCell = findGridCellByCursor(cursorPos, gridAnchorCoordinates);
+            setCurrentDraggedOverCell(draggedOverCell);
+
+            // Check if the dragged-over cell is occupied by another character
+            if (draggedOverCell && isOccupiedCell(draggedOverCell.row, draggedOverCell.col) && characterPositions[charName] !== draggedOverCell) {
+              // Search neighboring grids for valid moves
+              const validNeighborGrids = nearestEdges.map(edge => {
+                switch (edge) {
+                  case 'top':
+                    return { row: draggedOverCell.row - 1, col: draggedOverCell.col };
+                  case 'bottom':
+                    return { row: draggedOverCell.row + 1, col: draggedOverCell.col };
+                  case 'left':
+                    return { row: draggedOverCell.row, col: draggedOverCell.col - 1 };
+                  case 'right':
+                    return { row: draggedOverCell.row, col: draggedOverCell.col + 1 };
+                  default:
+                    return null;
+                }
+              }).filter(pos => pos && !isOccupiedCell(pos.row, pos.col));
+
+              if (validNeighborGrids.length > 0) {
+                // Sort valid grids based on proximity to the cursor position
+                validNeighborGrids.sort((a, b) => {
+                  const distA = calculateDistance(cursorPos, gridAnchorCoordinates[`${a.row}-${a.col}`]);
+                  const distB = calculateDistance(cursorPos, gridAnchorCoordinates[`${b.row}-${b.col}`]);
+                  return distA - distB;
+                });
+
+                // Set the current dragged-over grid to the nearest valid grid
+                setCurrentDraggedOverCell(validNeighborGrids[0]);
+              } else {
+                // Change the color of the dragged-over cell to transparent red
+                setDraggedOverCellColor(draggedOverCell, 'rgba(255, 0, 0, 0.5)');
+              }
+            }
           }
         },
         onDrop: (event) => {
@@ -215,6 +253,34 @@ const DraggableCharacter = ({
   );
 };
 /* #endregion */
+
+// Helper function to find the grid cell by cursor position
+const findGridCellByCursor = (cursorPos, gridAnchorCoordinates) => {
+  for (const key in gridAnchorCoordinates) {
+    const [row, col] = key.split('-').map(Number);
+    const anchor = gridAnchorCoordinates[key];
+    if (
+      cursorPos.x >= anchor.x - 32 && cursorPos.x <= anchor.x + 32 &&
+      cursorPos.y >= anchor.y - 32 && cursorPos.y <= anchor.y + 32
+    ) {
+      return { row, col };
+    }
+  }
+  return null;
+};
+
+// Helper function to calculate the distance between two points
+const calculateDistance = (point1, point2) => {
+  return Math.sqrt(Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2));
+};
+
+// Helper function to set the color of a grid cell
+const setDraggedOverCellColor = (cell, color) => {
+  const cellElement = document.querySelector(`[data-row="${cell.row}"][data-col="${cell.col}"]`);
+  if (cellElement) {
+    cellElement.style.backgroundColor = color;
+  }
+};
 
 /*
  * Calculates the grid distance between two characters using Manhattan distance
