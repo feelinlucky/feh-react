@@ -1,3 +1,4 @@
+/* #region  Import frameworks */
 import React, { useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import styles from './GameMap.module.css';
@@ -5,16 +6,25 @@ import { useLocation } from 'react-router-dom';
 import Sprite from '../sprite/Sprite';
 import MockChild from '../mock-child/MockChild';
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+/* #endregion */
 
 const publicFolder = `${process.env.PUBLIC_URL}`;
+
+// Terrain types enum
+export const TerrainType = {
+    PLAIN: 'plain',
+    FOREST: 'forest',
+    MOUNTAIN: 'mountain',
+    WATER: 'water',
+    WALL: 'wall'
+};
 
 // TODO: Implement other maps.
 
 export const gridSize = { rows: 6, cols: 8 };
 
-// Utility function to calculate cells within a radius, excluding invalid terrain
+/* #region Utility function to calculate cells within a radius, excluding invalid terrain */
 /**
- * Utility function to calculate cells within a radius, excluding invalid terrain
  * @param {number} centerRow - Center row coordinate
  * @param {number} centerCol - Center column coordinate
  * @param {number} radius - Movement radius
@@ -23,7 +33,7 @@ export const gridSize = { rows: 6, cols: 8 };
  */
 export const calculateCellsInRadius = (centerRow, centerCol, radius, invalidCells = []) => {
     const cells = [];
-    
+
     // Create a Set of invalid coordinates for O(1) lookup
     const invalidSet = new Set(
         invalidCells.map(cell => `${cell.row},${cell.col}`)
@@ -34,25 +44,17 @@ export const calculateCellsInRadius = (centerRow, centerCol, radius, invalidCell
         for (let col = Math.max(0, centerCol - radius); col <= Math.min(gridSize.cols - 1, centerCol + radius); col++) {
             // For orthogonal movement (like in Fire Emblem), use Manhattan distance
             const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
-            
+
             // Check if the cell is within radius AND not in invalid cells
             if (distance <= radius && !invalidSet.has(`${row},${col}`)) {
                 cells.push({ row, col });
             }
         }
     }
-    
+
     return cells;
 };
-
-// Terrain types enum
-export const TerrainType = {
-    PLAIN: 'plain',
-    FOREST: 'forest',
-    MOUNTAIN: 'mountain',
-    WATER: 'water',
-    WALL: 'wall'
-};
+/* #endregion */
 
 // Create a reverse mapping for string to TerrainType conversion
 const stringToTerrainType = Object.entries(TerrainType).reduce((acc, [key, value]) => {
@@ -140,21 +142,21 @@ export const defineTerrainGrid = (rectangles) => {
             console.warn(`Invalid coordinates in rectangle [${x1},${y1},${x2},${y2}]. Skipping.`);
             return;
         }
-        
+
         // Convert string to valid terrain type
-        const normalizedTerrainType = typeof terrainType === 'string' 
-            ? terrainType.toLowerCase() 
+        const normalizedTerrainType = typeof terrainType === 'string'
+            ? terrainType.toLowerCase()
             : terrainType;
-        
+
         const validTerrainType = stringToTerrainType[normalizedTerrainType];
-        
+
         if (!validTerrainType) {
             console.warn(`Invalid terrain type: ${terrainType}. Using PLAIN instead.`);
             terrainType = TerrainType.PLAIN;
         } else {
             terrainType = validTerrainType;
         }
-        
+
         // Fill the rectangle with the specified terrain
         for (let y = y1; y <= y2; y++) {
             for (let x = x1; x <= x2; x++) {
@@ -162,42 +164,42 @@ export const defineTerrainGrid = (rectangles) => {
             }
         }
     });
-    
+
     return grid;
 };
 
 // Movement costs for different terrain types based on movement type
 export const TerrainCost = {
-  [TerrainType.PLAIN]: {
-    infantry: 1,
-    cavalry: 1,
-    armored: 1,
-    flying: 1
-  },
-  [TerrainType.FOREST]: {
-    infantry: 2,
-    cavalry: 3,
-    armored: 2,
-    flying: 1
-  },
-  [TerrainType.MOUNTAIN]: {
-    infantry: 2,
-    cavalry: 999, // Impassable
-    armored: 3,
-    flying: 1
-  },
-  [TerrainType.WATER]: {
-    infantry: 999, // Impassable
-    cavalry: 999, // Impassable
-    armored: 999, // Impassable
-    flying: 1
-  },
-  [TerrainType.WALL]: {
-    infantry: 999, // Impassable
-    cavalry: 999, // Impassable
-    armored: 999, // Impassable
-    flying: 999  // Impassable
-  }
+    [TerrainType.PLAIN]: {
+        infantry: 1,
+        cavalry: 1,
+        armored: 1,
+        flying: 1
+    },
+    [TerrainType.FOREST]: {
+        infantry: 2,
+        cavalry: 3,
+        armored: 2,
+        flying: 1
+    },
+    [TerrainType.MOUNTAIN]: {
+        infantry: 2,
+        cavalry: 999, // Impassable
+        armored: 3,
+        flying: 1
+    },
+    [TerrainType.WATER]: {
+        infantry: 999, // Impassable
+        cavalry: 999, // Impassable
+        armored: 999, // Impassable
+        flying: 1
+    },
+    [TerrainType.WALL]: {
+        infantry: 999, // Impassable
+        cavalry: 999, // Impassable
+        armored: 999, // Impassable
+        flying: 999  // Impassable
+    }
 };
 
 
@@ -282,13 +284,13 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
 
                 if (row >= 0 && row < gridSize.rows && col >= 0 && col < gridSize.cols) {
                     const newGridPosition = { row, col };
-                    
+
                     // Only update if grid position changed
-                    if (!currentMouseGridPosition || 
-                        currentMouseGridPosition.row !== row || 
+                    if (!currentMouseGridPosition ||
+                        currentMouseGridPosition.row !== row ||
                         currentMouseGridPosition.col !== col) {
                         setCurrentMouseGridPosition(newGridPosition);
-                        
+
                         // Call onCellDragOver if provided
                         if (typeof onCellDragOver === 'function') {
                             onCellDragOver(row, col);
