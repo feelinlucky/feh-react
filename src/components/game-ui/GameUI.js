@@ -28,6 +28,7 @@ import MapCharacter from '../map-character/MapCharacter';
 // Define path to public assets folder
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
+/* #region DraggableCharacter component */
 /*
  * Renders a draggable character sprite on the game map
  * @param {Object} props - Component props
@@ -47,7 +48,6 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
  * @param {function} props.setCharacterPositions - Function to set character positions
  * @param {function} props.updateLogText - Function to update log text
  */
-/* #region DraggableCharacter component */
 const DraggableCharacter = ({
   charName,
   coordinates,
@@ -254,6 +254,7 @@ const DraggableCharacter = ({
 };
 /* #endregion */
 
+/* #region Helper functions for GameMap component  */
 // Helper function to find the grid cell by cursor position
 const findGridCellByCursor = (cursorPos, gridAnchorCoordinates) => {
   for (const key in gridAnchorCoordinates) {
@@ -281,7 +282,9 @@ const setDraggedOverCellColor = (cell, color) => {
     cellElement.style.backgroundColor = color;
   }
 };
+/* #endregion */
 
+/* #region calculateCharDistance & calculateGridDistance function */
 /*
  * Calculates the grid distance between two characters using Manhattan distance
  * @param {String} charName1 - Name of the first character
@@ -291,7 +294,6 @@ const setDraggedOverCellColor = (cell, color) => {
  * @param {Object} positions - Object containing character positions
  * @returns {number} The grid distance between the two characters
  */
-/* #region calculateCharDistance & calculateGridDistance function */
 const calculateGridDistance = (gridPos1, gridPos2) => {
   if (!gridPos1 || !gridPos2) {
     return null;
@@ -308,6 +310,7 @@ const calculateCharDistance = (positions, charName1, charName2) => {
 }
 /* #endregion */
 
+/* #region findNearestGridEdgeToCursor function */
 /*
  * Finds the two nearest edges of a grid cell to the current cursor position.
  * This function adjusts the cursor position based on the GameUI's position 
@@ -320,7 +323,6 @@ const calculateCharDistance = (positions, charName1, charName2) => {
  * @returns { Array | null } An array containing the two nearest edges(e.g., ['top', 'left'])
   * or null if the grid anchor is not found.
  */
-/* #region findNearestGridEdgeToCursor function */
 const findNearestGridEdgeToCursor = (
   draggedOverGrid,
   cursorPos,
@@ -366,13 +368,13 @@ const findNearestGridEdgeToCursor = (
 };
 /* #endregion */
 
+/* #region calculateGridCellCoordinates function  */
 /**
  * Calculates the four corner coordinates of a specific grid cell
  * @param {Object} draggedOverGrid - The grid position being dragged over {row, col}
  * @param {Object} gridAnchorCoordinates - Grid anchor coordinates for each cell
  * @returns {Object|null} Object containing top-left, top-right, bottom-left, and bottom-right coordinates
  */
-/* #region calculateGridCellCoordinates function  */
 const calculateGridCellCoordinates = (draggedOverGrid, gridAnchorCoordinates) => {
   // Get the center coordinates of the current grid cell
   const currentGridAnchor = gridAnchorCoordinates[`${draggedOverGrid.row}-${draggedOverGrid.col}`];
@@ -704,43 +706,7 @@ const GameUI = () => {
     if (isCellHighlighted(gridY, gridX) && selectedCharacter) {
       // If the cell is occupied by another character, find the nearest empty cell
       if (isOccupiedCell(gridY, gridX)) {
-        // Use a fallback cursor position if not available
-        const fallbackCursorPos = currentCursorPos || {
-          x: gridAnchorCoordinates[`${gridY}-${gridX}`]?.x || 0,
-          y: gridAnchorCoordinates[`${gridY}-${gridX}`]?.y || 0
-        };
-
-        const nearestGridEdges = findNearestGridEdgeToCursor(
-          { row: gridY, col: gridX },
-          fallbackCursorPos,
-          gridAnchorCoordinates,
-          mapPosition
-        );
-
-        // Find the nearest valid and unoccupied grid cell
-        const validNeighborGrids = nearestGridEdges.map(edge => {
-          switch (edge) {
-            case 'top':
-              return { row: gridY - 1, col: gridX };
-            case 'bottom':
-              return { row: gridY + 1, col: gridX };
-            case 'left':
-              return { row: gridY, col: gridX - 1 };
-            case 'right':
-              return { row: gridY, col: gridX + 1 };
-            default:
-              return null;
-          }
-        }).filter(pos => pos && !isOccupiedCell(pos.row, pos.col));
-
-        if (validNeighborGrids.length > 0) {
-          const selectedValidNeighborGrid = validNeighborGrids[0];
-          setCharacterPositions(prev => ({
-            ...prev,
-            [selectedCharacter]: selectedValidNeighborGrid
-          }));
-        }
-        /* #endregion */
+        updateLogText(`${selectedCharacter} could not move to an occupied grid`,'interaction');
       } else {
         /* #region handle grid destination if DraggableCharacter is dragged and dropped on empty cell */
         // Update character position
