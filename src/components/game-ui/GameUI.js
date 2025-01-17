@@ -84,13 +84,13 @@ const DraggableCharacter = ({
           // Ensure the character is selected and movement range is generated
           if (!isSelected) {
             setSelectedCharacter(charName);
-            const char = characterData(charName);
+            const charStates = characterData(charName);
             const gridPos = characterPositions[charName];
             const movementRange = calculateMovementRange(
               gridPos.row,
               gridPos.col,
-              sharedProps.moveTypes[char.type].distance,
-              char.type,
+              sharedProps.moveTypes[charStates.type].distance,
+              charStates.type,
               terrainData
             );
             setHighlightedCells(movementRange);
@@ -731,7 +731,7 @@ const GameUI = () => {
 
     if (characterAtPosition) {
       const [charName, _] = characterAtPosition;
-      const char = characterData(charName);
+      const charStates = characterData(charName);
       newState.characterName = charName;
       setSelectedCharacter(charName);
 
@@ -739,8 +739,8 @@ const GameUI = () => {
       const movementRange = calculateMovementRange(
         gridY,
         gridX,
-        sharedProps.moveTypes[char.type].distance,
-        char.type,
+        sharedProps.moveTypes[charStates.type].distance,
+        charStates.type,
         terrainData
       );
 
