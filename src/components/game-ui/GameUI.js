@@ -22,6 +22,7 @@ import GameMap, {
 } from '../game-map/GameMap';
 
 import { sharedProps, characterData } from '../character-data/CharacterData';
+import { characterInteraction } from '../character-data/CharacterInteraction';
 import MapCharacter from '../map-character/MapCharacter';
 /* #endregion */
 
@@ -84,13 +85,13 @@ const DraggableCharacter = ({
           // Ensure the character is selected and movement range is generated
           if (!isSelected) {
             setSelectedCharacter(charName);
-            const charStates = characterData(charName);
+            const charState = characterData(charName);
             const gridPos = charPositions[charName];
             const movementRange = calculateMovementRange(
               gridPos.row,
               gridPos.col,
-              sharedProps.moveTypes[charStates.type].distance,
-              charStates.type,
+              sharedProps.moveTypes[charState.type].distance,
+              charState.type,
               terrainData
             );
             setHighlightedCells(movementRange);
@@ -286,13 +287,13 @@ const setDraggedOverCellColor = (cell, color) => {
 
 /* #region calculateCharDistance & calculateGridDistance function */
 /*
- * Calculates the grid distance between two characters using Manhattan distance
+ * Calculates the grid distance between two characterStates using Manhattan distance
  * @param {String} charName1 - Name of the first character
  * @param {String} charName2 - Name of the second character
  * @param {Object} gridPos1 - grid row and column of the first position
  * @param {Object} gridPos2 - grid row and column of the second position
  * @param {Object} positions - Object containing character positions
- * @returns {number} The grid distance between the two characters
+ * @returns {number} The grid distance between the two characterStates
  */
 const calculateGridDistance = (gridPos1, gridPos2) => {
   if (!gridPos1 || !gridPos2) {
@@ -425,7 +426,7 @@ const GameUI = () => {
   const frontPageState = location.state || {};
 
   /* #region state management for UI elements and game mechanics */
-  const [charStates, setCharacterUIState] = useState({}); // Manages character UI properties
+  const [charState, setCharacterUIState] = useState({}); // Manages character UI properties
   const [mapState, setMapState] = useState(frontPageState.map); // Controls map state
   const [clickedState, setClickedState] = useState(null); // Tracks clicked positions
   const [clickedStateHistory, setClickedStateHistory] = useState([]); // Maintains history of clicks
@@ -477,13 +478,13 @@ const GameUI = () => {
   const characterNames = [...allyNames, ...foeNames];
 
   // Initialize character data with base properties
-  const [characters, setCharacters] = useState(
+  const [characterStates, setCharacterStates] = useState(
     characterNames.reduce((acc, name) => {
-      acc[name] = characterData(name);
+    const group = allyNames.includes(name) ? 'ally' : 'foe';
+    acc[name] = { ...characterData(name), group };
       return acc;
     }, {})
   );
-
   // Set initial character positions on the grid
   const [charPositions, setCharacterPositions] = useState({
     Alfonse: { row: 0, col: 0 },
@@ -553,7 +554,7 @@ const GameUI = () => {
    */
   useEffect(() => {
     if (selectedCharacter) {
-      const selectedCharData = characters[selectedCharacter];
+      const selectedCharData = characterStates[selectedCharacter];
 
       setCharacterUIState({
         charName: selectedCharacter,
@@ -706,6 +707,10 @@ const GameUI = () => {
     if (isCellHighlighted(gridY, gridX) && selectedCharacter) {
       // If the cell is occupied by another character, find the nearest empty cell
       if (isOccupiedCell(gridY, gridX)) {
+        // WORKING: Check interactions between characterStates
+        
+
+
         updateLogText(`${selectedCharacter} could not move to an occupied grid`,'interaction');
       } else {
         /* #region handle grid destination if DraggableCharacter is dragged and dropped on empty cell */
@@ -731,7 +736,7 @@ const GameUI = () => {
 
     if (characterAtPosition) {
       const [charName, _] = characterAtPosition;
-      const charStates = characterData(charName);
+      const charState = characterData(charName);      
       newState.characterName = charName;
       setSelectedCharacter(charName);
 
@@ -739,8 +744,8 @@ const GameUI = () => {
       const movementRange = calculateMovementRange(
         gridY,
         gridX,
-        sharedProps.moveTypes[charStates.type].distance,
-        charStates.type,
+        sharedProps.moveTypes[charState.type].distance,
+        charState.type,
         terrainData
       );
 
@@ -803,14 +808,14 @@ const GameUI = () => {
       <div className={styles['content-wrapper']}>
         {/* Character stats display panel */}
         <CharacterStatUI
-          charName={charStates.charName || ''}
-          level={charStates.level || 0}
-          wpn={charStates.wpn || ''}
-          hp={charStates.hp || 0}
-          atk={charStates.atk || 0}
-          spd={charStates.spd || 0}
-          def={charStates.def || 0}
-          res={charStates.res || 0}
+          charName={charState.charName || ''}
+          level={charState.level || 0}
+          wpn={charState.wpn || ''}
+          hp={charState.hp || 0}
+          atk={charState.atk || 0}
+          spd={charState.spd || 0}
+          def={charState.def || 0}
+          res={charState.res || 0}
         />
 
         {/* Main game map container */}
@@ -823,7 +828,7 @@ const GameUI = () => {
             terrainData={mapState}
             onCellDragOver={handleGridCellDragOver}
           />
-          {/* Render all characters on the map */}
+          {/* Render all characterStates on the map */}
           {characterNames.map((charName) => {
             const gridPos = charPositions[charName];
             const gridAnchor = gridAnchorCoordinates[`${gridPos.row}-${gridPos.col}`];

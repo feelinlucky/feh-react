@@ -4,13 +4,20 @@ const charData = {
     "Alfonse": {
         type: "infantry",
         level: 40,
-        wpn: "Folkvangr",
         wpnType: "Red Sword",
         hp: 50,
         atk: 50,
         spd: 50,
         def: 30,
-        res: 30
+        res: 30,
+        skills:{
+            weapon: "Red Sword",
+            assist: "Rally Attack",
+            special: "Daylight",
+            a: "Death Blow 3",
+            b: "Obstruct 3",
+            c: "Spur Atk 3"
+        }
     },
     "Sharena": {
         type: "infantry",
@@ -21,7 +28,15 @@ const charData = {
         atk: 50,
         spd: 50,
         def: 30,
-        res: 30
+        res: 30,
+        skills:{
+            weapon: "Blue Lance",
+            assist: "Rally Defense",
+            special: "Noontime",
+            a: "Fortress Def 3",
+            b: "Escape Route 3",
+            c: "Fortify Def 3"
+        }
     },
     "Anna": {
         type: "infantry",
@@ -32,7 +47,15 @@ const charData = {
         atk: 50,
         spd: 50,
         def: 30,
-        res: 30
+        res: 30,
+        skills:{
+            weapon: "Green Axe",
+            assist: "Rally Attack",
+            special: "Dawn",
+            a: "Death Blow 3",
+            b: "Obstruct 3",
+            c: "Spur Atk 3",
+        }
     },
     "Fjorm": {
         type: "infantry",
@@ -43,7 +66,15 @@ const charData = {
         atk: 50,
         spd: 50,
         def: 30,
-        res: 30
+        res: 30,
+        skills:{
+            weapon: "Blue Lance",
+            assist: "Rally Defense",
+            special: "Noontime",
+            a: "Fortress Def 3",
+            b: "Escape Route 3",
+            c: "Fortify Def 3",
+        }
     },
     "FighterSword": {
         type: "infantry",
@@ -54,7 +85,15 @@ const charData = {
         atk: 50,
         spd: 50,
         def: 30,
-        res: 30
+        res: 30,
+        skills:{
+            weapon: "Red Sword",
+            assist: "Rally Attack",
+            special: "Daylight",
+            a: "Death Blow 3",
+            b: "Obstruct 3",
+            c: "Spur Atk 3",
+        }
     },
     Default: {
         type: "",
@@ -66,6 +105,14 @@ const charData = {
         spd: 0,
         def: 0,
         res: 0,
+        skills:{
+            weapon: '',
+            assist: '',
+            special: '',
+            a: '',
+            b: '',
+            c: '',
+        }
     }
 };
 
