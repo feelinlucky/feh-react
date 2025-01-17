@@ -40,7 +40,7 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
  * @param {function} props.setHighlightedCells - Function to set highlighted cells
  * @param {function} props.setIsNearestEdgeDisplayActive - Function to toggle nearest edge display
  * @param {function} props.setNearestGridEdges - Function to set nearest grid edges
- * @param {Object} props.characterPositions - Object containing character positions
+ * @param {Object} props.charPositions - Object containing character positions
  * @param {Object} props.gridAnchorCoordinates - Object containing grid anchor coordinates
  * @param {Object} props.mapPosition - Object containing map position
  * @param {Object} props.terrainData - Object containing terrain data
@@ -57,7 +57,7 @@ const DraggableCharacter = ({
   setHighlightedCells,
   setIsNearestEdgeDisplayActive,
   setNearestGridEdges,
-  characterPositions,
+  charPositions,
   gridAnchorCoordinates,
   mapPosition,
   terrainData,
@@ -85,7 +85,7 @@ const DraggableCharacter = ({
           if (!isSelected) {
             setSelectedCharacter(charName);
             const charStates = characterData(charName);
-            const gridPos = characterPositions[charName];
+            const gridPos = charPositions[charName];
             const movementRange = calculateMovementRange(
               gridPos.row,
               gridPos.col,
@@ -103,7 +103,7 @@ const DraggableCharacter = ({
           if (isDragging) {
             // Continuously update nearest edge display
             const cursorPos = { x: event.clientX, y: event.clientY };
-            const gridPos = characterPositions[charName];
+            const gridPos = charPositions[charName];
             const nearestEdges = findNearestGridEdgeToCursor(
               gridPos,
               cursorPos,
@@ -117,7 +117,7 @@ const DraggableCharacter = ({
             setCurrentDraggedOverCell(draggedOverCell);
 
             // Check if the dragged-over cell is occupied by another character
-            if (draggedOverCell && isOccupiedCell(draggedOverCell.row, draggedOverCell.col) && characterPositions[charName] !== draggedOverCell) {
+            if (draggedOverCell && isOccupiedCell(draggedOverCell.row, draggedOverCell.col) && charPositions[charName] !== draggedOverCell) {
               // Search neighboring grids for valid moves
               const validNeighborGrids = nearestEdges.map(edge => {
                 switch (edge) {
@@ -157,7 +157,7 @@ const DraggableCharacter = ({
 
           // Determine the next valid move grid nearest to the cursor position
           const cursorPos = { x: event.clientX, y: event.clientY };
-          const gridPos = characterPositions[charName];
+          const gridPos = charPositions[charName];
           const nearestEdges = findNearestGridEdgeToCursor(
             gridPos,
             cursorPos,
@@ -221,7 +221,7 @@ const DraggableCharacter = ({
     setHighlightedCells,
     setIsNearestEdgeDisplayActive,
     setNearestGridEdges,
-    characterPositions,
+    charPositions,
     gridAnchorCoordinates,
     mapPosition,
     terrainData,
@@ -425,7 +425,7 @@ const GameUI = () => {
   const frontPageState = location.state || {};
 
   /* #region state management for UI elements and game mechanics */
-  const [characterUIState, setCharacterUIState] = useState({}); // Manages character UI properties
+  const [charStates, setCharacterUIState] = useState({}); // Manages character UI properties
   const [mapState, setMapState] = useState(frontPageState.map); // Controls map state
   const [clickedState, setClickedState] = useState(null); // Tracks clicked positions
   const [clickedStateHistory, setClickedStateHistory] = useState([]); // Maintains history of clicks
@@ -485,7 +485,7 @@ const GameUI = () => {
   );
 
   // Set initial character positions on the grid
-  const [characterPositions, setCharacterPositions] = useState({
+  const [charPositions, setCharacterPositions] = useState({
     Alfonse: { row: 0, col: 0 },
     Sharena: { row: 0, col: 1 },
     Anna: { row: 0, col: 2 },
@@ -689,8 +689,8 @@ const GameUI = () => {
    * @returns {boolean} True if the cell is occupied
    */
   const isOccupiedCell = useCallback((row, col) => {
-    return Object.values(characterPositions).some(pos => pos.row === row && pos.col === col);
-  }, [characterPositions]);
+    return Object.values(charPositions).some(pos => pos.row === row && pos.col === col);
+  }, [charPositions]);
 
   /**
    * Handles grid click events for character selection and movement
@@ -725,7 +725,7 @@ const GameUI = () => {
     }
 
     // Check if any character is at the clicked position
-    const characterAtPosition = Object.entries(characterPositions).find(
+    const characterAtPosition = Object.entries(charPositions).find(
       ([_, pos]) => pos.row === gridY && pos.col === gridX
     );
 
@@ -756,7 +756,7 @@ const GameUI = () => {
       const newHistory = [newState, ...prev].slice(0, 5);
       return newHistory;
     });
-  }, [characterPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition]);
+  }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition]);
 
   /**
    * Updates drag-related debug information
@@ -803,14 +803,14 @@ const GameUI = () => {
       <div className={styles['content-wrapper']}>
         {/* Character stats display panel */}
         <CharacterStatUI
-          charName={characterUIState.charName || ''}
-          level={characterUIState.level || 0}
-          wpn={characterUIState.wpn || ''}
-          hp={characterUIState.hp || 0}
-          atk={characterUIState.atk || 0}
-          spd={characterUIState.spd || 0}
-          def={characterUIState.def || 0}
-          res={characterUIState.res || 0}
+          charName={charStates.charName || ''}
+          level={charStates.level || 0}
+          wpn={charStates.wpn || ''}
+          hp={charStates.hp || 0}
+          atk={charStates.atk || 0}
+          spd={charStates.spd || 0}
+          def={charStates.def || 0}
+          res={charStates.res || 0}
         />
 
         {/* Main game map container */}
@@ -825,7 +825,7 @@ const GameUI = () => {
           />
           {/* Render all characters on the map */}
           {characterNames.map((charName) => {
-            const gridPos = characterPositions[charName];
+            const gridPos = charPositions[charName];
             const gridAnchor = gridAnchorCoordinates[`${gridPos.row}-${gridPos.col}`];
             return gridAnchor ? (
               <DraggableCharacter
@@ -841,7 +841,7 @@ const GameUI = () => {
                 setHighlightedCells={setHighlightedCells}
                 setIsNearestEdgeDisplayActive={setIsNearestEdgeDisplayActive}
                 setNearestGridEdges={setNearestGridEdges}
-                characterPositions={characterPositions}
+                charPositions={charPositions}
                 gridAnchorCoordinates={gridAnchorCoordinates}
                 mapPosition={mapPosition}
                 terrainData={terrainData}
