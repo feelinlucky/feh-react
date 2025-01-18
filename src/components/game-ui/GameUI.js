@@ -283,6 +283,16 @@ const setDraggedOverCellColor = (cell, color) => {
     cellElement.style.backgroundColor = color;
   }
 };
+
+// Helper function to find character name based on grid position
+const findCharacterNameByGridPosition = (gridPos, charPositions) => {
+  for (const charName in charPositions) {
+    if (charPositions[charName].row === gridPos.row && charPositions[charName].col === gridPos.col) {
+      return charName;
+    }
+  }
+};
+
 /* #endregion */
 
 /* #region calculateCharDistance & calculateGridDistance function */
@@ -707,11 +717,21 @@ const GameUI = () => {
     if (isCellHighlighted(gridY, gridX) && selectedCharacter) {
       // If the cell is occupied by another character, find the nearest empty cell
       if (isOccupiedCell(gridY, gridX)) {
-        // WORKING: Check interactions between characterStates
-        
+        const selectedCharData = characterStates[selectedCharacter];
+        const draggedOverCharacter = findCharacterNameByGridPosition({ row: gridY, col: gridX }, charPositions) || null;
+        const draggedOverCharacterData = characterStates[draggedOverCharacter] || null;
 
+        if (draggedOverCharacterData.group === 'ally') {
+          const charAssist = selectedCharData.skills.assist || null;
 
-        updateLogText(`${selectedCharacter} could not move to an occupied grid`,'interaction');
+          // TODO: Add real assist skill effects
+          updateLogText(`${selectedCharacter} used assist skill ${charAssist} to ${draggedOverCharacter}`,'interaction');
+        } else {
+          const charWeapon = selectedCharData.skills.weapon || null;
+
+          // TODO: Add real attack effects
+          updateLogText(`${selectedCharacter} attacked ${draggedOverCharacter} with ${charWeapon}`,'interaction');
+        }
       } else {
         /* #region handle grid destination if DraggableCharacter is dragged and dropped on empty cell */
         // Update character position
@@ -720,7 +740,6 @@ const GameUI = () => {
           [selectedCharacter]: { row: gridY, col: gridX }
         }));
       }
-
       // Reset states after movement
       setHighlightedCells([]);
       setSelectedCharacter(null);
