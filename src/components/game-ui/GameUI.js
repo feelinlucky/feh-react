@@ -14,6 +14,7 @@ import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 /* #region Import components */
 import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
 import Sprite from '../sprite/Sprite';
+import { createTurnState } from './TurnState'; // Import Turn Manager
 import GameMap, {
   visualizeTerrainGrid,
   defineTerrainGrid,
@@ -487,14 +488,21 @@ const GameUI = () => {
   const foeNames = ["FighterSword"];
   const characterNames = [...allyNames, ...foeNames];
 
-  // Initialize character data with base properties
-  const [characterStates, setCharacterStates] = useState(
-    characterNames.reduce((acc, name) => {
-    const group = allyNames.includes(name) ? 'ally' : 'foe';
-    acc[name] = { ...characterData(name), group };
+  // Initialize ally and foe states with base properties
+  const [allyStates, setAllyStates] = useState(
+    allyNames.reduce((acc, name) => {
+      acc[name] = { ...characterData(name), group: 'ally', hasActed: false };
       return acc;
     }, {})
   );
+
+  const [foeStates, setFoeStates] = useState(
+    foeNames.reduce((acc, name) => {
+      acc[name] = { ...characterData(name), group: 'foe', hasActed: false };
+      return acc;
+    }, {})
+  );
+
   // Set initial character positions on the grid
   const [charPositions, setCharacterPositions] = useState({
     Alfonse: { row: 0, col: 0 },
@@ -504,6 +512,9 @@ const GameUI = () => {
     FighterSword: { row: 0, col: 4 }
   });
   /* #endregion */
+
+  // Initialize turn manager
+  const turnState = createTurnState(allyStates, foeStates);
 
   /* #region update map and grid coordinates */
   /**
@@ -564,7 +575,7 @@ const GameUI = () => {
    */
   useEffect(() => {
     if (selectedCharacter) {
-      const selectedCharData = characterStates[selectedCharacter];
+      const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
 
       setCharacterUIState({
         charName: selectedCharacter,
@@ -592,7 +603,7 @@ const GameUI = () => {
         res: 0
       });
     }
-  }, [selectedCharacter, setCharacterUIState]);
+  }, [selectedCharacter, allyStates, foeStates, setCharacterUIState]);
   /* #endregion */
 
   /* #region cursor position observer */
@@ -717,9 +728,9 @@ const GameUI = () => {
     if (isCellHighlighted(gridY, gridX) && selectedCharacter) {
       // If the cell is occupied by another character, find the nearest empty cell
       if (isOccupiedCell(gridY, gridX)) {
-        const selectedCharData = characterStates[selectedCharacter];
+        const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
         const draggedOverCharacter = findCharacterNameByGridPosition({ row: gridY, col: gridX }, charPositions) || null;
-        const draggedOverCharacterData = characterStates[draggedOverCharacter] || null;
+        const draggedOverCharacterData = allyStates[draggedOverCharacter] || foeStates[draggedOverCharacter] || null;
 
         if (draggedOverCharacterData.group === 'ally') {
           const charAssist = selectedCharData.skills.assist || null;
@@ -755,7 +766,7 @@ const GameUI = () => {
 
     if (characterAtPosition) {
       const [charName, _] = characterAtPosition;
-      const charState = characterData(charName);      
+      const charState = allyStates[charName] || foeStates[charName];
       newState.characterName = charName;
       setSelectedCharacter(charName);
 
@@ -780,7 +791,7 @@ const GameUI = () => {
       const newHistory = [newState, ...prev].slice(0, 5);
       return newHistory;
     });
-  }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition]);
+  }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition, allyStates, foeStates]);
 
   /**
    * Updates drag-related debug information
