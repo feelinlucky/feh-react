@@ -1,50 +1,42 @@
-function createTurnState(playerUnits, cpuUnits) {
-  let currentTurn = "player"; // Start with the player's turn
-  let turnNumber = 1;
+/* #region Find current turn based which group still has units that can act */
+// determine turn based on turn number, and which group still has units that can actfunction
+function createTurnState(allyStates, foeStates, turnNumber = 1) {
+  // ally units always act first, then foe units
+  function currentTurnIsOdd(turnNumber) {
+    if ((turnNumber === 1) || ((turnNumber % 2) === 0)) {
+      return true;
+    }
+    return false;
+  };
 
-  function getCurrentTurn() {
-    return currentTurn;
-  }
+  function currentGroupStates() {
+    if (currentTurnIsOdd(turnNumber)) {
+      return allyStates;
+    }
+    return foeStates;
+  };
 
   function getTurnNumber() {
     return turnNumber;
-  }
+  };
 
+  // verify if current group has acted.
+  function currentGroupHasActed() {
+    const currentGroup = currentGroupStates();
+    const allActed = currentGroup.every(unit => unit.hasActed);
+    return allActed;
+  };
+
+  // next turn functions verify if all units from active group have acted before incrementing turn number
   function nextTurn() {
-    if (currentTurn === "player") {
-      currentTurn = "cpu";
-      // CPU logic here (e.g., AI movement and actions)
-      playerUnits.forEach(unit => unit.hasActed = true);
-      cpuUnits.forEach(unit => unit.hasActed = false);
-      cpuTurn();
-    } else {
-      currentTurn = "player";
-      cpuUnits.forEach(unit => unit.hasActed = true);
-      playerUnits.forEach(unit => unit.hasActed = false);
-      turnNumber++; // Increment turn number only after player's turn
+    if currentGroupHasActed() {
+      turnNumber++;
     }
-     // Reset action availability for all units at the start of a new turn
-  }
-
-  function cpuTurn() {
-    // Example CPU behavior (replace with your actual AI logic)
-    for (const cpuUnit of cpuUnits) {
-      if (!cpuUnit.hasActed) { // Check if the unit has already acted in this turn
-        // Perform CPU actions (e.g., movement, attack)
-        // ... your CPU AI logic here ...
-
-        cpuUnit.hasActed = true; // Mark the unit as having acted
-      }
-    }
-
-    // After all CPU units have acted (or chosen not to), end the CPU turn
-    nextTurn(); // Automatically switch back to player's turn
-  }  
+  };
 
   return {
-    getCurrentTurn,
     getTurnNumber,
-    nextTurn
+    nextTurn,
   };
 }
 
