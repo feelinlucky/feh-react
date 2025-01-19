@@ -1,8 +1,10 @@
 /* #region Find current turn based which group still has units that can act */
-// determine turn based on turn number, and which group still has units that can actfunction
-function createTurnState(allyStates, foeStates, turnNumber = 1) {
+// determine turn based on turn number, and which group still has units that can act
+function createTurnState(allyStates, foeStates) {
+  let turnNumber = 1; // Persistent internal variable
+
   // ally units always act first, then foe units
-  function currentTurnIsOdd(turnNumber) {
+  function currentTurnIsOdd() {
     if ((turnNumber === 1) || ((turnNumber % 2) === 0)) {
       return true;
     }
@@ -10,11 +12,18 @@ function createTurnState(allyStates, foeStates, turnNumber = 1) {
   };
 
   function currentGroupStates() {
-    if (currentTurnIsOdd(turnNumber)) {
+    if (currentTurnIsOdd()) {
       return allyStates;
     }
     return foeStates;
   };
+
+  function currentActiveGroupName() {
+    if (currentTurnIsOdd()) {
+      return 'ally';
+    }
+    return 'foe';
+  }
 
   function getTurnNumber() {
     return turnNumber;
@@ -31,12 +40,24 @@ function createTurnState(allyStates, foeStates, turnNumber = 1) {
   function nextTurn() {
     if (currentGroupHasActed()) {
       turnNumber++;
+      return true;
     }
+    return false;
   };
 
+  // after each unit has acted, automatically check if all units have acted
+  function hasActed(characterName) {
+    const currentGroup = currentGroupStates();
+    const currentUnit = currentGroup[characterName];
+    currentUnit.hasActed = true;
+    return nextTurn();
+  }
+
   return {
+    currentActiveGroupName,
+    currentGroupStates,
     getTurnNumber,
-    nextTurn,
+    hasActed
   };
 }
 

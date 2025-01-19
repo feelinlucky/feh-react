@@ -5,7 +5,6 @@ const DraggableCharacter = ({
   setParentIsDragging,
   setSelectedCharacter,
   setHighlightedCells,
-  setIsNearestEdgeDisplayActive,
   setNearestGridEdges,
   characterPositions,
   gridAnchorCoordinates,
@@ -43,22 +42,9 @@ const DraggableCharacter = ({
             );
             setHighlightedCells(movementRange);
           }
-
-          // Automatically toggle nearest edge display to true
-          setIsNearestEdgeDisplayActive(true);
         },
         onDrag: (event) => {
           if (isDragging) {
-            // Continuously update nearest edge display
-            const cursorPos = { x: event.clientX, y: event.clientY };
-            const gridPos = characterPositions[charName];
-            const nearestEdges = findNearestGridEdgeToCursor(
-              gridPos,
-              cursorPos,
-              gridAnchorCoordinates,
-              mapPosition
-            );
-            setNearestGridEdges(nearestEdges);
           }
         },
         onDrop: () => {
@@ -83,7 +69,6 @@ const DraggableCharacter = ({
     setParentIsDragging,
     setSelectedCharacter,
     setHighlightedCells,
-    setIsNearestEdgeDisplayActive,
     setNearestGridEdges,
     characterPositions,
     gridAnchorCoordinates,
