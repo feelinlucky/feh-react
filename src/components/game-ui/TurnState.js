@@ -5,7 +5,7 @@ function createTurnState(allyStates, foeStates) {
 
   // ally units always act first, then foe units
   function currentTurnIsOdd() {
-    if ((turnNumber === 1) || ((turnNumber % 2) === 0)) {
+    if ((turnNumber === 1) || ((turnNumber % 2) === 1)) {
       return true;
     }
     return false;
@@ -36,21 +36,16 @@ function createTurnState(allyStates, foeStates) {
     return allActed;
   };
 
-  // next turn functions verify if all units from active group have acted before incrementing turn number
-  function nextTurn() {
+  // after each unit has acted, automatically check if all units have acted, return true if all units have acted
+  function hasActed(characterName) {
+    const currentGroup = currentGroupStates();
+    const currentUnit = currentGroup[characterName];
+    currentUnit.hasActed = true;
     if (currentGroupHasActed()) {
       turnNumber++;
       return true;
     }
     return false;
-  };
-
-  // after each unit has acted, automatically check if all units have acted
-  function hasActed(characterName) {
-    const currentGroup = currentGroupStates();
-    const currentUnit = currentGroup[characterName];
-    currentUnit.hasActed = true;
-    return nextTurn();
   }
 
   return {
