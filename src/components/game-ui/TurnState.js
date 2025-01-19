@@ -23,13 +23,13 @@ function createTurnState(allyStates, foeStates, turnNumber = 1) {
   // verify if current group has acted.
   function currentGroupHasActed() {
     const currentGroup = currentGroupStates();
-    const allActed = currentGroup.every(unit => unit.hasActed);
+    const allActed = Object.values(currentGroup).every(unit => unit.hasActed);
     return allActed;
   };
 
   // next turn functions verify if all units from active group have acted before incrementing turn number
   function nextTurn() {
-    if currentGroupHasActed() {
+    if (currentGroupHasActed()) {
       turnNumber++;
     }
   };
