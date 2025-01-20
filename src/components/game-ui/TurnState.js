@@ -9,8 +9,8 @@ function createTurnState(allyStates, foeStates) {
     return currentTurnIsOdd() ? allyStates : foeStates;
   }
 
-  function currentActiveGroupName() {
-    return currentTurnIsOdd() ? 'ally' : 'foe';
+  function currentActiveGroupIsAlly() {
+    return currentTurnIsOdd() ? true : false;
   }
 
   function getTurnNumber() {
@@ -50,7 +50,7 @@ function createTurnState(allyStates, foeStates) {
   }
 
   return {
-    currentActiveGroupName,
+    currentActiveGroupIsAlly,
     currentGroupStates,
     getTurnNumber,
     hasActed,
