@@ -1,58 +1,61 @@
-/* #region Find current turn based which group still has units that can act */
-// determine turn based on turn number, and which group still has units that can act
 function createTurnState(allyStates, foeStates) {
-  let turnNumber = 1; // Persistent internal variable
+  let turnNumber = 1;
 
-  // ally units always act first, then foe units
   function currentTurnIsOdd() {
-    if ((turnNumber === 1) || ((turnNumber % 2) === 1)) {
-      return true;
-    }
-    return false;
-  };
+    return (turnNumber === 1) || ((turnNumber % 2) === 1);
+  }
 
   function currentGroupStates() {
-    if (currentTurnIsOdd()) {
-      return allyStates;
-    }
-    return foeStates;
-  };
+    return currentTurnIsOdd() ? allyStates : foeStates;
+  }
 
   function currentActiveGroupName() {
-    if (currentTurnIsOdd()) {
-      return 'ally';
-    }
-    return 'foe';
+    return currentTurnIsOdd() ? 'ally' : 'foe';
   }
 
   function getTurnNumber() {
     return turnNumber;
-  };
+  }
 
-  // verify if current group has acted.
   function currentGroupHasActed() {
     const currentGroup = currentGroupStates();
-    const allActed = Object.values(currentGroup).every(unit => unit.hasActed);
-    return allActed;
-  };
+    return Object.values(currentGroup).every(unit => unit.hasActed);
+  }
 
-  // after each unit has acted, automatically check if all units have acted, return true if all units have acted
   function hasActed(characterName) {
     const currentGroup = currentGroupStates();
-    const currentUnit = currentGroup[characterName];
-    currentUnit.hasActed = true;
+    const currentUnit = currentGroup[characterName]; 
+    
+    console.log('Character Name:', characterName);
+    console.log('Current Group:', currentGroup);
+    console.log('Current Unit:', currentUnit);
+  
+    if (!currentUnit) {
+      console.error(`Character ${characterName} not found in current group.`);
+      return false;
+    }
+    
+    currentUnit.hasActed = true; // currentUnit is a reference to an object within allyStates or foeStates
+
     if (currentGroupHasActed()) {
-      turnNumber++;
-      return true;
+      turnNumber++; // Increment turn
+      return true; // Indicates turn has ended
     }
     return false;
+  }
+
+  function resetGroupActions() {
+    const group = currentGroupStates();
+    Object.values(group).forEach(unit => (unit.hasActed = false));
   }
 
   return {
     currentActiveGroupName,
     currentGroupStates,
     getTurnNumber,
-    hasActed
+    hasActed,
+    resetGroupActions,
+    currentGroupHasActed,
   };
 }
 

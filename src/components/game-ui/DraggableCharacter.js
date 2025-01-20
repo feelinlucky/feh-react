@@ -1,5 +1,7 @@
 const DraggableCharacter = ({
   charName,
+  isDraggable,
+  onCharacterActed,
   coordinates,
   isSelected,
   setParentIsDragging,
@@ -18,7 +20,7 @@ const DraggableCharacter = ({
 
   useEffect(() => {
     const el = overlayRef.current;
-    if (el) {
+    if (el && isDraggable) {
       const cleanup = draggable({
         element: el,
         data: {
@@ -49,6 +51,7 @@ const DraggableCharacter = ({
         },
         onDrop: () => {
           setIsDragging(false);
+          onCharacterActed(charName); // Notify that the character has acted
           setParentIsDragging(false);
           setIsDropTriggered(true); // Set drop trigger state to true
         },
@@ -63,11 +66,13 @@ const DraggableCharacter = ({
       };
     }
   }, [
-    isSelected,
     charName,
+    setSelectedCharacter,
+    isSelected,
+    isDraggable,
     isDragging,
     setParentIsDragging,
-    setSelectedCharacter,
+    onCharacterActed,
     setHighlightedCells,
     setNearestGridEdges,
     characterPositions,
@@ -75,7 +80,7 @@ const DraggableCharacter = ({
     mapPosition,
     terrainData,
     setIsDropTriggered,
-    updateLogText // Add updateLogText handler
+    updateLogText  
   ]);
 
   return (
@@ -88,7 +93,9 @@ const DraggableCharacter = ({
         cursor: isSelected ? 'grab' : 'pointer',
         userSelect: 'none',
         pointerEvents: isSelected ? 'auto' : 'none',
+        pointerEvents: isDraggable ? 'auto' : 'none', // Disable pointer events if not draggable
         opacity: isDragging ? 0.7 : 1,
+        opacity: isDraggable ? 1 : 0.5, // Visually indicate non-draggable state
       }}
       data-dragging={isDragging}
     >

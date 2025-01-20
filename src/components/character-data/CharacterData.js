@@ -2,6 +2,7 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
 
 const charData = {
     "Alfonse": {
+        isAlly: true,
         type: "infantry",
         level: 40,
         wpnType: "Red Sword",
@@ -20,6 +21,7 @@ const charData = {
         }
     },
     "Sharena": {
+        isAlly: true,
         type: "infantry",
         level: 40,
         wpn: "Fensalir",
@@ -39,6 +41,7 @@ const charData = {
         }
     },
     "Anna": {
+        isAlly: true,
         type: "infantry",
         level: 40,
         wpn: "Noatun",
@@ -58,6 +61,7 @@ const charData = {
         }
     },
     "Fjorm": {
+        isAlly: true,
         type: "infantry",
         level: 40,
         wpn: "Leiptr",
@@ -77,6 +81,7 @@ const charData = {
         }
     },
     "FighterSword": {
+        isAlly: false,
         type: "infantry",
         level: 40,
         wpn: "Sword",
@@ -96,6 +101,7 @@ const charData = {
         }
     },
     Default: {
+        isAlly: false,
         type: "",
         level: 0,
         wpn: '',

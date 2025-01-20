@@ -292,6 +292,66 @@ const GameUI = () => {
   });
   const turnState = useRef(createTurnState(allyStates, foeStates)).current;
 
+  // Track whether the current group is draggable
+  const [isDraggable, setIsDraggable] = useState(true);
+
+  // Disable drag for inactive group
+  useEffect(() => {
+    const activeGroup = turnState.currentActiveGroupName();
+    setIsDraggable(activeGroup === 'ally'); // Allow dragging only for allies initially
+  }, [turnState]);
+
+  // Handle CPU input for foes
+  useEffect(() => {
+    if (turnState.currentActiveGroupName() === 'foe' && !isDraggable) {
+      simulateCPUActions();
+    }
+  }, [isDraggable, turnState]);
+
+  // Simulate CPU actions for foes
+  const simulateCPUActions = () => {
+    const foeGroup = turnState.currentGroupStates();
+    Object.keys(foeGroup).forEach((foeName) => {
+      // Simulate CPU movement and attack logic
+      setTimeout(() => {
+        moveFoeUnit(foeName);
+        attackWithFoeUnit(foeName);
+        turnState.hasActed(foeName); // Mark foe as having acted
+      }, 1000); // Simulate delay for CPU actions
+    });
+  };
+
+  // Example CPU movement logic
+  const moveFoeUnit = (foeName) => {
+    // Move foe unit to a random valid cell
+    const newPosition = { row: Math.floor(Math.random() * 6), col: Math.floor(Math.random() * 8) };
+    setCharacterPositions((prev) => ({
+      ...prev,
+      [foeName]: newPosition,
+    }));
+    updateLogText(`${foeName} moved to (${newPosition.row}, ${newPosition.col})`);
+  };
+
+  // Example CPU attack logic
+  const attackWithFoeUnit = (foeName) => {
+    // Simulate an attack on a random ally
+    const allyNames = Object.keys(allyStates);
+    const targetAlly = allyNames[Math.floor(Math.random() * allyNames.length)];
+    updateLogText(`${foeName} attacked ${targetAlly}`);
+  };
+
+  // Update turn state when a character acts
+  const updateTurnState = useCallback((characterName) => {
+    console.log('Updating turn state for character:', characterName);
+    const turnEnded = turnState.hasActed(characterName);
+    if (turnEnded) {
+      setIsDraggable(false); // Disable drag for the current group
+      turnState.resetGroupActions(); // Reset actions for the next group
+      const currentActiveGroup = turnState.currentActiveGroupName();
+      updateLogText(`Turn ended. Current active group is ${currentActiveGroup}`, 'event');
+    }
+  }, [turnState, updateLogText]);
+
   useEffect(() => {
     updateLogText(`initialized current active group to ${turnState.currentActiveGroupName()}`, 'event');
   }, [turnState, updateLogText]);
@@ -425,20 +485,21 @@ const GameUI = () => {
     return Object.values(charPositions).some(pos => pos.row === row && pos.col === col);
   }, [charPositions]);
 
-  const updateTurnState = useCallback((characterName) => {
-    const turnEnded = turnState.hasActed(characterName);
-    if (turnEnded) {
-      const currentActiveGroup = turnState.currentActiveGroupName(); 
-      updateLogText(`current active group is ${currentActiveGroup}`, 'event');       
-    }
-  }, [turnState, updateLogText]);
-
   const handleGridClick = useCallback((gridY, gridX) => {
     const newState = { gridY, gridX, isMapGrid: true };
 
-    if (isCellHighlighted(gridY, gridX) && selectedCharacter) {
+    const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
+    const isInActiveGroup = (selectedCharData.isAlly === turnState.currentActiveGroupName());
+    const hasNotActed = !turnState.hasActed(selectedCharacter);
+
+    if (!isInActiveGroup || !hasNotActed) {
+      updateLogText(`${selectedCharacter} cannot act - ${!isInActiveGroup ? 'not in active group' : 'already acted'}`, 'error');
+      return;
+    }
+
+    if (selectedCharacter && isCellHighlighted(gridY, gridX)) {
+      // Check if selected character is in the active group and hasn't acted yet
       if (isOccupiedCell(gridY, gridX)) {
-        const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
         const draggedOverCharacter = findCharacterNameByGridPosition({ row: gridY, col: gridX }, charPositions) || null;
         const draggedOverCharacterData = allyStates[draggedOverCharacter] || foeStates[draggedOverCharacter] || null;
 
@@ -539,12 +600,15 @@ const GameUI = () => {
             onCellDragOver={handleGridCellDragOver}
           />
           {characterNames.map((charName) => {
+            const isAlly = allyNames.includes(charName);
             const gridPos = charPositions[charName];
             const gridAnchor = gridAnchorCoordinates[`${gridPos.row}-${gridPos.col}`];
             return gridAnchor ? (
               <DraggableCharacter
                 key={charName}
                 charName={charName}
+                isDraggable={isAlly ? isDraggable : !isDraggable} // Disable drag for inactive group
+                onCharacterActed={updateTurnState}
                 coordinates={{
                   x: gridAnchor.x - 0,
                   y: gridAnchor.y + 64
