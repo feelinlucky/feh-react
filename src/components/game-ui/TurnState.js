@@ -30,12 +30,8 @@ function createTurnState(allyStates, foeStates, {
     const currentGroup = currentGroupStates();
     const currentUnit = currentGroup[characterName]; 
     
-    console.log('Character Name:', characterName);
-    console.log('Current Group:', currentGroup);
-    console.log('Current Unit:', currentUnit);
-  
     if (!currentUnit) {
-      console.error(`Character ${characterName} not found in current group.`);
+      console.error(`Character ${characterName} not found in current group ${currentActiveGroupIsAlly()}.`);
       return false;
     }
     

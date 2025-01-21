@@ -239,7 +239,7 @@ const GameUI = () => {
   const [clickedState, setClickedState] = useState(null);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
   const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState({});
-  const [selectedCharacter, setSelectedCharacter] = useState("Alfonse");
+  const [selectedCharacter, setSelectedCharacter] = useState();
   const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef(null);
   const [gridCenterAdjustment, setGridCenterAdjustment] = useState({ x: 0, y: 0 });
@@ -392,11 +392,6 @@ const GameUI = () => {
       }
     };
 
-    if (isCursorObserverActive) {
-      window.addEventListener('mousemove', handleMouseMove);
-      console.log('Cursor observer activated');
-    }
-
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
@@ -431,7 +426,6 @@ const GameUI = () => {
 
   // Update turn state after each character action
   const characterHasActed = useCallback((characterName) => {
-    console.log(`Updating turn state for character: ${characterName}`, 'event');
     const currentGroupIsFinished = turnState.hasActed(characterName);
     if (currentGroupIsFinished) {
       turnState.advanceTurn();
@@ -553,7 +547,9 @@ const GameUI = () => {
 
     if (clickedCharacterAtPosition) {
       const [charName, _] = clickedCharacterAtPosition;
-      if (!selectedCharacter) {
+      console.log(`Clicked on character: ${charName}`);
+
+      if (!selectedCharacter || (selectedCharacter !== charName)) {
         // Update the selected character state
         const charState = allyStates[charName] || foeStates[charName];
         newState.characterName = charName;
@@ -570,47 +566,47 @@ const GameUI = () => {
         return;
       }
 
-      if (selectedCharacter && isOccupiedCell(gridY, gridX)) {
-        // Check if the clicked character is in active group
-        const selectedCharData = allyStates[charName] || foeStates[charName];
-        const isInActiveGroup = (selectedCharData.group === (turnState.currentActiveGroupIsAlly() ? 'ally' : 'foe'));
-        const hasNotActed = !turnState.hasActed(selectedCharacter);
-
-        if (!isInActiveGroup || !hasNotActed) {
-          updateLogText(`${selectedCharacter} cannot act - ${!isInActiveGroup ? 'not in active group' : 'already acted'}`, 'error');
-          return;
-        }
-
-        // Invoke character interaction logic
-        const draggedOverCharacter = clickedCharacterAtPosition;
-        const draggedOverCharacterData = allyStates[draggedOverCharacter] || foeStates[draggedOverCharacter];
-
-        if (!draggedOverCharacter || !draggedOverCharacterData) {
-          updateLogText(`Invalid dragged over event`, 'error');
-          return;
-        }
-
-        if (draggedOverCharacterData.isAlly) {
-          const charAssist = selectedCharData.skills.assist || null;
-          updateLogText(`${selectedCharacter} used assist skill ${charAssist} to ${draggedOverCharacter}`, 'interaction');
+      if (selectedCharacter) {
+        if (isOccupiedCell(gridY, gridX)) {
+          // Check if the clicked character is in active group
+          const [draggedOverCharName, _] = clickedCharacterAtPosition;
+          const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
+          const draggedOverCharacterData = allyStates[draggedOverCharName] || foeStates[draggedOverCharName];
+  
+          if (!draggedOverCharName || !draggedOverCharacterData) {
+            updateLogText(`Invalid dragged over event`, 'error');
+            return;
+          }
+  
+          const isInActiveGroup = (selectedCharData.isAlly === (turnState.currentActiveGroupIsAlly() ? 'ally' : 'foe'));
+          const hasNotActed = !turnState.hasActed(selectedCharacter);
+  
+          if (!isInActiveGroup || !hasNotActed) {
+            updateLogText(`${selectedCharacter} cannot act - ${!isInActiveGroup ? 'not in active group' : 'already acted'}`, 'error');
+            return;
+          }
+  
+          if (draggedOverCharacterData.isAlly) {
+            const charAssist = selectedCharData.skills.assist || null;
+            updateLogText(`${selectedCharacter} used assist skill ${charAssist} to ${draggedOverCharName}`, 'interaction');
+          } else {
+            const charWeapon = selectedCharData.skills.weapon || null;
+            updateLogText(`${selectedCharacter} attacked ${draggedOverCharName} with ${charWeapon}`, 'interaction');
+          }
         } else {
-          const charWeapon = selectedCharData.skills.weapon || null;
-          updateLogText(`${selectedCharacter} attacked ${draggedOverCharacter} with ${charWeapon}`, 'interaction');
+          // Move character to the clicked position
+          setCharacterPositions(prev => ({
+            ...prev,
+            [selectedCharacter]: { row: gridY, col: gridX }
+          }));
+          characterHasActed(selectedCharacter);
+          setHighlightedCells([]);
+          setSelectedCharacter(null);
+          setClickedState(null);
         }
-      } else if (selectedCharacter) {
-        // Move character to the clicked position
-        setCharacterPositions(prev => ({
-          ...prev,
-          [selectedCharacter]: { row: gridY, col: gridX }
-        }));
+        return;
       }
-
-      characterHasActed(selectedCharacter);
-      setHighlightedCells([]);
-      setSelectedCharacter(null);
-      setClickedState(null);
     }
-
     setClickedState(newState);
     setClickedStateHistory(prev => {
       const newHistory = [newState, ...prev].slice(0, 5);

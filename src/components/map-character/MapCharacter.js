@@ -1,7 +1,6 @@
 import React from 'react';
 
 const MapCharacter = ({ characterName }) => {
-    console.log('MapCharacter: ', characterName);
     const src = `${process.env.PUBLIC_URL}/assets/images/sprite/${characterName}.png`;
     return (
         <img
