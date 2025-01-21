@@ -26,6 +26,14 @@ function createTurnState(allyStates, foeStates, {
     return Object.values(currentGroup).every(unit => unit.hasActed); // all units have acted
   };
 
+  function advanceTurn() {
+    if (onTurnEnd) onTurnEnd(turnNumber);
+    turnNumber++;
+    resetGroupActions();
+    if (onTurnStart) onTurnStart(turnNumber);
+    if (onGroupSwitch) onGroupSwitch(currentActiveGroupIsAlly());
+  }
+
   function hasActed(characterName) {
     const currentGroup = currentGroupStates();
     const currentUnit = currentGroup[characterName]; 
@@ -38,7 +46,7 @@ function createTurnState(allyStates, foeStates, {
     currentUnit.hasActed = true; // currentUnit is a reference to an object within allyStates or foeStates
 
     if (currentGroupHasActed()) {
-      turnNumber++; // Increment turn
+      advanceTurn();
       return true; // Indicates turn has ended
     }
     return false;
@@ -47,14 +55,6 @@ function createTurnState(allyStates, foeStates, {
   function resetGroupActions() {
     const group = currentGroupStates();
     Object.values(group).forEach(unit => (unit.hasActed = false));
-  }
-
-  function advanceTurn() {
-    if (onTurnEnd) onTurnEnd(turnNumber);
-    turnNumber++;
-    resetGroupActions();
-    if (onTurnStart) onTurnStart(turnNumber);
-    if (onGroupSwitch) onGroupSwitch(currentActiveGroupIsAlly());
   }
 
   // Undo/redo moves
