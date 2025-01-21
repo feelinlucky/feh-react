@@ -19,8 +19,8 @@ function createTurnState(allyStates, foeStates) {
 
   function currentGroupHasActed() {
     const currentGroup = currentGroupStates();
-    return Object.values(currentGroup).every(unit => unit.hasActed);
-  }
+    return Object.values(currentGroup).every(unit => unit.hasActed); // all units have acted
+  };
 
   function hasActed(characterName) {
     const currentGroup = currentGroupStates();
