@@ -300,47 +300,6 @@ const GameUI = () => {
   });
   /* #endregion */
 
-  /* #region  handle foe moves */
-  // Handle CPU input for foes
-  useEffect(() => {
-    if (!turnState.currentActiveGroupIsAlly() && !isDraggable) {
-      simulateCPUActions();
-    }
-  }, [isDraggable, turnState]);
-
-  // Simulate CPU actions for foes
-  const simulateCPUActions = () => {
-    const foeGroup = turnState.currentGroupStates();
-    Object.keys(foeGroup).forEach((foeName) => {
-      // Simulate CPU movement and attack logic
-      setTimeout(() => {
-        moveFoeUnit(foeName);
-        attackWithFoeUnit(foeName);
-        turnState.hasActed(foeName); // Mark foe as having acted
-      }, 1000); // Simulate delay for CPU actions
-    });
-  };
-
-  // Example CPU movement logic
-  const moveFoeUnit = (foeName) => {
-    // Move foe unit to a random valid cell
-    const newPosition = { row: Math.floor(Math.random() * 6), col: Math.floor(Math.random() * 8) };
-    setCharacterPositions((prev) => ({
-      ...prev,
-      [foeName]: newPosition,
-    }));
-    updateLogText(`${foeName} moved to (${newPosition.row}, ${newPosition.col})`);
-  };
-
-  // Example CPU attack logic
-  const attackWithFoeUnit = (foeName) => {
-    // Simulate an attack on a random ally
-    const allyNames = Object.keys(allyStates);
-    const targetAlly = allyNames[Math.floor(Math.random() * allyNames.length)];
-    updateLogText(`${foeName} attacked ${targetAlly}`);
-  };
-  /* #endregion */
-
   /* #region  handle map rendering positions */
   const handlegridAnchorCoordinates = useCallback((gridAnchorCoordinates) => {
     setgridAnchorCoordinates(gridAnchorCoordinates);
@@ -447,31 +406,28 @@ const GameUI = () => {
   const [isDraggable, setIsDraggable] = useState(true);
 
   // turn state hooks
-  useEffect(() => {
-    const handleTurnStart = (turnNumber) => {
-      updateLogText(`Turn ${turnNumber} started`, 'event');
-    };
+  const handleTurnStart = (turnNumber) => {
+    updateLogText(`Turn ${turnNumber} started`, 'event');
+  };
 
-    const handleTurnEnd = (turnNumber) => {
-      updateLogText(`Turn ${turnNumber} ended`, 'event');
-    };
+  const handleTurnEnd = (turnNumber) => {
+    updateLogText(`Turn ${turnNumber} ended`, 'event');
+  };
 
-    const handleGroupSwitch = (isAllyTurn) => {
-      setIsDraggable(isAllyTurn);
-      updateLogText(`Switched to ${isAllyTurn ? 'ally' : 'foe'} turn`, 'event');
-    };
+  const handleGroupSwitch = (isAllyTurn) => {
+    setIsDraggable(isAllyTurn);
+    updateLogText(`Switched to ${isAllyTurn ? 'ally' : 'foe'} turn`, 'event');
+  };
 
-    // Add these to your turn state creation
-    const turnState = useRef(createTurnState(
-      allyStates,
-      foeStates,
-      {
-        onTurnStart: handleTurnStart,
-        onTurnEnd: handleTurnEnd,
-        onGroupSwitch: handleGroupSwitch
-      }
-    )).current;
-  }, [characterHasActed, setIsDraggable]);
+  const turnState = useRef(createTurnState(
+    allyStates,
+    foeStates,
+    {
+      onTurnStart: handleTurnStart,
+      onTurnEnd: handleTurnEnd,
+      onGroupSwitch: handleGroupSwitch
+    }
+  )).current;
 
   // Update turn state after each character action
   const characterHasActed = useCallback((characterName) => {
@@ -482,6 +438,47 @@ const GameUI = () => {
       updateLogText(`Turn ended. Current active group is ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foes'}`, 'event');
     }
   }, [turnState, updateLogText]);
+
+  /* #region  handle foe moves */
+  // Handle CPU input for foes
+  useEffect(() => {
+    if (!turnState.currentActiveGroupIsAlly() && !isDraggable) {
+      simulateCPUActions();
+    }
+  }, [isDraggable, turnState]);
+
+  // Simulate CPU actions for foes
+  const simulateCPUActions = () => {
+    const foeGroup = turnState.currentGroupStates();
+    Object.keys(foeGroup).forEach((foeName) => {
+      // Simulate CPU movement and attack logic
+      setTimeout(() => {
+        moveFoeUnit(foeName);
+        attackWithFoeUnit(foeName);
+        turnState.hasActed(foeName); // Mark foe as having acted
+      }, 1000); // Simulate delay for CPU actions
+    });
+  };
+
+  // Example CPU movement logic
+  const moveFoeUnit = (foeName) => {
+    // Move foe unit to a random valid cell
+    const newPosition = { row: Math.floor(Math.random() * 6), col: Math.floor(Math.random() * 8) };
+    setCharacterPositions((prev) => ({
+      ...prev,
+      [foeName]: newPosition,
+    }));
+    updateLogText(`${foeName} moved to (${newPosition.row}, ${newPosition.col})`);
+  };
+
+  // Example CPU attack logic
+  const attackWithFoeUnit = (foeName) => {
+    // Simulate an attack on a random ally
+    const allyNames = Object.keys(allyStates);
+    const targetAlly = allyNames[Math.floor(Math.random() * allyNames.length)];
+    updateLogText(`${foeName} attacked ${targetAlly}`);
+  };
+  /* #endregion */
 
   const toggleCursorObserver = () => {
     setIsCursorObserverActive(!isCursorObserverActive);
@@ -495,7 +492,7 @@ const GameUI = () => {
     currentGridCenterCoordinate.x = currentGridCenterCoordinate.x + gridCenterAdjustment.x;
     currentGridCenterCoordinate.y = currentGridCenterCoordinate.y + gridCenterAdjustment.y;
     return currentGridCenterCoordinate;
-  };
+  }
 
   function TurnIndicator({ turnState }) {
     return (

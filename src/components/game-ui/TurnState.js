@@ -65,6 +65,10 @@ function createTurnState(allyStates, foeStates, {
   const turnHistory = [];
   const redoStack = [];
   
+  const deepClone = (obj) => {
+    return JSON.parse(JSON.stringify(obj));
+  };
+
   function saveTurnState() {
     turnHistory.push({
       turnNumber,
