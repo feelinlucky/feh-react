@@ -150,6 +150,7 @@ const DraggableCharacter = ({
   );
 };
 
+/* #region  GameMap helper functions */
 const findGridCellByCursor = (cursorPos, gridAnchorCoordinates) => {
   for (const key in gridAnchorCoordinates) {
     const [row, col] = key.split('-').map(Number);
@@ -227,6 +228,7 @@ const calculateGridCellCoordinates = (draggedOverGrid, gridAnchorCoordinates) =>
     center: currentGridAnchor
   };
 };
+/* #endregion */
 
 const GameUI = () => {
   const location = useLocation();
@@ -256,6 +258,7 @@ const GameUI = () => {
     { text: "Anna healed Fjorm", category: "healing" },
     { text: "Fjorm used special skill", category: "skill" }
   ]);
+  const [turnNumber, setTurnNumber] = useState(0);
 
   const [activeTab, setActiveTab] = useState("categorized");
 
@@ -268,6 +271,8 @@ const GameUI = () => {
 
   const categorizedLogs = logText.filter(log => log.category !== "uncategorized");
   const uncategorizedLogs = logText.filter(log => log.category === "uncategorized");
+
+  /* #region  initialize character states and positions */
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
   const foeNames = ["FighterSword"];
   const characterNames = [...allyNames, ...foeNames];
@@ -293,16 +298,9 @@ const GameUI = () => {
     Fjorm: { row: 0, col: 3 },
     FighterSword: { row: 0, col: 4 }
   });
-  const turnState = useRef(createTurnState(allyStates, foeStates)).current;
+  /* #endregion */
 
-  // Track whether the current group is draggable
-  const [isDraggable, setIsDraggable] = useState(true);
-
-  // Disable drag for inactive group
-  useEffect(() => {
-    setIsDraggable(turnState.currentActiveGroupIsAlly()); // Allow dragging only for allies initially
-  }, [turnState]);
-
+  /* #region  handle foe moves */
   // Handle CPU input for foes
   useEffect(() => {
     if (!turnState.currentActiveGroupIsAlly() && !isDraggable) {
@@ -341,22 +339,9 @@ const GameUI = () => {
     const targetAlly = allyNames[Math.floor(Math.random() * allyNames.length)];
     updateLogText(`${foeName} attacked ${targetAlly}`);
   };
+  /* #endregion */
 
-  // Update turn state when a character acts
-  const updateTurnState = useCallback((characterName) => {
-    console.log('Updating turn state for character:', characterName);
-    const turnEnded = turnState.hasActed(characterName);
-    if (turnEnded) {
-      setIsDraggable(false); // Disable drag for the current group
-      turnState.resetGroupActions(); // Reset actions for the next group
-      updateLogText(`Turn ended. Current active group is ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foes'}`, 'event');
-    }
-  }, [turnState, updateLogText]);
-
-  useEffect(() => {
-    updateLogText(`initialized current active group to ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foes'}`, 'event');
-  }, [turnState, updateLogText]);
-
+  /* #region  handle map rendering positions */
   const handlegridAnchorCoordinates = useCallback((gridAnchorCoordinates) => {
     setgridAnchorCoordinates(gridAnchorCoordinates);
   }, [mapState]);
@@ -391,6 +376,9 @@ const GameUI = () => {
     setGridCenterAdjustment({ x: mapPosition.x, y: mapPosition.y });
   }, [mapPosition]);
 
+  /* #endregion */
+
+  // Update character UI state when a character is selected
   useEffect(() => {
     if (selectedCharacter) {
       const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
@@ -434,6 +422,7 @@ const GameUI = () => {
     }
   }, [selectedCharacter, allyStates, foeStates, setCharacterUIState]);
 
+  // cursor observer
   useEffect(() => {
     const handleMouseMove = (event) => {
       if (isCursorObserverActive) {
@@ -454,6 +443,46 @@ const GameUI = () => {
     };
   }, [isCursorObserverActive]);
 
+  // Track whether the current group is draggable
+  const [isDraggable, setIsDraggable] = useState(true);
+
+  // turn state hooks
+  useEffect(() => {
+    const handleTurnStart = (turnNumber) => {
+      updateLogText(`Turn ${turnNumber} started`, 'event');
+    };
+
+    const handleTurnEnd = (turnNumber) => {
+      updateLogText(`Turn ${turnNumber} ended`, 'event');
+    };
+
+    const handleGroupSwitch = (isAllyTurn) => {
+      setIsDraggable(isAllyTurn);
+      updateLogText(`Switched to ${isAllyTurn ? 'ally' : 'foe'} turn`, 'event');
+    };
+
+    // Add these to your turn state creation
+    const turnState = useRef(createTurnState(
+      allyStates,
+      foeStates,
+      {
+        onTurnStart: handleTurnStart,
+        onTurnEnd: handleTurnEnd,
+        onGroupSwitch: handleGroupSwitch
+      }
+    )).current;
+  }, [characterHasActed, setIsDraggable]);
+
+  // Update turn state after each character action
+  const characterHasActed = useCallback((characterName) => {
+    console.log(`Updating turn state for character: ${characterName}`, 'event');
+    const currentGroupIsFinished = turnState.hasActed(characterName);
+    if (currentGroupIsFinished) {
+      turnState.advanceTurn();
+      updateLogText(`Turn ended. Current active group is ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foes'}`, 'event');
+    }
+  }, [turnState, updateLogText]);
+
   const toggleCursorObserver = () => {
     setIsCursorObserverActive(!isCursorObserverActive);
     if (!isCursorObserverActive) {
@@ -467,6 +496,19 @@ const GameUI = () => {
     currentGridCenterCoordinate.y = currentGridCenterCoordinate.y + gridCenterAdjustment.y;
     return currentGridCenterCoordinate;
   };
+
+  function TurnIndicator({ turnState }) {
+    return (
+      <div className="turn-indicator">
+        <div>Turn: {turnState.getTurnNumber()}</div>
+        <div>Active Group: {turnState.currentActiveGroupIsAlly() ? 'Allies' : 'Enemies'}</div>
+        <div>Actions Remaining: {
+          Object.values(turnState.currentGroupStates())
+            .filter(unit => !unit.hasActed).length
+        }</div>
+      </div>
+    );
+  }
 
   const terrainData = defineTerrainGrid([
     [0, 0, 1, 2, 'forest'],
@@ -566,7 +608,7 @@ const GameUI = () => {
         }));
       }
 
-      updateTurnState(selectedCharacter);
+      characterHasActed(selectedCharacter);
       setHighlightedCells([]);
       setSelectedCharacter(null);
       setClickedState(null);
@@ -577,7 +619,7 @@ const GameUI = () => {
       const newHistory = [newState, ...prev].slice(0, 5);
       return newHistory;
     });
-  }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition, allyStates, foeStates, updateTurnState]);
+  }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition, allyStates, foeStates, characterHasActed]);
 
   const handleDragUpdate = useCallback((dragInfo) => {
     if (!dragInfo) {
@@ -630,7 +672,7 @@ const GameUI = () => {
                 key={charName}
                 charName={charName}
                 isDraggable={isAlly ? isDraggable : !isDraggable} // Disable drag for inactive group
-                onCharacterActed={updateTurnState}
+                onCharacterActed={characterHasActed}
                 coordinates={{
                   x: gridAnchor.x - 0,
                   y: gridAnchor.y + 64

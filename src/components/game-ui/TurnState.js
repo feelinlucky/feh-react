@@ -1,4 +1,8 @@
-function createTurnState(allyStates, foeStates) {
+function createTurnState(allyStates, foeStates, {
+  onTurnStart,
+  onTurnEnd,
+  onGroupSwitch
+}) {
   let turnNumber = 1;
 
   function currentTurnIsOdd() {
@@ -49,6 +53,46 @@ function createTurnState(allyStates, foeStates) {
     Object.values(group).forEach(unit => (unit.hasActed = false));
   }
 
+  function advanceTurn() {
+    if (onTurnEnd) onTurnEnd(turnNumber);
+    turnNumber++;
+    resetGroupActions();
+    if (onTurnStart) onTurnStart(turnNumber);
+    if (onGroupSwitch) onGroupSwitch(currentActiveGroupIsAlly());
+  }
+
+  // Undo/redo moves
+  const turnHistory = [];
+  const redoStack = [];
+  
+  function saveTurnState() {
+    turnHistory.push({
+      turnNumber,
+      allyStates: deepClone(allyStates),
+      foeStates: deepClone(foeStates)
+    });
+  }
+  
+  function undo() {
+    if (turnHistory.length > 1) {
+      redoStack.push(turnHistory.pop());
+      const prevState = turnHistory[turnHistory.length - 1];
+      turnNumber = prevState.turnNumber;
+      allyStates = prevState.allyStates;
+      foeStates = prevState.foeStates;
+    }
+  }
+  
+  function redo() {
+    if (redoStack.length > 0) {
+      const nextState = redoStack.pop();
+      turnHistory.push(nextState);
+      turnNumber = nextState.turnNumber;
+      allyStates = nextState.allyStates;
+      foeStates = nextState.foeStates;
+    }
+  }
+
   return {
     currentActiveGroupIsAlly,
     currentGroupStates,
@@ -56,6 +100,9 @@ function createTurnState(allyStates, foeStates) {
     hasActed,
     resetGroupActions,
     currentGroupHasActed,
+    advanceTurn,
+    undo,
+    redo
   };
 }
 
