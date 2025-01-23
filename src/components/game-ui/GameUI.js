@@ -472,7 +472,7 @@ const GameUI = () => {
   const handleGridClick = useCallback((gridY, gridX) => {
     const newState = { gridY, gridX, isMapGrid: true };
 
-    if (isCellHighlighted(gridY, gridX) && selectedCharacter) {
+    if (isCellHighlighted(gridY, gridX) && selectedCharacter && turnState.waitingToAct(selectedCharacter)) {
       if (isOccupiedCell(gridY, gridX)) {
         const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
         const draggedOverCharacter = findCharacterNameByGridPosition({ row: gridY, col: gridX }, charPositions) || null;
@@ -493,9 +493,8 @@ const GameUI = () => {
           [selectedCharacter]: { row: gridY, col: gridX }
         }));
       }
-
       updateTurnState(selectedCharacter);
-      updateLogText(`Now turn # ${turnState.getTurnNumber()}. Current active group is ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foes'}`, 'event');
+      updateLogText(`${selectedCharacter} has acted. Now turn # ${turnState.getTurnNumber()}. Current active group is ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foes'}`, 'event');
 
       setHighlightedCells([]);
       setSelectedCharacter(null);

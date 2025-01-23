@@ -34,6 +34,21 @@ function createTurnState(allyStates, foeStates, {
     if (onGroupSwitch) onGroupSwitch(currentActiveGroupIsAlly());
   }
 
+  // Check if the character is in the current group and hasn't acted yet
+  function waitingToAct(characterName) {
+    if (currentGroupHasActed()) {
+      advanceTurn();
+      return true; // Indicates turn has ended
+    }
+    
+    const currentGroup = currentGroupStates();
+    const currentUnit = currentGroup[characterName];
+    if (!currentUnit) {
+      return false;
+    }
+    return !currentUnit.hasActed;
+  }
+
   function hasActed(characterName) {
     const currentGroup = currentGroupStates();
     const currentUnit = currentGroup[characterName]; 
@@ -97,6 +112,7 @@ function createTurnState(allyStates, foeStates, {
     currentActiveGroupIsAlly,
     currentGroupStates,
     getTurnNumber,
+    waitingToAct,
     hasActed,
     resetGroupActions,
     currentGroupHasActed,
