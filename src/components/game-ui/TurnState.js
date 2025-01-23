@@ -38,7 +38,7 @@ function createTurnState(allyStates, foeStates, {
   function waitingToAct(characterName) {
     if (currentGroupHasActed()) {
       advanceTurn();
-      return true; // Indicates turn has ended
+      return false; // Indicates turn has ended
     }
     
     const currentGroup = currentGroupStates();
