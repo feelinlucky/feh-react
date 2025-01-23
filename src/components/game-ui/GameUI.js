@@ -437,6 +437,7 @@ const GameUI = () => {
     [1, 3, 3, 4, 'water'],
     [6, 4, 7, 5, 'wall'],
   ]);
+
   const handleContainerClick = useCallback((event) => {
     if (event.target.closest(`.${styles['map-container']}`)) {
       return;
@@ -571,7 +572,7 @@ const GameUI = () => {
             ongridAnchorCoordinates={handlegridAnchorCoordinates}
             clickedState={clickedState}
             highlightedCells={highlightedCells}
-            terrainData={mapState}
+            terrainData={terrainData}
             onCellDragOver={handleGridCellDragOver}
           />
           {characterNames.map((charName) => {

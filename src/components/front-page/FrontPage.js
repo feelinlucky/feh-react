@@ -65,9 +65,9 @@ export default function FrontPage() {
             </select>
           </div>
           <div className={styles.characterInputDisplay}>
-            <h2 className={styles.uiH2}>Current User Input: </h2>
+            <h2 className={styles.uiH2}>Character Name: </h2>
             <h3 className={styles.uiH3}>{userInput}</h3>
-            <h3 className={styles.uiH3}>Selected Class: {selectedOption}</h3>
+            <h3 className={styles.uiH3}>Selected Map number: {selectedOption}</h3>
           </div>
           <div className={styles.buttonContainer}>
             <button className={styles.button} onClick={handleButtonClick}>
