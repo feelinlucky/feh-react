@@ -26,9 +26,13 @@ export default function FrontPage() {
         const mapImagePath = `/assets/images/maps/Map_${selectedMapId}.png`;
 
         const importedMapData = await import(`../assets/data/map/Map_${selectedMapId}.json`);
-        const terrainData = importedMapData.terrain.map(row => row.map(cell => cell));
+        const terrainData = importedMapData.default.terrain || []; // Add .default and fallback
         
-        setMapData({ id: selectedMapId, imagePath: mapImagePath, terrain: terrainData });
+        setMapData({
+          id: selectedMapId,
+          imagePath: mapImagePath,
+          terrain: terrainData
+        });
       } catch (error) {
         console.error('Error fetching map data:', error);
       }

@@ -261,9 +261,8 @@ const GameUI = () => {
   //   [1, 3, 3, 4, 'water'],
   //   [6, 4, 7, 5, 'wall'],
   // ]);
-  const [mapState, setMapState] = useState(frontPageState.mapData);
-  const terrainData = defineTerrainGrid(mapState.terrain);
-
+  const [mapState, setMapState] = useState(frontPageState.mapData || { terrain: [] });
+  const terrainData = defineTerrainGrid(mapState?.terrain || []);
   
   const [activeTab, setActiveTab] = useState("categorized");
 
