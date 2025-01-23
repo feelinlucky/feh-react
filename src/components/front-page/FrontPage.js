@@ -5,13 +5,32 @@ import { useNavigate } from 'react-router-dom';
 export default function FrontPage() {
   const [userInput, setUserInput] = useState('');
   const [selectedOption, setSelectedOption] = useState('');
+  const [mapData, setMapData] = useState({});
 
   function handleUserInput(e) {
     setUserInput(e.target.value);
   }
 
-  function handleDropdownChange(e) {
-    setSelectedOption(e.target.value);
+  async function handleDropdownChange(e) {
+    const selectedMapId = e.target.value;
+    if (!selectedMapId) {
+      setSelectedOption('');
+      return;
+    }
+  
+    setSelectedOption(selectedMapId);
+  
+    if (!mapData || !mapData.name || (mapData.name !== selectedMapId)) {
+      setSelectedOption(selectedMapId);
+      try {
+        const importedMapData = await import(`../assets/data/map/Map_${selectedMapId}.json`);
+        const mapData = { name: selectedMapId, terrain: [] };
+  
+        setMapData({ ...mapData, terrain: [...importedMapData.terrain] });
+      } catch (error) {
+        console.error('Error fetching map data:', error);
+      }
+    }
   }
 
   const navigate = useNavigate();
@@ -21,25 +40,22 @@ export default function FrontPage() {
       alert('Please enter character name.');
       return;
     }
-
+  
     if (selectedOption.trim() === '') {
       alert('Please select map.');
       return;
     }
-
+  
     navigate('/game-ui', {
       state: {
         character: {
-          charName: 'Alfonse',
-          image: '/path/to/alfonse-image.jpg',
+          charName: userInput,
+          image: '/path/to/default-character-image.jpg', // Replace with dynamic path if needed
           level: 40,
           stats: { hp: 40, atk: 60, def: 25, spd: 40, res: 60 },
-          weapon: { name: 'Levin Sword', icon: '/path/to/weapon-icon.png' }
+          weapon: { name: 'Levin Sword', icon: '/path/to/weapon-icon.png' }, // Replace dynamically if needed
         },
-        map: {
-          image: `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`,
-          name: 'Map_S0001'
-        }
+        map: mapData, // Pass the fetched map data here
       },
     });
   };

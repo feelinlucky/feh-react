@@ -225,6 +225,7 @@ const calculateGridCellCoordinates = (draggedOverGrid, gridAnchorCoordinates) =>
     center: currentGridAnchor
   };
 };
+
 const GameUI = () => {
   const location = useLocation();
   const frontPageState = location.state || {};
@@ -334,6 +335,13 @@ const GameUI = () => {
   useEffect(() => {
     updateLogText(`initialized current active group to ${turnState.currentActiveGroupIsAlly()? 'ally' : 'foe'}`, 'event');
   }, [turnState, updateLogText]);
+
+  useEffect(() => {
+    if (!mapState) {
+      console.error('No map data provided! Returning to FrontPage.');
+      // Handle missing map data, e.g., redirect back to FrontPage
+    }
+  }, [mapState]);
 
   const handlegridAnchorCoordinates = useCallback((gridAnchorCoordinates) => {
     setgridAnchorCoordinates(gridAnchorCoordinates);
