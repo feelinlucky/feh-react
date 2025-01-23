@@ -231,7 +231,6 @@ const GameUI = () => {
   const frontPageState = location.state || {};
 
   const [charState, setCharacterUIState] = useState({});
-  const [mapState, setMapState] = useState(frontPageState.map);
   const [clickedState, setClickedState] = useState(null);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
   const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState({});
@@ -255,6 +254,17 @@ const GameUI = () => {
     { text: "Fjorm used special skill", category: "skill" }
   ]);
 
+  // const terrainData = defineTerrainGrid([
+  //   [0, 0, 1, 2, 'forest'],
+  //   [1, 0, 2, 2, 'plain'],
+  //   [3, 0, 5, 1, 'mountain'],
+  //   [1, 3, 3, 4, 'water'],
+  //   [6, 4, 7, 5, 'wall'],
+  // ]);
+  const [mapState, setMapState] = useState(frontPageState.mapData);
+  const terrainData = defineTerrainGrid(mapState.terrain);
+
+  
   const [activeTab, setActiveTab] = useState("categorized");
 
   const updateLogText = useCallback((newLog, category = "uncategorized") => {
@@ -431,20 +441,13 @@ const GameUI = () => {
       setCurrentCursorPos(null);
     }
   };
+
   function rowColNumToGridCoord(rowNum, colNum) {
     const currentGridCenterCoordinate = { ...gridAnchorCoordinates[`${rowNum}-${colNum}`] };
     currentGridCenterCoordinate.x = currentGridCenterCoordinate.x + gridCenterAdjustment.x;
     currentGridCenterCoordinate.y = currentGridCenterCoordinate.y + gridCenterAdjustment.y;
     return currentGridCenterCoordinate;
   };
-
-  const terrainData = defineTerrainGrid([
-    [0, 0, 1, 2, 'forest'],
-    [1, 0, 2, 2, 'plain'],
-    [3, 0, 5, 1, 'mountain'],
-    [1, 3, 3, 4, 'water'],
-    [6, 4, 7, 5, 'wall'],
-  ]);
 
   const handleContainerClick = useCallback((event) => {
     if (event.target.closest(`.${styles['map-container']}`)) {

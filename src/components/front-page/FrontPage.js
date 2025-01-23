@@ -23,10 +23,12 @@ export default function FrontPage() {
     if (!mapData || !mapData.name || (mapData.name !== selectedMapId)) {
       setSelectedOption(selectedMapId);
       try {
+        const mapImagePath = `/assets/images/maps/Map_${selectedMapId}.png`;
+
         const importedMapData = await import(`../assets/data/map/Map_${selectedMapId}.json`);
-        const mapData = { name: selectedMapId, terrain: [] };
-  
-        setMapData({ ...mapData, terrain: [...importedMapData.terrain] });
+        const terrainData = importedMapData.terrain.map(row => row.map(cell => cell));
+        
+        setMapData({ id: selectedMapId, imagePath: mapImagePath, terrain: terrainData });
       } catch (error) {
         console.error('Error fetching map data:', error);
       }
@@ -55,7 +57,7 @@ export default function FrontPage() {
           stats: { hp: 40, atk: 60, def: 25, spd: 40, res: 60 },
           weapon: { name: 'Levin Sword', icon: '/path/to/weapon-icon.png' }, // Replace dynamically if needed
         },
-        map: mapData, // Pass the fetched map data here
+        mapData: mapData, // Pass the fetched map data here
       },
     });
   };
@@ -74,10 +76,10 @@ export default function FrontPage() {
             <h3 className={styles.uiH3}>Map Name</h3>
             <select id="mapName" value={selectedOption} onChange={handleDropdownChange}>
               <option value="">Select map</option>
-              <option value="1">Stage 1</option>
-              <option value="2">Stage 2</option>
-              <option value="3">Stage 3</option>
-              <option value="4">Stage 4</option>
+              <option value="S0001">Stage 1</option>
+              <option value="S0002">Stage 2</option>
+              <option value="S0101">Stage 3</option>
+              <option value="S0102">Stage 4</option>
             </select>
           </div>
           <div className={styles.characterInputDisplay}>

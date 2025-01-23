@@ -1,0 +1,12 @@
+{
+    "name": "Stage 1",
+    "image": "/assets/images/map/Map_S0001.jpg",
+    "terrain": [
+      ["plain", "plain", "forest", "mountain", "plain", "plain", "plain", "plain"],
+      ["plain", "plain", "forest", "mountain", "plain", "plain", "plain", "plain"],
+      ["plain", "plain", "water", "water", "plain", "plain", "plain", "plain"],
+      ["plain", "plain", "plain", "plain", "plain", "wall", "wall", "plain"],
+      ["plain", "forest", "forest", "plain", "plain", "plain", "plain", "plain"],
+      ["plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain"]
+    ]
+}
