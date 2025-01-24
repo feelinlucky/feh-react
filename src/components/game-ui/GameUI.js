@@ -263,7 +263,9 @@ const GameUI = () => {
   // ]);
   const [mapState, setMapState] = useState(frontPageState.mapData || { terrain: [] });
   const terrainData = defineTerrainGrid(mapState?.terrain || []);
-  
+
+  const [showTerrainOverlay, setShowTerrainOverlay] = useState(false);
+
   const [activeTab, setActiveTab] = useState("categorized");
 
   const updateLogText = useCallback((newLog, category = "uncategorized") => {
@@ -342,7 +344,7 @@ const GameUI = () => {
   )).current;
 
   useEffect(() => {
-    updateLogText(`initialized current active group to ${turnState.currentActiveGroupIsAlly()? 'ally' : 'foe'}`, 'event');
+    updateLogText(`initialized current active group to ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foe'}`, 'event');
   }, [turnState, updateLogText]);
 
   useEffect(() => {
@@ -575,7 +577,6 @@ const GameUI = () => {
           def={charState.def || 0}
           res={charState.res || 0}
         />
-
         <div className={styles['map-container']} ref={mapContainerRef}>
           <GameMap
             onGridClick={handleGridClick}
@@ -584,6 +585,7 @@ const GameUI = () => {
             highlightedCells={highlightedCells}
             terrainData={terrainData}
             onCellDragOver={handleGridCellDragOver}
+            showTerrainOverlay={showTerrainOverlay}
           />
           {characterNames.map((charName) => {
             const gridPos = charPositions[charName];
@@ -612,7 +614,6 @@ const GameUI = () => {
             ) : null;
           })}
         </div>
-
         <div className={styles['debug-display']}>
           <button
             onClick={toggleDebugDisplay}
@@ -629,7 +630,7 @@ const GameUI = () => {
             {isDebugDisplayVisible ? 'Collapse Debug Info' : 'Expand Debug Info'}
           </button>
           {isDebugDisplayVisible && (
-            <>
+            <div> {/* Added missing <div> tag */}
               {draggedOverCell ? (
                 <div>
                   <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
@@ -646,36 +647,49 @@ const GameUI = () => {
                     >
                       Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
                     </button>
+                    <button
+                      onClick={() => setShowTerrainOverlay(!showTerrainOverlay)}
+                      style={{
+                        padding: '5px 10px',
+                        backgroundColor: showTerrainOverlay ? '#4CAF50' : '#f44336',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Terrain Overlay: {showTerrainOverlay ? 'ON' : 'OFF'}
+                    </button>
+                    <pre>
+                      Drag Debug Info:
+                      {JSON.stringify({
+                        cursorObserver: {
+                          active: isCursorObserverActive,
+                          position: currentCursorPos || 'none'
+                        },
+                        draggedOverCell: draggedOverCell || 'none',
+                        inputVariables: {
+                          draggedOverGrid: draggedOverCell,
+                          cursorPos: currentCursorPos ? {
+                            original: currentCursorPos,
+                            adjusted: {
+                              x: currentCursorPos.x - mapPosition.x,
+                              y: currentCursorPos.y - mapPosition.y
+                            },
+                            adjustedToGrid: draggedOverCell && gridAnchorCoordinates ? {
+                              x: currentCursorPos.x - mapPosition.x - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].x,
+                              y: currentCursorPos.y - mapPosition.y - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].y
+                            } : 'none'
+                          } : 'none',
+                          mapPosition: mapPosition
+                        }
+                      }, null, 2)}
+                    </pre>
+                    <pre>
+                      Grid Cell Coordinates:
+                      {JSON.stringify(calculateGridCellCoordinates(draggedOverCell, gridAnchorCoordinates), null, 2)}
+                    </pre>
                   </div>
-                  <pre>
-                    Drag Debug Info:
-                    {JSON.stringify({
-                      cursorObserver: {
-                        active: isCursorObserverActive,
-                        position: currentCursorPos || 'none'
-                      },
-                      draggedOverCell: draggedOverCell || 'none',
-                      inputVariables: {
-                        draggedOverGrid: draggedOverCell,
-                        cursorPos: currentCursorPos ? {
-                          original: currentCursorPos,
-                          adjusted: {
-                            x: currentCursorPos.x - mapPosition.x,
-                            y: currentCursorPos.y - mapPosition.y
-                          },
-                          adjustedToGrid: draggedOverCell && gridAnchorCoordinates ? {
-                            x: currentCursorPos.x - mapPosition.x - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].x,
-                            y: currentCursorPos.y - mapPosition.y - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].y
-                          } : 'none'
-                        } : 'none',
-                        mapPosition: mapPosition
-                      }
-                    }, null, 2)}
-                  </pre>
-                  <pre>
-                    Grid Cell Coordinates:
-                    {JSON.stringify(calculateGridCellCoordinates(draggedOverCell, gridAnchorCoordinates), null, 2)}
-                  </pre>
                 </div>
               ) : (
                 <div>
@@ -704,10 +718,9 @@ const GameUI = () => {
                   </pre>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
-
         <div className={styles['log-text-container']}>
           <div className={styles['log-text-header']}>
             Log
@@ -758,7 +771,7 @@ const GameUI = () => {
         </div>
       </div>
     </div>
-  );
-};
-
-export default GameUI;
+    );
+  };
+  
+  export default GameUI;

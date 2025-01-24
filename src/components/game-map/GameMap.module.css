@@ -35,7 +35,8 @@
 
 /* Make highlighted state specific */
 .grid-cell.grid-cell-highlighted {
-    background: rgb(0, 0, 255, 0.2);;
+    background: rgb(0, 0, 255, 0.2);
+    ;
     /* Keep highlighted cells below character overlays */
     z-index: 3;
 }
@@ -88,4 +89,18 @@
 
 .grid-cell.grid-cell-clicked[data-terrain] {
     background-blend-mode: multiply;
+}
+
+.terrain-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1;
 }

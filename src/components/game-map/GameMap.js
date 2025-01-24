@@ -200,6 +200,24 @@ export const TerrainCost = {
   }
 };
 
+// Debug display to overlay terrain types on the map
+const TerrainOverlay = ({ terrainType }) => {
+    const terrainAbbrev = {
+      [TerrainType.PLAIN]: 'P',
+      [TerrainType.FOREST]: 'F',
+      [TerrainType.MOUNTAIN]: 'M',
+      [TerrainType.WATER]: 'WT',
+      [TerrainType.WALL]: 'WL'
+    };
+  
+    return (
+      <div className={styles['terrain-overlay']}>
+        {terrainAbbrev[terrainType]}
+      </div>
+    );
+  };
+  
+
 /**
  * Calculates cells within movement range considering terrain costs
  * @param {number} centerRow - Starting row coordinate
@@ -272,7 +290,7 @@ export const calculateMovementRange = (centerRow, centerCol, movementPoints, mov
   });
 };
 
-const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick, onDragOver }) => {
+const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick, onDragOver ,showTerrainOverlay}) => {
     const ref = useRef(null);
     const [isDraggedOver, setIsDraggedOver] = useState(false);
 
@@ -304,15 +322,17 @@ const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClic
 
     return (
         <div
-            ref={ref}
-            className={`${styles['grid-cell']} 
-                ${styles[`terrain-${terrainType}`]}
-                ${isClicked ? styles['grid-cell-clicked'] : ''} 
-                ${isHighlighted ? styles['grid-cell-highlighted'] : ''}
-                ${isDraggedOver ? styles['grid-cell-dragged-over'] : ''}`}
-            onClick={onClick}
-            data-terrain={terrainType}
-        />
+        ref={ref}
+        className={`${styles['grid-cell']} 
+            ${styles[`terrain-${terrainType}`]}
+            ${isClicked ? styles['grid-cell-clicked'] : ''} 
+            ${isHighlighted ? styles['grid-cell-highlighted'] : ''}
+            ${isDraggedOver ? styles['grid-cell-dragged-over'] : ''}`}
+        onClick={onClick}
+        data-terrain={terrainType}
+      >
+        {showTerrainOverlay && <TerrainOverlay terrainType={terrainType} />}
+      </div>
     );
 };
 
@@ -330,7 +350,7 @@ const terrainData = [
 ];
 */
 
-const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlightedCells, terrainData, onCellDragOver }) => {
+const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlightedCells, terrainData, onCellDragOver, showTerrainOverlay}) => {
     const mapImage = `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
     const imgRef = useRef(null);
     const mapImageWidthRef = useRef(0);
@@ -437,6 +457,7 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                         terrainType={terrainType}
                         onClick={() => handleGridClick(row, col)}
                         onDragOver={onCellDragOver}
+                        showTerrainOverlay={showTerrainOverlay}
                     />
                 );
             }
