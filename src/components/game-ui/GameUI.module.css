@@ -16,7 +16,8 @@
   margin: 20px;
   box-shadow: 0px 10px 30px rgba(153, 153, 153, 0.3);
   width: 100%;
-  max-width: 800px; /* Or your desired maximum width */
+  max-width: 800px;
+  /* Or your desired maximum width */
   margin: 0 auto;
 }
 
@@ -43,7 +44,8 @@
 }
 
 .map-container {
-  width: 100%; /* Will match CharacterStatUI width */
+  width: 100%;
+  /* Will match CharacterStatUI width */
   margin: 1rem 0;
   position: relative;
   /* Establish a new stacking context */
@@ -76,7 +78,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  font-size: calc(1em + 1vw); /* Adjust font size proportionally to button size */
+  font-size: calc(1em + 1vw);
+  /* Adjust font size proportionally to button size */
 }
 
 .button-group {
@@ -112,11 +115,12 @@
 
 .character-overlay {
   position: absolute;
-  transform: translate(-50%, -100%); /* Center horizontally and align bottom */
+  transform: translate(-50%, -100%);
+  /* Center horizontally and align bottom */
   z-index: 1000;
   /* Remove pointer-events: none to allow dragging */
   pointer-events: auto;
-  
+
   /* Ensure the dragging state stays on top */
   &[data-dragging="true"] {
     z-index: 1001;
@@ -143,17 +147,41 @@
   white-space: pre-wrap;
 }
 
+.debug-button {
+  padding: 5px 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 30px;
+  /* Set a fixed height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.debug-button.active {
+  background-color: #f44336;
+}
+
 .log-text-container {
-  border: 2px solid #0000FF; /* Blue border */
-  background-color: #000080; /* Dark blue background */
-  color: #FFFFFF; /* White text */
+  border: 2px solid #0000FF;
+  /* Blue border */
+  background-color: #000080;
+  /* Dark blue background */
+  color: #FFFFFF;
+  /* White text */
   padding: 10px;
   margin-top: 20px;
-  font-family: 'Press Start 2P', cursive; /* Retro pixel font */
+  font-family: 'Press Start 2P', cursive;
+  /* Retro pixel font */
   font-size: 12px;
   line-height: 1.5;
-  width: 100%; /* Match the width of map-container */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  width: 100%;
+  /* Match the width of map-container */
+  box-sizing: border-box;
+  /* Include padding and border in the element's total width and height */
 }
 
 .log-text-header {

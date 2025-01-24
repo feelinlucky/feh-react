@@ -564,214 +564,177 @@ const GameUI = () => {
     setIsDebugDisplayVisible(!isDebugDisplayVisible);
   };
 
-  return (
-    <div className={styles['game-container']} onClick={handleContainerClick}>
-      <div className={styles['content-wrapper']}>
-        <CharacterStatUI
-          charName={charState.charName || ''}
-          level={charState.level || 0}
-          wpn={charState.wpn || ''}
-          hp={charState.hp || 0}
-          atk={charState.atk || 0}
-          spd={charState.spd || 0}
-          def={charState.def || 0}
-          res={charState.res || 0}
+return (
+  <div className={styles['game-container']} onClick={handleContainerClick}>
+    <div className={styles['content-wrapper']}>
+      <CharacterStatUI
+        charName={charState.charName || ''}
+        level={charState.level || 0}
+        wpn={charState.wpn || ''}
+        hp={charState.hp || 0}
+        atk={charState.atk || 0}
+        spd={charState.spd || 0}
+        def={charState.def || 0}
+        res={charState.res || 0}
+      />
+      <div className={styles['map-container']} ref={mapContainerRef}>
+        <GameMap
+          onGridClick={handleGridClick}
+          ongridAnchorCoordinates={handlegridAnchorCoordinates}
+          clickedState={clickedState}
+          highlightedCells={highlightedCells}
+          terrainData={terrainData}
+          onCellDragOver={handleGridCellDragOver}
+          showTerrainOverlay={showTerrainOverlay}
         />
-        <div className={styles['map-container']} ref={mapContainerRef}>
-          <GameMap
-            onGridClick={handleGridClick}
-            ongridAnchorCoordinates={handlegridAnchorCoordinates}
-            clickedState={clickedState}
-            highlightedCells={highlightedCells}
-            terrainData={terrainData}
-            onCellDragOver={handleGridCellDragOver}
-            showTerrainOverlay={showTerrainOverlay}
-          />
-          {characterNames.map((charName) => {
-            const gridPos = charPositions[charName];
-            const gridAnchor = gridAnchorCoordinates[`${gridPos.row}-${gridPos.col}`];
-            return gridAnchor ? (
-              <DraggableCharacter
-                key={charName}
-                charName={charName}
-                coordinates={{
-                  x: gridAnchor.x - 0,
-                  y: gridAnchor.y + 64
-                }}
-                isSelected={selectedCharacter === charName}
-                setParentIsDragging={setIsDragging}
-                setSelectedCharacter={setSelectedCharacter}
-                setHighlightedCells={setHighlightedCells}
-                setNearestGridEdges={setNearestGridEdges}
-                charPositions={charPositions}
-                gridAnchorCoordinates={gridAnchorCoordinates}
-                mapPosition={mapPosition}
-                terrainData={terrainData}
-                isOccupiedCell={isOccupiedCell}
-                setCharacterPositions={setCharacterPositions}
-                updateLogText={updateLogText}
-              />
-            ) : null;
-          })}
-        </div>
-        <div className={styles['debug-display']}>
-          <button
-            onClick={toggleDebugDisplay}
-            style={{
-              padding: '5px 10px',
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginBottom: '10px'
-            }}
-          >
-            {isDebugDisplayVisible ? 'Collapse Debug Info' : 'Expand Debug Info'}
-          </button>
-          {isDebugDisplayVisible && (
-            <div> {/* Added missing <div> tag */}
-              {draggedOverCell ? (
-                <div>
-                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                    <button
-                      onClick={toggleCursorObserver}
-                      style={{
-                        padding: '5px 10px',
-                        backgroundColor: isCursorObserverActive ? '#4CAF50' : '#f44336',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
-                    </button>
-                    <button
-                      onClick={() => setShowTerrainOverlay(!showTerrainOverlay)}
-                      style={{
-                        padding: '5px 10px',
-                        backgroundColor: showTerrainOverlay ? '#4CAF50' : '#f44336',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Terrain Overlay: {showTerrainOverlay ? 'ON' : 'OFF'}
-                    </button>
-                    <pre>
-                      Drag Debug Info:
-                      {JSON.stringify({
-                        cursorObserver: {
-                          active: isCursorObserverActive,
-                          position: currentCursorPos || 'none'
-                        },
-                        draggedOverCell: draggedOverCell || 'none',
-                        inputVariables: {
-                          draggedOverGrid: draggedOverCell,
-                          cursorPos: currentCursorPos ? {
-                            original: currentCursorPos,
-                            adjusted: {
-                              x: currentCursorPos.x - mapPosition.x,
-                              y: currentCursorPos.y - mapPosition.y
-                            },
-                            adjustedToGrid: draggedOverCell && gridAnchorCoordinates ? {
-                              x: currentCursorPos.x - mapPosition.x - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].x,
-                              y: currentCursorPos.y - mapPosition.y - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].y
-                            } : 'none'
-                          } : 'none',
-                          mapPosition: mapPosition
-                        }
-                      }, null, 2)}
-                    </pre>
-                    <pre>
-                      Grid Cell Coordinates:
-                      {JSON.stringify(calculateGridCellCoordinates(draggedOverCell, gridAnchorCoordinates), null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                    <button
-                      onClick={toggleCursorObserver}
-                      style={{
-                        padding: '5px 10px',
-                        backgroundColor: isCursorObserverActive ? '#4CAF50' : '#f44336',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
-                    </button>
-                  </div>
-                  <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
-                  <div>Selected Character: {selectedCharacter || 'None'}</div>
-                  <div>Clicked Character: {clickedState?.characterName || 'None'}</div>
-                  <div>Is Map Grid: {clickedState?.isMapGrid ? 'Yes' : 'No'}</div>
-                  <div>History:</div>
+        {characterNames.map((charName) => {
+          const gridPos = charPositions[charName];
+          const gridAnchor = gridAnchorCoordinates[`${gridPos.row}-${gridPos.col}`];
+          return gridAnchor ? (
+            <DraggableCharacter
+              key={charName}
+              charName={charName}
+              coordinates={{
+                x: gridAnchor.x - 0,
+                y: gridAnchor.y + 64
+              }}
+              isSelected={selectedCharacter === charName}
+              setParentIsDragging={setIsDragging}
+              setSelectedCharacter={setSelectedCharacter}
+              setHighlightedCells={setHighlightedCells}
+              setNearestGridEdges={setNearestGridEdges}
+              charPositions={charPositions}
+              gridAnchorCoordinates={gridAnchorCoordinates}
+              mapPosition={mapPosition}
+              terrainData={terrainData}
+              isOccupiedCell={isOccupiedCell}
+              setCharacterPositions={setCharacterPositions}
+              updateLogText={updateLogText}
+            />
+          ) : null;
+        })}
+      </div>
+      <div className={styles['debug-display']}>
+        <button
+          onClick={toggleDebugDisplay}
+          className={styles['debug-button']}
+        >
+          {isDebugDisplayVisible ? 'Collapse Debug Info' : 'Expand Debug Info'}
+        </button>
+        {isDebugDisplayVisible && (
+          <div>
+            {draggedOverCell ? (
+              <div>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                  <button
+                    onClick={toggleCursorObserver}
+                    className={`${styles['debug-button']} ${isCursorObserverActive ? styles['active'] : ''}`}
+                  >
+                    Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
+                  </button>
+                  <button
+                    onClick={() => setShowTerrainOverlay(!showTerrainOverlay)}
+                    className={`${styles['debug-button']} ${showTerrainOverlay ? styles['active'] : ''}`}
+                  >
+                    Terrain Overlay: {showTerrainOverlay ? 'ON' : 'OFF'}
+                  </button>
                   <pre>
-                    {JSON.stringify(clickedStateHistory, null, 2)}
+                    Drag Debug Info:
+                    {JSON.stringify({
+                      cursorObserver: {
+                        active: isCursorObserverActive,
+                        position: currentCursorPos || 'none'
+                      },
+                      draggedOverCell: draggedOverCell || 'none',
+                      inputVariables: {
+                        draggedOverGrid: draggedOverCell,
+                        cursorPos: currentCursorPos ? {
+                          original: currentCursorPos,
+                          adjusted: {
+                            x: currentCursorPos.x - mapPosition.x,
+                            y: currentCursorPos.y - mapPosition.y
+                          },
+                          adjustedToGrid: draggedOverCell && gridAnchorCoordinates ? {
+                            x: currentCursorPos.x - mapPosition.x - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].x,
+                            y: currentCursorPos.y - mapPosition.y - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].y
+                          } : 'none'
+                        } : 'none',
+                        mapPosition: mapPosition
+                      }
+                    }, null, 2)}
+                  </pre>
+                  <pre>
+                    Grid Cell Coordinates:
+                    {JSON.stringify(calculateGridCellCoordinates(draggedOverCell, gridAnchorCoordinates), null, 2)}
                   </pre>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-        <div className={styles['log-text-container']}>
-          <div className={styles['log-text-header']}>
-            Log
-            <button
-              onClick={() => setErrorLogging(!errorLogging)}
-              style={{
-                float: 'right',
-                padding: '5px 10px',
-                backgroundColor: errorLogging ? '#f44336' : '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              {errorLogging ? 'Disable Error Logging' : 'Enable Error Logging'}
-            </button>
-          </div>
-          <div className={styles['log-text-tabs']}>
-            <button
-              className={activeTab === "categorized" ? styles['active-tab'] : ""}
-              onClick={() => setActiveTab("categorized")}
-            >
-              Categorized
-            </button>
-            <button
-              className={activeTab === "uncategorized" ? styles['active-tab'] : ""}
-              onClick={() => setActiveTab("uncategorized")}
-            >
-              Uncategorized
-            </button>
-          </div>
-          <div className={styles['log-text-content']}>
-            {activeTab === "categorized" ? (
-              categorizedLogs.map((log, index) => (
-                <div key={index} className={styles['log-text-item']}>
-                  {log.text}
-                </div>
-              ))
+              </div>
             ) : (
-              uncategorizedLogs.map((log, index) => (
-                <div key={index} className={styles['log-text-item']}>
-                  {log.text}
+              <div>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                  <button
+                    onClick={toggleCursorObserver}
+                    className={`${styles['debug-button']} ${isCursorObserverActive ? styles['active'] : ''}`}
+                  >
+                    Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
+                  </button>
                 </div>
-              ))
+                <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
+                <div>Selected Character: {selectedCharacter || 'None'}</div>
+                <div>Clicked Character: {clickedState?.characterName || 'None'}</div>
+                <div>Is Map Grid: {clickedState?.isMapGrid ? 'Yes' : 'No'}</div>
+                <div>History:</div>
+                <pre>
+                  {JSON.stringify(clickedStateHistory, null, 2)}
+                </pre>
+              </div>
             )}
           </div>
+        )}
+      </div>
+      <div className={styles['log-text-container']}>
+        <div className={styles['log-text-header']}>
+          Log
+          <button
+            onClick={() => setErrorLogging(!errorLogging)}
+            className={styles['debug-button']}
+          >
+            {errorLogging ? 'Disable Error Logging' : 'Enable Error Logging'}
+          </button>
+        </div>
+        <div className={styles['log-text-tabs']}>
+          <button
+            className={activeTab === "categorized" ? styles['active-tab'] : ""}
+            onClick={() => setActiveTab("categorized")}
+          >
+            Categorized
+          </button>
+          <button
+            className={activeTab === "uncategorized" ? styles['active-tab'] : ""}
+            onClick={() => setActiveTab("uncategorized")}
+          >
+            Uncategorized
+          </button>
+        </div>
+        <div className={styles['log-text-content']}>
+          {activeTab === "categorized" ? (
+            categorizedLogs.map((log, index) => (
+              <div key={index} className={styles['log-text-item']}>
+                {log.text}
+              </div>
+            ))
+          ) : (
+            uncategorizedLogs.map((log, index) => (
+              <div key={index} className={styles['log-text-item']}>
+                {log.text}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
-    );
+  </div>
+);
   };
   
   export default GameUI;
