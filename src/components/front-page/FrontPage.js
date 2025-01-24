@@ -27,9 +27,11 @@ export default function FrontPage() {
 
         const importedMapData = await import(`../assets/data/map/Map_${selectedMapId}.json`);
         const terrainData = importedMapData.default.terrain || []; // Add .default and fallback
+        const mapName = importedMapData.default.name || selectedMapId; // Add .default and fallback
         
         setMapData({
           id: selectedMapId,
+          mapName: mapName,
           imagePath: mapImagePath,
           terrain: terrainData
         });
