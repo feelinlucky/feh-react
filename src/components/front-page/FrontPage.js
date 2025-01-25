@@ -26,20 +26,18 @@ export default function FrontPage() {
       setSelectedOption('');
       return;
     }
-  
-    setSelectedOption(selectedMapId);
-  
-    if (!mapData || !mapData.name || (mapData.name !== selectedMapId)) {
+
+    if (selectedMapId) {
       setSelectedOption(selectedMapId);
       try {
         const mapImagePath = `/assets/images/maps/Map_${selectedMapId}.png`;
 
-        const importedMapData = await import(`../assets/data/map/Map_${selectedMapId}.json`);
+        const importedMapData = await import(`../../../assets/data/map/Map_${selectedMapId}.json`);
         const mapName = importedMapData.default.name || selectedMapId; // Add .default and fallback
         const terrainData = importedMapData.default.terrain || []; // Add .default and fallback
         const allyPos = sort2DArray(importedMapData.default.allyPos) || []; // Add .default and fallback
         const foePos = sort2DArray(importedMapData.default.foePos) || [];
-        
+
         setMapData({
           id: selectedMapId,
           mapName: mapName,
@@ -61,12 +59,12 @@ export default function FrontPage() {
       alert('Please enter character name.');
       return;
     }
-  
+
     if (selectedOption.trim() === '') {
       alert('Please select map.');
       return;
     }
-  
+
     navigate('/game-ui', {
       state: {
         character: {

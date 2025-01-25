@@ -264,6 +264,7 @@ const GameUI = () => {
   //   [6, 4, 7, 5, 'wall'],
   // ]);
   const [mapState, setMapState] = useState(frontPageState.mapData || { terrain: [] });
+  console.log(mapState);
 
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
   const foeNames = ["FighterSword"];
@@ -284,8 +285,8 @@ const GameUI = () => {
   );
 
   const terrainData = defineTerrainGrid(mapState?.terrain || []);
-  const allyPos = defineTerrainGrid(mapState?.allyPos || []);
-  const foePos = defineTerrainGrid(mapState?.foePos || []);
+  const allyPos = mapState?.allyPos || [];
+  const foePos = mapState?.foePos || [];
   const pairTextArrayWith2DArray = (textArray, array2D) => {
     return textArray.map((text, index) => {
       return {
@@ -299,11 +300,15 @@ const GameUI = () => {
   const foePositions = pairTextArrayWith2DArray(foeNames, foePos);
   const initialCharPositions = {
     ...allyPositions.reduce((acc, { text, position }) => {
-      acc[text] = position;
+      if (position) {
+        acc[text] = { row: position[0], col: position[1] };
+      }
       return acc;
     }, {}),
     ...foePositions.reduce((acc, { text, position }) => {
-      acc[text] = position;
+      if (position) {
+        acc[text] = { row: position[0], col: position[1] };
+      }
       return acc;
     }, {})
   };
@@ -311,6 +316,8 @@ const GameUI = () => {
   const [charPositions, setCharacterPositions] = useState(
     initialCharPositions
   );
+
+  console.log(initialCharPositions);
 
   const [showTerrainOverlay, setShowTerrainOverlay] = useState(false);
 
@@ -612,6 +619,7 @@ const GameUI = () => {
           />
           {characterNames.map((charName) => {
             const gridPos = charPositions[charName];
+            if (!gridPos) return null;
             const gridAnchor = gridAnchorCoordinates[`${gridPos.row}-${gridPos.col}`];
             return gridAnchor ? (
               <DraggableCharacter
