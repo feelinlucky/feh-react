@@ -264,7 +264,6 @@ const GameUI = () => {
   //   [6, 4, 7, 5, 'wall'],
   // ]);
   const [mapState, setMapState] = useState(frontPageState.mapData || { terrain: [] });
-  console.log(mapState);
 
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
   const foeNames = ["FighterSword"];
@@ -301,13 +300,13 @@ const GameUI = () => {
   const initialCharPositions = {
     ...allyPositions.reduce((acc, { text, position }) => {
       if (position) {
-        acc[text] = { row: position[0], col: position[1] };
+        acc[text] = { row: position[1], col: position[0] };
       }
       return acc;
     }, {}),
     ...foePositions.reduce((acc, { text, position }) => {
       if (position) {
-        acc[text] = { row: position[0], col: position[1] };
+        acc[text] = { row: position[1], col: position[0] };
       }
       return acc;
     }, {})
@@ -316,8 +315,6 @@ const GameUI = () => {
   const [charPositions, setCharacterPositions] = useState(
     initialCharPositions
   );
-
-  console.log(initialCharPositions);
 
   const [showTerrainOverlay, setShowTerrainOverlay] = useState(false);
 
@@ -458,7 +455,6 @@ const GameUI = () => {
 
     if (isCursorObserverActive) {
       window.addEventListener('mousemove', handleMouseMove);
-      console.log('Cursor observer activated');
     }
 
     return () => {

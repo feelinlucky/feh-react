@@ -15,6 +15,7 @@ export default function FrontPage() {
   const [userInput, setUserInput] = useState('');
   const [selectedOption, setSelectedOption] = useState('');
   const [mapData, setMapData] = useState({});
+  const [mapError, setMapError] = useState('');
 
   function handleUserInput(e) {
     setUserInput(e.target.value);
@@ -24,31 +25,46 @@ export default function FrontPage() {
     const selectedMapId = e.target.value;
     if (!selectedMapId) {
       setSelectedOption('');
+      setMapData({});
+      setMapError('');
       return;
     }
 
-    if (selectedMapId) {
-      setSelectedOption(selectedMapId);
-      try {
-        const mapImagePath = `/assets/images/maps/Map_${selectedMapId}.png`;
+    setSelectedOption(selectedMapId);
+    setMapError('');
 
-        const importedMapData = await import(`../../../assets/data/map/Map_${selectedMapId}.json`);
-        const mapName = importedMapData.default.name || selectedMapId; // Add .default and fallback
-        const terrainData = importedMapData.default.terrain || []; // Add .default and fallback
-        const allyPos = sort2DArray(importedMapData.default.allyPos) || []; // Add .default and fallback
-        const foePos = sort2DArray(importedMapData.default.foePos) || [];
-
-        setMapData({
-          id: selectedMapId,
-          mapName: mapName,
-          imagePath: mapImagePath,
-          terrain: terrainData,
-          allyPos: allyPos,
-          foePos: foePos
-        });
-      } catch (error) {
-        console.error('Error fetching map data:', error);
+    try {
+      const mapImagePath = `/assets/images/maps/Map_${selectedMapId}.png`;
+      
+      // Check if file exists before importing
+      const mapDataPath = `../../../public/assets/data/map/Map_${selectedMapId}.json`;
+      
+      // First try to fetch the file
+      const response = await fetch(mapDataPath);
+      if (!response.ok) {
+        throw new Error(`Map data not found for ${selectedMapId}`);
       }
+
+      // If file exists, import it
+      const importedMapData = await import(`../../../public/assets/data/map/Map_${selectedMapId}.json`);
+      
+      const mapName = importedMapData.default?.name || selectedMapId;
+      const terrainData = importedMapData.default?.terrain || [];
+      const allyPos = sort2DArray(importedMapData.default?.allyPos || []);
+      const foePos = sort2DArray(importedMapData.default?.foePos || []);
+
+      setMapData({
+        id: selectedMapId,
+        mapName: mapName,
+        imagePath: mapImagePath,
+        terrain: terrainData,
+        allyPos: allyPos,
+        foePos: foePos
+      });
+    } catch (error) {
+      console.error('Error fetching map data:', error);
+      setMapError(`Failed to load map data for ${selectedMapId}`);
+      setMapData({});
     }
   }
 
@@ -65,16 +81,21 @@ export default function FrontPage() {
       return;
     }
 
+    if (Object.keys(mapData).length === 0) {
+      alert('Please select a valid map.');
+      return;
+    }
+
     navigate('/game-ui', {
       state: {
         character: {
           charName: userInput,
-          image: '/path/to/default-character-image.jpg', // Replace with dynamic path if needed
+          image: '/path/to/default-character-image.jpg',
           level: 40,
           stats: { hp: 40, atk: 60, def: 25, spd: 40, res: 60 },
-          weapon: { name: 'Levin Sword', icon: '/path/to/weapon-icon.png' }, // Replace dynamically if needed
+          weapon: { name: 'Levin Sword', icon: '/path/to/weapon-icon.png' },
         },
-        mapData: mapData, // Pass the fetched map data here
+        mapData: mapData,
       },
     });
   };
@@ -98,6 +119,7 @@ export default function FrontPage() {
               <option value="S0101">Stage 3</option>
               <option value="S0102">Stage 4</option>
             </select>
+            {mapError && <div className={styles.errorMessage}>{mapError}</div>}
           </div>
           <div className={styles.characterInputDisplay}>
             <h2 className={styles.uiH2}>Character Name: </h2>
