@@ -308,9 +308,9 @@ const GameUI = () => {
     }, {})
   };
 
-  const [charPositions, setCharacterPositions] = useState({
+  const [charPositions, setCharacterPositions] = useState(
     initialCharPositions
-  });
+  );
 
   const [showTerrainOverlay, setShowTerrainOverlay] = useState(false);
 
