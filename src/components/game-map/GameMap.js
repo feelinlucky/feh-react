@@ -156,8 +156,8 @@ export const defineTerrainGrid = (rectangles) => {
         }
         
         // Fill the rectangle with the specified terrain
-        for (let y = y1; y <= y2; y++) {
-            for (let x = x1; x <= x2; x++) {
+        for (let x = x1; x <= x2; x++) {
+            for (let y = y1; y <= y2; y++) {
                 grid[y][x] = terrainType;
             }
         }

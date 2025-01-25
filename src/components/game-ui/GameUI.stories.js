@@ -12,14 +12,13 @@ const mockState = {
     weapon: { name: 'Levin Sword', icon: '/path/to/weapon-icon.png' }
   },
   mapData: {
-    image: '/assets/images/map/Map_S0001.jpg',
-    id: 'Map_S0001',
-    terrain: [
-        [0, 0, 1, 2, 'forest'],
-        [1, 0, 2, 2, 'plain'],
-        [3, 0, 5, 1, 'mountain'],
-        [1, 3, 3, 4, 'water'],
-        [6, 4, 7, 5, 'wall'],
+    "name": "frontyard",
+    "image": "/assets/images/map/Map_S0001.jpg",
+    "terrain": [
+      [0, 0, 0, 1, "plain"],
+      [1, 0, 6, 1, "wall"],      
+      [7, 0, 7, 1, "plain"],
+      [0, 2, 7, 5, "plain"]
     ]
   }
 };

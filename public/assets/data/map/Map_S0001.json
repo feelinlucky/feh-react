@@ -2,10 +2,9 @@
     "name": "frontyard",
     "image": "/assets/images/map/Map_S0001.jpg",
     "terrain": [
-      [0, 0, 1, 6, "wall"],
-      [2, 0, 2, 0, "plain"],
-      [2, 1, 2, 4, "wall"],
-      [2, 5, 2, 5, "plain"],
-      [3, 0, 7, 5, "plain"]
+      [0, 0, 0, 1, "plain"],
+      [1, 0, 6, 1, "wall"],      
+      [7, 0, 7, 1, "plain"],
+      [0, 2, 7, 5, "plain"]
     ]
 }
