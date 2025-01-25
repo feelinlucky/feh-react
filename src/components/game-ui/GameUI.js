@@ -149,6 +149,7 @@ const DraggableCharacter = ({
     </div>
   );
 };
+
 const findGridCellByCursor = (cursorPos, gridAnchorCoordinates) => {
   for (const key in gridAnchorCoordinates) {
     const [row, col] = key.split('-').map(Number);
