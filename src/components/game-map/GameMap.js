@@ -166,6 +166,25 @@ export const defineTerrainGrid = (rectangles) => {
     return grid;
 };
 
+// WORKING: Check each terrain grids from top-left to bottom-right which are eligible for starting position, and returns the first four eligible grids.
+export const findEligibleStartingPositions = (terrainGrid) => {
+    const eligiblePositions = [];
+
+    for (let row = 0; row < gridSize.rows; row++) {
+        for (let col = 0; col < gridSize.cols; col++) {
+            const terrainType = terrainGrid[row][col];
+            if (terrainType !== TerrainType.WATER && terrainType !== TerrainType.WALL) {
+                eligiblePositions.push({ row, col });
+                if (eligiblePositions.length >= 4) {
+                    return eligiblePositions;
+                }
+            }
+        }
+    }
+
+    return eligiblePositions;
+};
+
 // Movement costs for different terrain types based on movement type
 export const TerrainCost = {
   [TerrainType.PLAIN]: {

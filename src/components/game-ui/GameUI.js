@@ -196,6 +196,7 @@ const calculateCharDistance = (positions, charName1, charName2) => {
   const char2Pos = positions[charName2];
   return calculateGridDistance(char1Pos, char2Pos);
 }
+
 const calculateGridCellCoordinates = (draggedOverGrid, gridAnchorCoordinates) => {
   const currentGridAnchor = gridAnchorCoordinates[`${draggedOverGrid.row}-${draggedOverGrid.col}`];
 
@@ -263,21 +264,7 @@ const GameUI = () => {
   //   [6, 4, 7, 5, 'wall'],
   // ]);
   const [mapState, setMapState] = useState(frontPageState.mapData || { terrain: [] });
-  const terrainData = defineTerrainGrid(mapState?.terrain || []);
 
-  const [showTerrainOverlay, setShowTerrainOverlay] = useState(false);
-
-  const [activeTab, setActiveTab] = useState("categorized");
-
-  const updateLogText = useCallback((newLog, category = "uncategorized") => {
-    setLogText((prevLogText) => {
-      const updatedLogText = [{ text: newLog, category }, ...prevLogText];
-      return updatedLogText.slice(0, 6);
-    });
-  }, []);
-
-  const categorizedLogs = logText.filter(log => log.category !== "uncategorized");
-  const uncategorizedLogs = logText.filter(log => log.category === "uncategorized");
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
   const foeNames = ["FighterSword"];
   const characterNames = [...allyNames, ...foeNames];
@@ -296,13 +283,48 @@ const GameUI = () => {
     }, {})
   );
 
+  const terrainData = defineTerrainGrid(mapState?.terrain || []);
+  const allyPos = defineTerrainGrid(mapState?.allyPos || []);
+  const foePos = defineTerrainGrid(mapState?.foePos || []);
+  const pairTextArrayWith2DArray = (textArray, array2D) => {
+    return textArray.map((text, index) => {
+      return {
+        text,
+        position: array2D[index]
+      };
+    });
+  };
+
+  const allyPositions = pairTextArrayWith2DArray(allyNames, allyPos);
+  const foePositions = pairTextArrayWith2DArray(foeNames, foePos);
+  const initialCharPositions = {
+    ...allyPositions.reduce((acc, { text, position }) => {
+      acc[text] = position;
+      return acc;
+    }, {}),
+    ...foePositions.reduce((acc, { text, position }) => {
+      acc[text] = position;
+      return acc;
+    }, {})
+  };
+
   const [charPositions, setCharacterPositions] = useState({
-    Alfonse: { row: 0, col: 0 },
-    Sharena: { row: 0, col: 1 },
-    Anna: { row: 0, col: 2 },
-    Fjorm: { row: 0, col: 3 },
-    FighterSword: { row: 0, col: 4 }
+    initialCharPositions
   });
+
+  const [showTerrainOverlay, setShowTerrainOverlay] = useState(false);
+
+  const [activeTab, setActiveTab] = useState("categorized");
+
+  const updateLogText = useCallback((newLog, category = "uncategorized") => {
+    setLogText((prevLogText) => {
+      const updatedLogText = [{ text: newLog, category }, ...prevLogText];
+      return updatedLogText.slice(0, 6);
+    });
+  }, []);
+
+  const categorizedLogs = logText.filter(log => log.category !== "uncategorized");
+  const uncategorizedLogs = logText.filter(log => log.category === "uncategorized");
 
   function TurnIndicator({ turnState }) {
     return (
@@ -565,177 +587,178 @@ const GameUI = () => {
     setIsDebugDisplayVisible(!isDebugDisplayVisible);
   };
 
-return (
-  <div className={styles['game-container']} onClick={handleContainerClick}>
-    <div className={styles['content-wrapper']}>
-      <CharacterStatUI
-        charName={charState.charName || ''}
-        level={charState.level || 0}
-        wpn={charState.wpn || ''}
-        hp={charState.hp || 0}
-        atk={charState.atk || 0}
-        spd={charState.spd || 0}
-        def={charState.def || 0}
-        res={charState.res || 0}
-      />
-      <div className={styles['map-container']} ref={mapContainerRef}>
-        <GameMap
-          onGridClick={handleGridClick}
-          ongridAnchorCoordinates={handlegridAnchorCoordinates}
-          clickedState={clickedState}
-          highlightedCells={highlightedCells}
-          terrainData={terrainData}
-          onCellDragOver={handleGridCellDragOver}
-          showTerrainOverlay={showTerrainOverlay}
+  return (
+    <div className={styles['game-container']} onClick={handleContainerClick}>
+      <div className={styles['content-wrapper']}>
+        <CharacterStatUI
+          charName={charState.charName || ''}
+          level={charState.level || 0}
+          wpn={charState.wpn || ''}
+          hp={charState.hp || 0}
+          atk={charState.atk || 0}
+          spd={charState.spd || 0}
+          def={charState.def || 0}
+          res={charState.res || 0}
         />
-        {characterNames.map((charName) => {
-          const gridPos = charPositions[charName];
-          const gridAnchor = gridAnchorCoordinates[`${gridPos.row}-${gridPos.col}`];
-          return gridAnchor ? (
-            <DraggableCharacter
-              key={charName}
-              charName={charName}
-              coordinates={{
-                x: gridAnchor.x - 0,
-                y: gridAnchor.y + 64
-              }}
-              isSelected={selectedCharacter === charName}
-              setParentIsDragging={setIsDragging}
-              setSelectedCharacter={setSelectedCharacter}
-              setHighlightedCells={setHighlightedCells}
-              setNearestGridEdges={setNearestGridEdges}
-              charPositions={charPositions}
-              gridAnchorCoordinates={gridAnchorCoordinates}
-              mapPosition={mapPosition}
-              terrainData={terrainData}
-              isOccupiedCell={isOccupiedCell}
-              setCharacterPositions={setCharacterPositions}
-              updateLogText={updateLogText}
-            />
-          ) : null;
-        })}
-      </div>
-      <div className={styles['debug-display']}>
-        <button
-          onClick={toggleDebugDisplay}
-          className={styles['debug-button']}
-        >
-          {isDebugDisplayVisible ? 'Collapse Debug Info' : 'Expand Debug Info'}
-        </button>
-        {isDebugDisplayVisible && (
-          <div>
-            {draggedOverCell ? (
-              <div>
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                  <button
-                    onClick={toggleCursorObserver}
-                    className={`${styles['debug-button']} ${isCursorObserverActive ? styles['active'] : ''}`}
-                  >
-                    Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
-                  </button>
-                  <button
-                    onClick={() => setShowTerrainOverlay(!showTerrainOverlay)}
-                    className={`${styles['debug-button']} ${showTerrainOverlay ? styles['active'] : ''}`}
-                  >
-                    Terrain Overlay: {showTerrainOverlay ? 'ON' : 'OFF'}
-                  </button>
-                  <pre>
-                    Drag Debug Info:
-                    {JSON.stringify({
-                      cursorObserver: {
-                        active: isCursorObserverActive,
-                        position: currentCursorPos || 'none'
-                      },
-                      draggedOverCell: draggedOverCell || 'none',
-                      inputVariables: {
-                        draggedOverGrid: draggedOverCell,
-                        cursorPos: currentCursorPos ? {
-                          original: currentCursorPos,
-                          adjusted: {
-                            x: currentCursorPos.x - mapPosition.x,
-                            y: currentCursorPos.y - mapPosition.y
-                          },
-                          adjustedToGrid: draggedOverCell && gridAnchorCoordinates ? {
-                            x: currentCursorPos.x - mapPosition.x - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].x,
-                            y: currentCursorPos.y - mapPosition.y - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].y
-                          } : 'none'
-                        } : 'none',
-                        mapPosition: mapPosition
-                      }
-                    }, null, 2)}
-                  </pre>
-                  <pre>
-                    Grid Cell Coordinates:
-                    {JSON.stringify(calculateGridCellCoordinates(draggedOverCell, gridAnchorCoordinates), null, 2)}
-                  </pre>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                  <button
-                    onClick={toggleCursorObserver}
-                    className={`${styles['debug-button']} ${isCursorObserverActive ? styles['active'] : ''}`}
-                  >
-                    Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
-                  </button>
-                </div>
-                <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
-                <div>Selected Character: {selectedCharacter || 'None'}</div>
-                <div>Clicked Character: {clickedState?.characterName || 'None'}</div>
-                <div>Is Map Grid: {clickedState?.isMapGrid ? 'Yes' : 'No'}</div>
-                <div>History:</div>
-                <pre>
-                  {JSON.stringify(clickedStateHistory, null, 2)}
-                </pre>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-      <div className={styles['log-text-container']}>
-        <div className={styles['log-text-header']}>
-          Log
+        <div className={styles['map-container']} ref={mapContainerRef}>
+          <GameMap
+            onGridClick={handleGridClick}
+            ongridAnchorCoordinates={handlegridAnchorCoordinates}
+            clickedState={clickedState}
+            highlightedCells={highlightedCells}
+            terrainData={terrainData}
+            onCellDragOver={handleGridCellDragOver}
+            showTerrainOverlay={showTerrainOverlay}
+          />
+          {characterNames.map((charName) => {
+            const gridPos = charPositions[charName];
+            const gridAnchor = gridAnchorCoordinates[`${gridPos.row}-${gridPos.col}`];
+            return gridAnchor ? (
+              <DraggableCharacter
+                key={charName}
+                charName={charName}
+                coordinates={{
+                  x: gridAnchor.x - 0,
+                  y: gridAnchor.y + 64
+                }}
+                isSelected={selectedCharacter === charName}
+                setParentIsDragging={setIsDragging}
+                setSelectedCharacter={setSelectedCharacter}
+                setHighlightedCells={setHighlightedCells}
+                setNearestGridEdges={setNearestGridEdges}
+                charPositions={charPositions}
+                gridAnchorCoordinates={gridAnchorCoordinates}
+                mapPosition={mapPosition}
+                terrainData={terrainData}
+                isOccupiedCell={isOccupiedCell}
+                setCharacterPositions={setCharacterPositions}
+                updateLogText={updateLogText}
+              />
+            ) : null;
+          })}
+        </div>
+        <div className={styles['debug-display']}>
           <button
-            onClick={() => setErrorLogging(!errorLogging)}
+            onClick={toggleDebugDisplay}
             className={styles['debug-button']}
           >
-            {errorLogging ? 'Disable Error Logging' : 'Enable Error Logging'}
+            {isDebugDisplayVisible ? 'Collapse Debug Info' : 'Expand Debug Info'}
           </button>
-        </div>
-        <div className={styles['log-text-tabs']}>
-          <button
-            className={activeTab === "categorized" ? styles['active-tab'] : ""}
-            onClick={() => setActiveTab("categorized")}
-          >
-            Categorized
-          </button>
-          <button
-            className={activeTab === "uncategorized" ? styles['active-tab'] : ""}
-            onClick={() => setActiveTab("uncategorized")}
-          >
-            Uncategorized
-          </button>
-        </div>
-        <div className={styles['log-text-content']}>
-          {activeTab === "categorized" ? (
-            categorizedLogs.map((log, index) => (
-              <div key={index} className={styles['log-text-item']}>
-                {log.text}
-              </div>
-            ))
-          ) : (
-            uncategorizedLogs.map((log, index) => (
-              <div key={index} className={styles['log-text-item']}>
-                {log.text}
-              </div>
-            ))
+          {isDebugDisplayVisible && (
+            <div>
+              {draggedOverCell ? (
+                <div>
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                    <button
+                      onClick={toggleCursorObserver}
+                      className={`${styles['debug-button']} ${isCursorObserverActive ? styles['active'] : ''}`}
+                    >
+                      Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
+                    </button>
+                    <button
+                      onClick={() => setShowTerrainOverlay(!showTerrainOverlay)}
+                      className={`${styles['debug-button']} ${showTerrainOverlay ? styles['active'] : ''}`}
+                    >
+                      Terrain Overlay: {showTerrainOverlay ? 'ON' : 'OFF'}
+                    </button>
+                    <pre>
+                      Drag Debug Info:
+                      {JSON.stringify({
+                        cursorObserver: {
+                          active: isCursorObserverActive,
+                          position: currentCursorPos || 'none'
+                        },
+                        draggedOverCell: draggedOverCell || 'none',
+                        inputVariables: {
+                          draggedOverGrid: draggedOverCell,
+                          cursorPos: currentCursorPos ? {
+                            original: currentCursorPos,
+                            adjusted: {
+                              x: currentCursorPos.x - mapPosition.x,
+                              y: currentCursorPos.y - mapPosition.y
+                            },
+                            adjustedToGrid: draggedOverCell && gridAnchorCoordinates ? {
+                              x: currentCursorPos.x - mapPosition.x - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].x,
+                              y: currentCursorPos.y - mapPosition.y - gridAnchorCoordinates[`${draggedOverCell.row}-${draggedOverCell.col}`].y
+                            } : 'none'
+                          } : 'none',
+                          mapPosition: mapPosition
+                        }
+                      }, null, 2)}
+                    </pre>
+                    <pre>
+                      Grid Cell Coordinates:
+                      {JSON.stringify(calculateGridCellCoordinates(draggedOverCell, gridAnchorCoordinates), null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                    <button
+                      onClick={toggleCursorObserver}
+                      className={`${styles['debug-button']} ${isCursorObserverActive ? styles['active'] : ''}`}
+                    >
+                      Cursor Observer: {isCursorObserverActive ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                  <div>Clicked Position: {clickedState ? `[${clickedState.gridY},${clickedState.gridX}]` : 'None'}</div>
+                  <div>Selected Character: {selectedCharacter || 'None'}</div>
+                  <div>Clicked Character: {clickedState?.characterName || 'None'}</div>
+                  <div>Is Map Grid: {clickedState?.isMapGrid ? 'Yes' : 'No'}</div>
+                  <div>History:</div>
+                  <pre>
+                    {JSON.stringify(clickedStateHistory, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
           )}
+        </div>
+        <div className={styles['log-text-container']}>
+          <div className={styles['log-text-header']}>
+            Log
+            <button
+              onClick={() => setErrorLogging(!errorLogging)}
+              className={styles['debug-button']}
+            >
+              {errorLogging ? 'Disable Error Logging' : 'Enable Error Logging'}
+            </button>
+          </div>
+          <div className={styles['log-text-tabs']}>
+            <button
+              className={activeTab === "categorized" ? styles['active-tab'] : ""}
+              onClick={() => setActiveTab("categorized")}
+            >
+              Categorized
+            </button>
+            <button
+              className={activeTab === "uncategorized" ? styles['active-tab'] : ""}
+              onClick={() => setActiveTab("uncategorized")}
+            >
+              Uncategorized
+            </button>
+          </div>
+          <div className={styles['log-text-content']}>
+            {activeTab === "categorized" ? (
+              categorizedLogs.map((log, index) => (
+                <div key={index} className={styles['log-text-item']}>
+                  {log.text}
+                </div>
+              ))
+            ) : (
+              uncategorizedLogs.map((log, index) => (
+                <div key={index} className={styles['log-text-item']}>
+                  {log.text}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
-  };
-  
-  export default GameUI;
+  );
+};
+
+export default GameUI;
+

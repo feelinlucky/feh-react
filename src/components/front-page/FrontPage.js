@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import styles from './FrontPage.module.css';
 import { useNavigate } from 'react-router-dom';
 
+function sort2DArray(arr) {
+  return arr.sort((a, b) => {
+    if (a[0] === b[0]) {
+      return a[1] - b[1];
+    }
+    return a[0] - b[0];
+  });
+}
+
 export default function FrontPage() {
   const [userInput, setUserInput] = useState('');
   const [selectedOption, setSelectedOption] = useState('');
@@ -26,14 +35,18 @@ export default function FrontPage() {
         const mapImagePath = `/assets/images/maps/Map_${selectedMapId}.png`;
 
         const importedMapData = await import(`../assets/data/map/Map_${selectedMapId}.json`);
-        const terrainData = importedMapData.default.terrain || []; // Add .default and fallback
         const mapName = importedMapData.default.name || selectedMapId; // Add .default and fallback
+        const terrainData = importedMapData.default.terrain || []; // Add .default and fallback
+        const allyPos = sort2DArray(importedMapData.default.allyPos) || []; // Add .default and fallback
+        const foePos = sort2DArray(importedMapData.default.foePos) || [];
         
         setMapData({
           id: selectedMapId,
           mapName: mapName,
           imagePath: mapImagePath,
-          terrain: terrainData
+          terrain: terrainData,
+          allyPos: allyPos,
+          foePos: foePos
         });
       } catch (error) {
         console.error('Error fetching map data:', error);
