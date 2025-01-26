@@ -1,0 +1,59 @@
+.log-text-container {
+    border: 2px solid #0000FF;
+    background-color: #000080;
+    color: #FFFFFF;
+    padding: 10px;
+    margin-top: 20px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    line-height: 1.5;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .log-text-header {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .log-text-content {
+    max-height: 150px;
+    overflow-y: auto;
+  }
+  
+  .log-text-item {
+    margin-bottom: 5px;
+  }
+  
+  .debug-button {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .log-text-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .log-text-tabs button {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .log-text-tabs button.active-tab {
+    background-color: #f44336;
+  }

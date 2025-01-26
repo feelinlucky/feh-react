@@ -15,6 +15,8 @@ import GameMap, {
 import { sharedProps, characterData } from '../character-data/CharacterData';
 import { characterInteraction } from '../character-data/CharacterInteraction';
 import MapCharacter from '../map-character/MapCharacter';
+import LogTextContainer from '../log-text-container/LogTextContainer';
+
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
 const DraggableCharacter = ({
@@ -719,46 +721,13 @@ const GameUI = () => {
             </div>
           )}
         </div>
-        <div className={styles['log-text-container']}>
-          <div className={styles['log-text-header']}>
-            Log
-            <button
-              onClick={() => setErrorLogging(!errorLogging)}
-              className={styles['debug-button']}
-            >
-              {errorLogging ? 'Disable Error Logging' : 'Enable Error Logging'}
-            </button>
-          </div>
-          <div className={styles['log-text-tabs']}>
-            <button
-              className={activeTab === "categorized" ? styles['active-tab'] : ""}
-              onClick={() => setActiveTab("categorized")}
-            >
-              Categorized
-            </button>
-            <button
-              className={activeTab === "uncategorized" ? styles['active-tab'] : ""}
-              onClick={() => setActiveTab("uncategorized")}
-            >
-              Uncategorized
-            </button>
-          </div>
-          <div className={styles['log-text-content']}>
-            {activeTab === "categorized" ? (
-              categorizedLogs.map((log, index) => (
-                <div key={index} className={styles['log-text-item']}>
-                  {log.text}
-                </div>
-              ))
-            ) : (
-              uncategorizedLogs.map((log, index) => (
-                <div key={index} className={styles['log-text-item']}>
-                  {log.text}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <LogTextContainer
+          logText={logText}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          errorLogging={errorLogging}
+          setErrorLogging={setErrorLogging}
+        />
       </div>
     </div>
   );
