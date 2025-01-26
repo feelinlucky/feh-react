@@ -3,6 +3,22 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import GameUI from './GameUI';
 import { GameDataProvider } from '../../store/GameDataContext';
 
+function sort2DArray(arr) {
+  return arr.sort((a, b) => {
+    if (a[0] === b[0]) {
+      return a[1] - b[1];
+    }
+    return a[0] - b[0];
+  });
+}
+
+const selectedMapId = 'S0001';
+const importedMapData = await import(`../../../public/assets/data/map/Map_${selectedMapId}.json`);
+const mapName = importedMapData.default?.name || selectedMapId;
+const terrainData = importedMapData.default?.terrain || [];
+const allyPos = sort2DArray(importedMapData.default?.allyPos || []);
+const foePos = sort2DArray(importedMapData.default?.foePos || []);
+
 const mockState = {
   character: {
     charName: 'Alfonse',
@@ -12,14 +28,12 @@ const mockState = {
     weapon: { name: 'Levin Sword', icon: '/path/to/weapon-icon.png' }
   },
   mapData: {
-    "name": "frontyard",
-    "image": "/assets/images/map/Map_S0001.jpg",
-    "terrain": [
-      [0, 0, 0, 1, "plain"],
-      [1, 0, 6, 1, "wall"],      
-      [7, 0, 7, 1, "plain"],
-      [0, 2, 7, 5, "plain"]
-    ]
+    id: selectedMapId,
+    mapName: mapName,
+    imagePath: `/assets/images/maps/Map_${selectedMapId}.png`,
+    terrain: terrainData,
+    allyPos: allyPos,
+    foePos: foePos
   }
 };
 
