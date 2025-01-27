@@ -15,9 +15,9 @@
     max-height: 500px;
     overflow-y: auto;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-  }
-  
-  .debugToggleButton {
+}
+
+.debugToggleButton {
     background-color: transparent;
     border: 1px solid #00ff00;
     color: #00ff00;
@@ -26,26 +26,26 @@
     cursor: pointer;
     margin-bottom: 10px;
     transition: background-color 0.3s ease, transform 0.1s ease;
-  }
-  
-  .debugToggleButton:hover {
+}
+
+.debugToggleButton:hover {
     background-color: #00ff00;
     color: #000;
-  }
-  
-  .debugContent {
+}
+
+.debugContent {
     display: flex;
     flex-direction: column;
     gap: 15px;
-  }
-  
-  .debugButtonGroup {
+}
+
+.debugButtonGroup {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-  }
-  
-  .debugButton {
+}
+
+.debugButton {
     padding: 6px 12px;
     background-color: #4caf50;
     color: white;
@@ -53,31 +53,47 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.1s ease;
-  }
-  
-  .debugButton:hover {
+}
+
+.debugButton:hover {
     background-color: #45a049;
-  }
-  
-  .debugButton.active {
+}
+
+.debugButton.active {
     background-color: #f44336;
-  }
-  
-  .debugInfoBlock {
+}
+
+.debugInfoBlock {
     background-color: rgba(0, 0, 0, 0.9);
     padding: 10px;
     border-radius: 5px;
-  }
-  
-  .debugInfoTitle {
+}
+
+.debugInfoTitle {
     font-size: 16px;
     color: #00ff00;
     margin-bottom: 5px;
-  }
-  
-  .debugInfoPre {
+}
+
+.debugInfoPre {
     margin: 0;
     white-space: pre-wrap;
     word-wrap: break-word;
     color: #00ff00;
-  }
+}
+
+.debugInfoTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.debugInfoTable th,
+.debugInfoTable td {
+    border: 1px solid #00ff00;
+    padding: 8px;
+    text-align: left;
+}
+
+.debugInfoTable th {
+    background-color: rgba(0, 255, 0, 0.2);
+}

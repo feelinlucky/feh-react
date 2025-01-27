@@ -22,12 +22,34 @@ DebugButton.defaultProps = {
   isActive: false,
 };
 
-const DebugInfoBlock = ({ title, data }) => (
-  <div className={styles.debugInfoBlock}>
-    <h4 className={styles.debugInfoTitle}>{title}</h4>
-    <pre className={styles.debugInfoPre}>{JSON.stringify(data, null, 2)}</pre>
-  </div>
-);
+const DebugInfoBlock = ({ title, data }) => {
+  // Convert data to an array of rows for the table
+  const dataRows = Object.entries(data).map(([key, value]) => {
+    return (
+      <tr key={key}>
+        <td>{key}</td>
+        <td>{JSON.stringify(value)}</td>
+      </tr>
+    );
+  });
+
+  return (
+    <div className={styles.debugInfoBlock}>
+      <h4 className={styles.debugInfoTitle}>{title}</h4>
+      <table className={styles.debugInfoTable}>
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {dataRows}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 DebugInfoBlock.propTypes = {
   title: PropTypes.string.isRequired,
