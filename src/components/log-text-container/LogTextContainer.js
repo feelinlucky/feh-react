@@ -1,20 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './LogTextContainer.module.css';
+import Dropdown from '../dropdown/Dropdown';
 
 const LogTextContainer = ({ logText, activeTab, setActiveTab, errorLogging, setErrorLogging }) => {
+  const [selectedOption, setSelectedOption] = useState(null);
+
+  const handleDropdownSelect = (option) => {
+    setSelectedOption(option);
+  };
+
   const categorizedLogs = logText.filter(log => log.category !== "uncategorized");
   const uncategorizedLogs = logText.filter(log => log.category === "uncategorized");
 
   return (
     <div className={styles['log-text-container']}>
+      <Dropdown onSelect={handleDropdownSelect} />
       <div className={styles['log-text-header']}>
-        Log
-        <button
-          onClick={() => setErrorLogging(!errorLogging)}
-          className={styles['debug-button']}
-        >
-          {errorLogging ? 'Disable Error Logging' : 'Enable Error Logging'}
-        </button>
+        Selected Option: {selectedOption}
       </div>
       <div className={styles['log-text-tabs']}>
         <button
