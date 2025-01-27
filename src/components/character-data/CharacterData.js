@@ -2,6 +2,7 @@ const publicFolder = `${process.env.PUBLIC_URL}`;
 
 const charData = {
     "Alfonse": {
+        name: "Alfonse",
         isAlly: true,
         type: "infantry",
         level: 40,
@@ -21,6 +22,7 @@ const charData = {
         }
     },
     "Sharena": {
+        name: "Sharena",
         isAlly: true,
         type: "infantry",
         level: 40,
@@ -41,6 +43,7 @@ const charData = {
         }
     },
     "Anna": {
+        name: "Anna",
         isAlly: true,
         type: "infantry",
         level: 40,
@@ -61,6 +64,7 @@ const charData = {
         }
     },
     "Fjorm": {
+        name: "Fjorm",
         isAlly: true,
         type: "infantry",
         level: 40,
@@ -81,6 +85,7 @@ const charData = {
         }
     },
     "FighterSword": {
+        name: "FighterSword",
         isAlly: false,
         type: "infantry",
         level: 40,
@@ -101,6 +106,7 @@ const charData = {
         }
     },
     Default: {
+        name: "",
         isAlly: false,
         type: "",
         level: 0,

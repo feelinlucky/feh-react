@@ -13,7 +13,7 @@ import GameMap, {
 } from '../game-map/GameMap';
 
 import { sharedProps, characterData } from '../character-data/CharacterData';
-import { characterInteraction } from '../character-data/CharacterInteraction';
+import { characterInteraction, printInteractionResult } from '../character-data/CharacterInteraction';
 import MapCharacter from '../map-character/MapCharacter';
 import LogTextContainer from '../log-text-container/LogTextContainer';
 
@@ -53,13 +53,13 @@ const DraggableCharacter = ({
 
           if (!isSelected) {
             setSelectedCharacter(charName);
-            const charState = characterData(charName);
+            const selectedCharState = characterData(charName);
             const gridPos = charPositions[charName];
             const movementRange = calculateMovementRange(
               gridPos.row,
               gridPos.col,
-              sharedProps.moveTypes[charState.type].distance,
-              charState.type,
+              sharedProps.moveTypes[selectedCharState.type].distance,
+              selectedCharState.type,
               terrainData
             );
             setHighlightedCells(movementRange);
@@ -234,7 +234,7 @@ const GameUI = () => {
   const location = useLocation();
   const frontPageState = location.state || {};
 
-  const [charState, setCharacterUIState] = useState({});
+  const [selectedCharState, setselectedCharState] = useState({});
   const [clickedState, setClickedState] = useState(null);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
   const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState({});
@@ -416,24 +416,13 @@ const GameUI = () => {
   useEffect(() => {
     setGridCenterAdjustment({ x: mapPosition.x, y: mapPosition.y });
   }, [mapPosition]);
+
   useEffect(() => {
     if (selectedCharacter) {
       const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
-
-      setCharacterUIState({
-        charName: selectedCharacter,
-        level: selectedCharData.level,
-        wpn: selectedCharData.wpn,
-        hp: selectedCharData.hp,
-        atk: selectedCharData.atk,
-        spd: selectedCharData.spd,
-        def: selectedCharData.def,
-        res: selectedCharData.res
-      });
-
-      const selectedCharProps = sharedProps[selectedCharData.type];
+      setselectedCharState( { ...selectedCharData } );
     } else {
-      setCharacterUIState({
+      setselectedCharState({
         charName: '',
         level: 0,
         wpn: '',
@@ -444,7 +433,8 @@ const GameUI = () => {
         res: 0
       });
     }
-  }, [selectedCharacter, allyStates, foeStates, setCharacterUIState]);
+  }, [selectedCharacter, allyStates, foeStates, setselectedCharState]);
+
   useEffect(() => {
     const handleMouseMove = (event) => {
       if (isCursorObserverActive) {
@@ -519,14 +509,16 @@ const GameUI = () => {
         const draggedOverCharacter = findCharacterNameByGridPosition({ row: gridY, col: gridX }, charPositions) || null;
         const draggedOverCharacterData = allyStates[draggedOverCharacter] || foeStates[draggedOverCharacter] || null;
 
+        if (!selectedCharData || !draggedOverCharacterData) {
+          return;
+        }
+
         if (draggedOverCharacterData.group === 'ally') {
-          const charAssist = selectedCharData.skills.assist || null;
-
-          updateLogText(`${selectedCharacter} used assist skill ${charAssist} to ${draggedOverCharacter}`, 'interaction');
+          const interactionResult = characterInteraction(selectedCharData, draggedOverCharacterData, 'assist');
+          updateLogText(printInteractionResult(interactionResult), 'interaction');
         } else {
-          const charWeapon = selectedCharData.skills.weapon || null;
-
-          updateLogText(`${selectedCharacter} attacked ${draggedOverCharacter} with ${charWeapon}`, 'interaction');
+          const interactionResult = characterInteraction(selectedCharData, draggedOverCharacterData, 'attack');
+          updateLogText(printInteractionResult(interactionResult), 'interaction');
         }
       } else {
         setCharacterPositions(prev => ({
@@ -549,15 +541,15 @@ const GameUI = () => {
 
     if (characterAtPosition) {
       const [charName, _] = characterAtPosition;
-      const charState = allyStates[charName] || foeStates[charName];
+      const selectedCharState = allyStates[charName] || foeStates[charName];
       newState.characterName = charName;
       setSelectedCharacter(charName);
 
       const movementRange = calculateMovementRange(
         gridY,
         gridX,
-        sharedProps.moveTypes[charState.type].distance,
-        charState.type,
+        sharedProps.moveTypes[selectedCharState.type].distance,
+        selectedCharState.type,
         terrainData
       );
       setHighlightedCells(movementRange);
@@ -596,14 +588,14 @@ const GameUI = () => {
     <div className={styles['game-container']} onClick={handleContainerClick}>
       <div className={styles['content-wrapper']}>
         <CharacterStatUI
-          charName={charState.charName || ''}
-          level={charState.level || 0}
-          wpn={charState.wpn || ''}
-          hp={charState.hp || 0}
-          atk={charState.atk || 0}
-          spd={charState.spd || 0}
-          def={charState.def || 0}
-          res={charState.res || 0}
+          charName={selectedCharState.charName || ''}
+          level={selectedCharState.level || 0}
+          wpn={selectedCharState.wpn || ''}
+          hp={selectedCharState.hp || 0}
+          atk={selectedCharState.atk || 0}
+          spd={selectedCharState.spd || 0}
+          def={selectedCharState.def || 0}
+          res={selectedCharState.res || 0}
         />
         <div className={styles['map-container']} ref={mapContainerRef}>
           <GameMap
