@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Dropdown.module.css"; // Import CSS for styling
 
-const Dropdown = ({ onSelect }) => {
+const Dropdown = ({ options, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
 
@@ -13,26 +13,24 @@ const Dropdown = ({ onSelect }) => {
     setSelectedOption(option);
     setIsOpen(false);
     if (onSelect) {
-      onSelect(option);
+      onSelect(option.value);
     }
   };
-
-  const options = ["Option 1", "Option 2", "Option 3"];
 
   return (
     <div className="dropdown">
       <button className="dropdown-toggle" onClick={toggleDropdown}>
-        {selectedOption || "Select an option"}
+        {selectedOption ? selectedOption.label : "Select an option"}
       </button>
       {isOpen && (
         <ul className="dropdown-menu-overlay">
           {options.map((option) => (
             <li
-              key={option}
+              key={option.value}
               className="dropdown-item"
               onClick={() => handleOptionClick(option)}
             >
-              {option}
+              {option.label}
             </li>
           ))}
         </ul>
