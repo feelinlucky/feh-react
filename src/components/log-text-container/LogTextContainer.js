@@ -1,8 +1,29 @@
 import React, { useState } from 'react';
 import styles from './LogTextContainer.module.css';
 import Dropdown from '../dropdown/Dropdown';
+import DebugDisplay from '../debug-display/DebugDisplay'; // Import DebugDisplay
 
-const LogTextContainer = ({ logText, activeTab, setActiveTab, errorLogging, setErrorLogging }) => {
+const LogTextContainer = ({
+  logText,
+  activeTab,
+  setActiveTab,
+  errorLogging,
+  setErrorLogging,
+  draggedOverCell,
+  toggleCursorObserver,
+  isCursorObserverActive,
+  currentCursorPos,
+  mapPosition,
+  gridAnchorCoordinates,
+  calculateGridCellCoordinates,
+  clickedState,
+  selectedCharacter,
+  clickedStateHistory,
+  showTerrainOverlay,
+  setShowTerrainOverlay,
+  isDebugDisplayVisible,
+  toggleDebugDisplay,
+}) => {
   const [selectedMode, setSelectedMode] = useState(null);
 
   const modeOptions = [
@@ -54,9 +75,22 @@ const LogTextContainer = ({ logText, activeTab, setActiveTab, errorLogging, setE
         </>
       )}
       {(selectedMode === 2) && (
-        <>
-          {/* import DebugDisplay component here */}
-        </>
+        <DebugDisplay
+          draggedOverCell={draggedOverCell}
+          toggleCursorObserver={toggleCursorObserver}
+          isCursorObserverActive={isCursorObserverActive}
+          currentCursorPos={currentCursorPos}
+          mapPosition={mapPosition}
+          gridAnchorCoordinates={gridAnchorCoordinates}
+          calculateGridCellCoordinates={calculateGridCellCoordinates}
+          clickedState={clickedState}
+          selectedCharacter={selectedCharacter}
+          clickedStateHistory={clickedStateHistory}
+          showTerrainOverlay={showTerrainOverlay}
+          setShowTerrainOverlay={setShowTerrainOverlay}
+          isDebugDisplayVisible={isDebugDisplayVisible}
+          toggleDebugDisplay={toggleDebugDisplay}
+        />
       )}
     </div>
   );

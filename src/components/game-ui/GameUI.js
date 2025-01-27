@@ -16,7 +16,6 @@ import { sharedProps, characterData } from '../character-data/CharacterData';
 import { characterInteraction } from '../character-data/CharacterInteraction';
 import MapCharacter from '../map-character/MapCharacter';
 import LogTextContainer from '../log-text-container/LogTextContainer';
-import DebugDisplay from '../debug-display/DebugDisplay';
 
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
@@ -644,7 +643,12 @@ const GameUI = () => {
             ) : null;
           })}
         </div>
-        <DebugDisplay
+        <LogTextContainer
+          logText={logText}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          errorLogging={errorLogging}
+          setErrorLogging={setErrorLogging}
           draggedOverCell={draggedOverCell}
           toggleCursorObserver={toggleCursorObserver}
           isCursorObserverActive={isCursorObserverActive}
@@ -659,13 +663,6 @@ const GameUI = () => {
           setShowTerrainOverlay={setShowTerrainOverlay}
           isDebugDisplayVisible={isDebugDisplayVisible}
           toggleDebugDisplay={toggleDebugDisplay}
-        />
-        <LogTextContainer
-          logText={logText}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          errorLogging={errorLogging}
-          setErrorLogging={setErrorLogging}
         />
       </div>
     </div>
