@@ -1,7 +1,7 @@
 /* DebugDisplay.module.css */
 
 .debugDisplay {
-    position: fixed;
+    position: relative;
     top: 10px;
     right: 10px;
     background-color: rgba(0, 0, 0, 0.85);
