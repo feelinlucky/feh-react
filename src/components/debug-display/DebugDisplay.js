@@ -30,6 +30,7 @@ const DebugDisplay = ({
           {draggedOverCell ? (
             <div>
               <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                {/* Toggle buttons */}
                 <button
                   onClick={toggleCursorObserver}
                   className={`${styles['debug-button']} ${isCursorObserverActive ? styles['active'] : ''}`}
