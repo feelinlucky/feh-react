@@ -53,6 +53,11 @@ const LogTextContainer = ({ logText, activeTab, setActiveTab, errorLogging, setE
           </div>
         </>
       )}
+      {(selectedMode === 2) && (
+        <>
+          {/* import DebugDisplay component here */}
+        </>
+      )}
     </div>
   );
 };
