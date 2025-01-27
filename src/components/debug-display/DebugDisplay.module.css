@@ -1,50 +1,83 @@
 /* DebugDisplay.module.css */
 
-.debug-display {
+.debugDisplay {
     position: fixed;
     top: 10px;
     right: 10px;
-    background-color: rgba(0, 0, 0, 0.85); /* Slightly darker for better contrast */
-    color: #00ff00; /* Bright green for visibility */
-    padding: 15px; /* Increased padding for better spacing */
-    border-radius: 8px; /* Slightly rounded corners */
-    font-family: 'Courier New', monospace; /* Monospace font for debug info */
-    font-size: 14px; /* Increased font size for better readability */
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #00ff00;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
     z-index: 1000;
-    max-width: 300px; /* Fixed max width to avoid stretching */
-    max-height: 400px; /* Limit height to maintain usability */
-    overflow-y: auto; /* Enable scrolling if content exceeds max height */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+    max-width: 350px;
+    max-height: 500px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   }
   
-  /* Styling for preformatted text blocks */
-  .debug-display pre {
-    margin: 10px 0; /* Margin for spacing between blocks */
-    white-space: pre-wrap; /* Allow text wrapping */
-    overflow-wrap: break-word; /* Prevent overflow of long words */
+  .debugToggleButton {
+    background-color: transparent;
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
   }
   
-  /* Button styles */
-  .debug-button {
-    padding: 6px 12px; /* Padding for better touch targets */
-    background-color: #4CAF50; /* Standard button color */
+  .debugToggleButton:hover {
+    background-color: #00ff00;
+    color: #000;
+  }
+  
+  .debugContent {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .debugButtonGroup {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .debugButton {
+    padding: 6px 12px;
+    background-color: #4caf50;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    height: auto; /* Allow height to auto adjust */
-    margin: 5px 0; /* Vertical margin for spacing */
-    transition: background-color 0.3s ease, transform 0.1s; /* Smooth transitions */
+    transition: background-color 0.3s ease, transform 0.1s ease;
   }
   
-  .debug-button:hover {
-    background-color: #45a049; /* Darker green on hover */
+  .debugButton:hover {
+    background-color: #45a049;
   }
   
-  .debug-button:active {
-    transform: scale(0.95); /* Slight scale down on click */
+  .debugButton.active {
+    background-color: #f44336;
   }
   
-  .debug-button.active {
-    background-color: #f44336; /* Active state color for toggles */
+  .debugInfoBlock {
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .debugInfoTitle {
+    font-size: 16px;
+    color: #00ff00;
+    margin-bottom: 5px;
+  }
+  
+  .debugInfoPre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #00ff00;
   }
