@@ -30,7 +30,7 @@ function createTurnState(allyStates, foeStates, {
     if (onTurnEnd) onTurnEnd(turnNumber);
     turnNumber++;
     resetGroupActions();
-    if (onGroupSwitch) onGroupSwitch(turnNumber);
+    if (onGroupSwitch) onGroupSwitch();
     if (onTurnStart) onTurnStart(turnNumber);
   }
 

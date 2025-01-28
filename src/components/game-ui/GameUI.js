@@ -357,7 +357,8 @@ const GameUI = () => {
     updateLogText(`Turn ${turnNumber} ended`, 'event');
   };
 
-  const handleGroupSwitch = (isAllyTurn) => {
+  const handleGroupSwitch = () => {
+    let isAllyTurn = turnState.currentActiveGroupIsAlly();
     setIsDraggable(isAllyTurn);
     updateLogText(`Switched to ${isAllyTurn ? 'ally' : 'foe'} turn`, 'event');
   };
