@@ -30,8 +30,8 @@ function createTurnState(allyStates, foeStates, {
     if (onTurnEnd) onTurnEnd(turnNumber);
     turnNumber++;
     resetGroupActions();
+    if (onGroupSwitch) onGroupSwitch(turnNumber);
     if (onTurnStart) onTurnStart(turnNumber);
-    if (onGroupSwitch) onGroupSwitch(currentActiveGroupIsAlly());
   }
 
   // Check if the character is in the current group and hasn't acted yet

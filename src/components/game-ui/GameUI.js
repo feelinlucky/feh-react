@@ -512,20 +512,20 @@ const GameUI = () => {
         if (!selectedCharData || !draggedOverCharacterData) {
           return;
         }
-
-        if (draggedOverCharacterData.group === 'ally') {
-          const interactionResult = characterInteraction(selectedCharData, draggedOverCharacterData, 'assist');
-          updateLogText(printInteractionResult(interactionResult), 'interaction');
-        } else {
-          const interactionResult = characterInteraction(selectedCharData, draggedOverCharacterData, 'attack');
-          updateLogText(printInteractionResult(interactionResult), 'interaction');
+        const actionResult = characterInteraction(selectedCharData, draggedOverCharacterData);
+        if (actionResult.error) {
+          updateLogText(`Error occured during ${selectedCharacter}'s interaction in turn # ${turnState.getTurnNumber()} with active group ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foes'}`, 'event');
+          return;
         }
+
+        updateLogText(printInteractionResult(actionResult), 'interaction');
       } else {
         setCharacterPositions(prev => ({
           ...prev,
           [selectedCharacter]: { row: gridY, col: gridX }
         }));
       }
+      
       updateTurnState(selectedCharacter);
       updateLogText(`${selectedCharacter} has acted. Now turn # ${turnState.getTurnNumber()}. Current active group is ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foes'}`, 'event');
 

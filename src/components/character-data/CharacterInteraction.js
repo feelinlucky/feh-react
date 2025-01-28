@@ -1,7 +1,15 @@
-export const characterInteraction = (charStates1, charStates2, interactionType) => {
+export const characterInteraction = (charStates1, charStates2) => {
     // Create copies to avoid modifying original states
     let char1 = { ...charStates1 };
     let char2 = { ...charStates2 };
+
+    let interactionType = '';
+
+    if (char1.group[0] === char2.group[0]) {
+        interactionType = 'assist'; // Default interaction type for allies
+    } else {
+        interactionType = 'attack'; // Default interaction type for enemies
+    }
 
     switch (interactionType) {
         case 'attack':
