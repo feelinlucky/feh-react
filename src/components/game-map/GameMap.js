@@ -318,38 +318,30 @@ export const calculateMovementRange = (centerRow, centerCol, movementPoints, mov
  * @returns {Array<{row: number, col: number}>} - An array of the nearest grid coordinates.
  */
 export const findNearestGrids = (centerRow, centerCol, gridDistance, areaGrids) => {
-    if (Array.isArray(areaGrids)) {
-        // Create a Set to hold unique grid coordinates and their distances
-        const gridDistances = [];
-        areaGrids.forEach(({row, col}) => {
-            // Calculate Manhattan distance from the center grid
-            const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
-
-            // Push grid coordinates with their distance to the array
-            gridDistances.push({ row, col, distance });
-
-            const nearestGrids = [];
-
-            // Check bounds to ensure the center grid is valid
-            if (centerRow < 0 || centerRow >= gridSize.rows || centerCol < 0 || centerCol >= gridSize.cols) {
-                console.warn("Invalid center grid position");
-                return nearestGrids;
-            }
-        
-            // Sort the grids based on distance
-            gridDistances.sort((a, b) => a.distance - b.distance);
-        
-            // Get the first x grids from the sorted array
-            for (let i = 0; i < Math.min(gridDistance, gridDistances.length); i++) {
-                nearestGrids.push({ row: gridDistances[i].row, col: gridDistances[i].col });
-            }
-        
-            return nearestGrids;
-        });
-    } else {
-        console.error('areaGrids is not an array:', areaGrids);
+    if (centerRow < 0 || centerRow >= gridSize.rows || centerCol < 0 || centerCol >= gridSize.cols) {
+        console.warn("Invalid center grid position");
+        return [];
     }
-}
+
+    if (!Array.isArray(areaGrids)) {
+        console.error('areaGrids is not an array:', areaGrids);
+        return [];
+    }
+
+    // Create an array to hold grid coordinates and their distances
+    const gridDistances = areaGrids.map(({ row, col }) => {
+        const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
+        return { row, col, distance };
+    });
+
+    // Sort the grids based on distance
+    gridDistances.sort((a, b) => a.distance - b.distance);
+
+    // Get the first x grids from the sorted array
+    const nearestGrids = gridDistances.slice(0, gridDistance).map(({ row, col }) => ({ row, col }));
+
+    return nearestGrids;
+};
 
 const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick, onDragOver, showTerrainOverlay }) => {
     const ref = useRef(null);
