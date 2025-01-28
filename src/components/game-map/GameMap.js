@@ -23,7 +23,7 @@ export const gridSize = { rows: 6, cols: 8 };
  */
 export const calculateCellsInRadius = (centerRow, centerCol, radius, invalidCells = []) => {
     const cells = [];
-    
+
     // Create a Set of invalid coordinates for O(1) lookup
     const invalidSet = new Set(
         invalidCells.map(cell => `${cell.row},${cell.col}`)
@@ -34,14 +34,14 @@ export const calculateCellsInRadius = (centerRow, centerCol, radius, invalidCell
         for (let col = Math.max(0, centerCol - radius); col <= Math.min(gridSize.cols - 1, centerCol + radius); col++) {
             // For orthogonal movement (like in Fire Emblem), use Manhattan distance
             const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
-            
+
             // Check if the cell is within radius AND not in invalid cells
             if (distance <= radius && !invalidSet.has(`${row},${col}`)) {
                 cells.push({ row, col });
             }
         }
     }
-    
+
     return cells;
 };
 
@@ -140,21 +140,21 @@ export const defineTerrainGrid = (rectangles) => {
             console.warn(`Invalid coordinates in rectangle [${x1},${y1},${x2},${y2}]. Skipping.`);
             return;
         }
-        
+
         // Convert string to valid terrain type
-        const normalizedTerrainType = typeof terrainType === 'string' 
-            ? terrainType.toLowerCase() 
+        const normalizedTerrainType = typeof terrainType === 'string'
+            ? terrainType.toLowerCase()
             : terrainType;
-        
+
         const validTerrainType = stringToTerrainType[normalizedTerrainType];
-        
+
         if (!validTerrainType) {
             console.warn(`Invalid terrain type: ${terrainType}. Using PLAIN instead.`);
             terrainType = TerrainType.PLAIN;
         } else {
             terrainType = validTerrainType;
         }
-        
+
         // Fill the rectangle with the specified terrain
         for (let x = x1; x <= x2; x++) {
             for (let y = y1; y <= y2; y++) {
@@ -162,7 +162,7 @@ export const defineTerrainGrid = (rectangles) => {
             }
         }
     });
-    
+
     return grid;
 };
 
@@ -187,55 +187,55 @@ export const findEligibleStartingPositions = (terrainGrid) => {
 
 // Movement costs for different terrain types based on movement type
 export const TerrainCost = {
-  [TerrainType.PLAIN]: {
-    infantry: 1,
-    cavalry: 1,
-    armored: 1,
-    flying: 1
-  },
-  [TerrainType.FOREST]: {
-    infantry: 2,
-    cavalry: 3,
-    armored: 2,
-    flying: 1
-  },
-  [TerrainType.MOUNTAIN]: {
-    infantry: 2,
-    cavalry: 999, // Impassable
-    armored: 3,
-    flying: 1
-  },
-  [TerrainType.WATER]: {
-    infantry: 999, // Impassable
-    cavalry: 999, // Impassable
-    armored: 999, // Impassable
-    flying: 1
-  },
-  [TerrainType.WALL]: {
-    infantry: 999, // Impassable
-    cavalry: 999, // Impassable
-    armored: 999, // Impassable
-    flying: 999  // Impassable
-  }
+    [TerrainType.PLAIN]: {
+        infantry: 1,
+        cavalry: 1,
+        armored: 1,
+        flying: 1
+    },
+    [TerrainType.FOREST]: {
+        infantry: 2,
+        cavalry: 3,
+        armored: 2,
+        flying: 1
+    },
+    [TerrainType.MOUNTAIN]: {
+        infantry: 2,
+        cavalry: 999, // Impassable
+        armored: 3,
+        flying: 1
+    },
+    [TerrainType.WATER]: {
+        infantry: 999, // Impassable
+        cavalry: 999, // Impassable
+        armored: 999, // Impassable
+        flying: 1
+    },
+    [TerrainType.WALL]: {
+        infantry: 999, // Impassable
+        cavalry: 999, // Impassable
+        armored: 999, // Impassable
+        flying: 999  // Impassable
+    }
 };
 
 // Debug display to overlay terrain types on the map
 const TerrainOverlay = ({ terrainType }) => {
     const terrainAbbrev = {
-      [TerrainType.PLAIN]: 'P',
-      [TerrainType.FOREST]: 'F',
-      [TerrainType.MOUNTAIN]: 'M',
-      [TerrainType.WATER]: 'WT',
-      [TerrainType.WALL]: 'WL'
+        [TerrainType.PLAIN]: 'P',
+        [TerrainType.FOREST]: 'F',
+        [TerrainType.MOUNTAIN]: 'M',
+        [TerrainType.WATER]: 'WT',
+        [TerrainType.WALL]: 'WL'
     };
-  
+
     return (
-      <div className={styles['terrain-overlay']}>
-        {terrainAbbrev[terrainType]}
-      </div>
+        <div className={styles['terrain-overlay']}>
+            {terrainAbbrev[terrainType]}
+        </div>
     );
-  };
-  
+};
+
 
 /**
  * Calculates cells within movement range considering terrain costs
@@ -247,66 +247,66 @@ const TerrainOverlay = ({ terrainType }) => {
  * @returns {Array<{row: number, col: number}>} Array of reachable cells
  */
 export const calculateMovementRange = (centerRow, centerCol, movementPoints, moveType, terrainGrid) => {
-  const reachableCells = new Set();
-  const visited = new Set();
-  const queue = [{
-    row: centerRow,
-    col: centerCol,
-    remainingPoints: movementPoints
-  }];
+    const reachableCells = new Set();
+    const visited = new Set();
+    const queue = [{
+        row: centerRow,
+        col: centerCol,
+        remainingPoints: movementPoints
+    }];
 
-  // Helper to create a unique key for a cell
-  const cellKey = (row, col) => `${row},${col}`;
+    // Helper to create a unique key for a cell
+    const cellKey = (row, col) => `${row},${col}`;
 
-  while (queue.length > 0) {
-    const { row, col, remainingPoints } = queue.shift();
-    const key = cellKey(row, col);
+    while (queue.length > 0) {
+        const { row, col, remainingPoints } = queue.shift();
+        const key = cellKey(row, col);
 
-    // Skip if we've been here with more movement points
-    if (visited.has(key)) continue;
-    visited.add(key);
+        // Skip if we've been here with more movement points
+        if (visited.has(key)) continue;
+        visited.add(key);
 
-    // Add current cell to reachable cells
-    reachableCells.add(key);
+        // Add current cell to reachable cells
+        reachableCells.add(key);
 
-    // Check adjacent cells (orthogonal movement)
-    const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-    for (const [dRow, dCol] of directions) {
-      const newRow = row + dRow;
-      const newCol = col + dCol;
+        // Check adjacent cells (orthogonal movement)
+        const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        for (const [dRow, dCol] of directions) {
+            const newRow = row + dRow;
+            const newCol = col + dCol;
 
-      // Check bounds
-      if (newRow < 0 || newRow >= gridSize.rows || 
-          newCol < 0 || newCol >= gridSize.cols) {
-        continue;
-      }
+            // Check bounds
+            if (newRow < 0 || newRow >= gridSize.rows ||
+                newCol < 0 || newCol >= gridSize.cols) {
+                continue;
+            }
 
-      // Get terrain cost
-      const terrainType = terrainGrid[newRow][newCol];
-      const moveCost = TerrainCost[terrainType][moveType] || 999;
+            // Get terrain cost
+            const terrainType = terrainGrid[newRow][newCol];
+            const moveCost = TerrainCost[terrainType][moveType] || 999;
 
-      // Skip impassable terrain or if not enough movement points
-      if (moveCost === 999 || moveCost > remainingPoints) {
-        continue;
-      }
+            // Skip impassable terrain or if not enough movement points
+            if (moveCost === 999 || moveCost > remainingPoints) {
+                continue;
+            }
 
-      // Add to queue if we have enough movement points
-      const newRemainingPoints = remainingPoints - moveCost;
-      if (newRemainingPoints >= 0) {
-        queue.push({
-          row: newRow,
-          col: newCol,
-          remainingPoints: newRemainingPoints
-        });
-      }
+            // Add to queue if we have enough movement points
+            const newRemainingPoints = remainingPoints - moveCost;
+            if (newRemainingPoints >= 0) {
+                queue.push({
+                    row: newRow,
+                    col: newCol,
+                    remainingPoints: newRemainingPoints
+                });
+            }
+        }
     }
-  }
 
-  // Convert Set of keys back to array of coordinates
-  return Array.from(reachableCells).map(key => {
-    const [row, col] = key.split(',').map(Number);
-    return { row, col };
-  });
+    // Convert Set of keys back to array of coordinates
+    return Array.from(reachableCells).map(key => {
+        const [row, col] = key.split(',').map(Number);
+        return { row, col };
+    });
 };
 
 /**
@@ -318,38 +318,40 @@ export const calculateMovementRange = (centerRow, centerCol, movementPoints, mov
  * @returns {Array<{row: number, col: number}>} - An array of the nearest grid coordinates.
  */
 export const findNearestGrids = (centerRow, centerCol, gridDistance, areaGrids) => {
-    const nearestGrids = [];
+    if (Array.isArray(areaGrids)) {
+        // Create a Set to hold unique grid coordinates and their distances
+        const gridDistances = [];
+        areaGrids.forEach(({row, col}) => {
+            // Calculate Manhattan distance from the center grid
+            const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
 
-    // Check bounds to ensure the center grid is valid
-    if (centerRow < 0 || centerRow >= gridSize.rows || centerCol < 0 || centerCol >= gridSize.cols) {
-        console.warn("Invalid center grid position");
-        return nearestGrids;
+            // Push grid coordinates with their distance to the array
+            gridDistances.push({ row, col, distance });
+
+            const nearestGrids = [];
+
+            // Check bounds to ensure the center grid is valid
+            if (centerRow < 0 || centerRow >= gridSize.rows || centerCol < 0 || centerCol >= gridSize.cols) {
+                console.warn("Invalid center grid position");
+                return nearestGrids;
+            }
+        
+            // Sort the grids based on distance
+            gridDistances.sort((a, b) => a.distance - b.distance);
+        
+            // Get the first x grids from the sorted array
+            for (let i = 0; i < Math.min(gridDistance, gridDistances.length); i++) {
+                nearestGrids.push({ row: gridDistances[i].row, col: gridDistances[i].col });
+            }
+        
+            return nearestGrids;
+        });
+    } else {
+        console.error('areaGrids is not an array:', areaGrids);
     }
+}
 
-    // Create a Set to hold unique grid coordinates and their distances
-    const gridDistances = [];
-
-    // Iterate through each cell in the provided areaGrids array
-    areaGrids.forEach(({ row, col }) => {
-        // Calculate Manhattan distance from the center grid
-        const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
-
-        // Push grid coordinates with their distance to the array
-        gridDistances.push({ row, col, distance });
-    });
-
-    // Sort the grids based on distance
-    gridDistances.sort((a, b) => a.distance - b.distance);
-
-    // Get the first x grids from the sorted array
-    for (let i = 0; i < Math.min(gridDistance, gridDistances.length); i++) {
-        nearestGrids.push({ row: gridDistances[i].row, col: gridDistances[i].col });
-    }
-
-    return nearestGrids;
-};
-
-const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick, onDragOver ,showTerrainOverlay}) => {
+const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick, onDragOver, showTerrainOverlay }) => {
     const ref = useRef(null);
     const [isDraggedOver, setIsDraggedOver] = useState(false);
 
@@ -381,17 +383,17 @@ const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClic
 
     return (
         <div
-        ref={ref}
-        className={`${styles['grid-cell']} 
+            ref={ref}
+            className={`${styles['grid-cell']} 
             ${styles[`terrain-${terrainType}`]}
             ${isClicked ? styles['grid-cell-clicked'] : ''} 
             ${isHighlighted ? styles['grid-cell-highlighted'] : ''}
             ${isDraggedOver ? styles['grid-cell-dragged-over'] : ''}`}
-        onClick={onClick}
-        data-terrain={terrainType}
-      >
-        {showTerrainOverlay && <TerrainOverlay terrainType={terrainType} />}
-      </div>
+            onClick={onClick}
+            data-terrain={terrainType}
+        >
+            {showTerrainOverlay && <TerrainOverlay terrainType={terrainType} />}
+        </div>
     );
 };
 
@@ -409,7 +411,7 @@ const terrainData = [
 ];
 */
 
-const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlightedCells, terrainData, onCellDragOver, showTerrainOverlay}) => {
+const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlightedCells, terrainData, onCellDragOver, showTerrainOverlay }) => {
     const mapImage = `${process.env.PUBLIC_URL}/assets/images/map/Map_S0001.jpg`;
     const imgRef = useRef(null);
     const mapImageWidthRef = useRef(0);
@@ -432,13 +434,13 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
 
                 if (row >= 0 && row < gridSize.rows && col >= 0 && col < gridSize.cols) {
                     const newGridPosition = { row, col };
-                    
+
                     // Only update if grid position changed
-                    if (!currentMouseGridPosition || 
-                        currentMouseGridPosition.row !== row || 
+                    if (!currentMouseGridPosition ||
+                        currentMouseGridPosition.row !== row ||
                         currentMouseGridPosition.col !== col) {
                         setCurrentMouseGridPosition(newGridPosition);
-                        
+
                         // Call onCellDragOver if provided
                         if (typeof onCellDragOver === 'function') {
                             onCellDragOver(row, col);

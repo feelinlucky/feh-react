@@ -38,6 +38,7 @@ export const characterInteraction = (charStates1, charStates2) => {
                 char1: char1.name,
                 char2: char2.name,
                 action: 'attack',
+                range: 1,
                 effect: -100 // TODO: create an effect object that encapsulate all the effects of the action
             };
 
@@ -62,6 +63,7 @@ export const characterInteraction = (charStates1, charStates2) => {
                 char1: char1.name,
                 char2: char2.name,
                 action: skill,
+                range: 1,
                 effect: effect // TODO: create an effect object that encapsulate all the effects of the action
             };
 

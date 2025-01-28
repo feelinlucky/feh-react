@@ -6,7 +6,7 @@ import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
 import Sprite from '../sprite/Sprite';
 import { createTurnState } from './TurnState';
 import GameMap, {
-  visualizeTerrainGrid,
+  findNearestGrids,
   defineTerrainGrid,
   TerrainType,
   calculateMovementRange
@@ -514,9 +514,17 @@ const GameUI = () => {
           return;
         }
         const actionResult = characterInteraction(selectedCharData, draggedOverCharacterData);
-        if (actionResult.error) {
+        if (actionResult.error || !actionResult) {
+          return;
+        } else {
+          const interactionRange = actionResult.range || 0;
+          const areaGrids = [...highlightedCells];
+          const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
+          console.log(`validMoveGrids:`, validMoveGrids);
+          setHighlightedCells(validMoveGrids);
           return;
         }
+
         updateLogText(printInteractionResult(actionResult), 'interaction');
       } else {
         setCharacterPositions(prev => ({
