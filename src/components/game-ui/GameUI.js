@@ -517,7 +517,7 @@ const GameUI = () => {
         if (actionResult.error || !actionResult) {
           return;
         } else {
-          const interactionRange = actionResult.range || 0;
+          const interactionRange = actionResult.range? actionResult.range : 0;
           const areaGrids = [...highlightedCells];
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
           console.log(`validMoveGrids:`, validMoveGrids);

@@ -318,6 +318,8 @@ export const calculateMovementRange = (centerRow, centerCol, movementPoints, mov
  * @returns {Array<{row: number, col: number}>} - An array of the nearest grid coordinates.
  */
 export const findNearestGrids = (centerRow, centerCol, gridDistance, areaGrids) => {
+    gridDistance = gridDistance + 1; // Add 1 to include the center grid
+
     if (centerRow < 0 || centerRow >= gridSize.rows || centerCol < 0 || centerCol >= gridSize.cols) {
         console.warn("Invalid center grid position");
         return [];
