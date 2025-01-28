@@ -309,6 +309,46 @@ export const calculateMovementRange = (centerRow, centerCol, movementPoints, mov
   });
 };
 
+/**
+ * Helper function to find the nearest x grids based on a given grid position.
+ * @param {number} centerRow - The row of the center grid.
+ * @param {number} centerCol - The column of the center grid.
+ * @param {number} gridDistance - The number of nearest grids to return.
+ * @param {Array<{row: number, col: number}>} areaGrids - The grid of terrain types.
+ * @returns {Array<{row: number, col: number}>} - An array of the nearest grid coordinates.
+ */
+export const findNearestGrids = (centerRow, centerCol, gridDistance, areaGrids) => {
+    const nearestGrids = [];
+
+    // Check bounds to ensure the center grid is valid
+    if (centerRow < 0 || centerRow >= gridSize.rows || centerCol < 0 || centerCol >= gridSize.cols) {
+        console.warn("Invalid center grid position");
+        return nearestGrids;
+    }
+
+    // Create a Set to hold unique grid coordinates and their distances
+    const gridDistances = [];
+
+    // Iterate through each cell in the provided areaGrids array
+    areaGrids.forEach(({ row, col }) => {
+        // Calculate Manhattan distance from the center grid
+        const distance = Math.abs(row - centerRow) + Math.abs(col - centerCol);
+
+        // Push grid coordinates with their distance to the array
+        gridDistances.push({ row, col, distance });
+    });
+
+    // Sort the grids based on distance
+    gridDistances.sort((a, b) => a.distance - b.distance);
+
+    // Get the first x grids from the sorted array
+    for (let i = 0; i < Math.min(gridDistance, gridDistances.length); i++) {
+        nearestGrids.push({ row: gridDistances[i].row, col: gridDistances[i].col });
+    }
+
+    return nearestGrids;
+};
+
 const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick, onDragOver ,showTerrainOverlay}) => {
     const ref = useRef(null);
     const [isDraggedOver, setIsDraggedOver] = useState(false);
@@ -513,3 +553,4 @@ GameMap.propTypes = {
 
 // Make GameMap the default export
 export default GameMap;
+
