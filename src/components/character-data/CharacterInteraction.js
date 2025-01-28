@@ -34,9 +34,6 @@ export const characterInteraction = (charStates1, charStates2) => {
             // Ensure minimum 0 damage
             damage = Math.max(0, damage);
 
-            // Apply damage
-            char2.hp = Math.max(0, char2.hp - damage);
-
             return {
                 char1: char1.name,
                 char2: char2.name,

@@ -515,10 +515,8 @@ const GameUI = () => {
         }
         const actionResult = characterInteraction(selectedCharData, draggedOverCharacterData);
         if (actionResult.error) {
-          updateLogText(`Error occured during ${selectedCharacter}'s interaction in turn # ${turnState.getTurnNumber()} with active group ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foes'}`, 'event');
           return;
         }
-
         updateLogText(printInteractionResult(actionResult), 'interaction');
       } else {
         setCharacterPositions(prev => ({
