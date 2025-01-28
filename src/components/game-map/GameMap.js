@@ -339,8 +339,11 @@ export const findNearestGrids = (centerRow, centerCol, gridDistance, areaGrids) 
     // Sort the grids based on distance
     gridDistances.sort((a, b) => a.distance - b.distance);
 
+    // Filter out the center grid
+    const filteredGrids = gridDistances.filter(({ row, col }) => !(row === centerRow && col === centerCol));
+
     // Get the first x grids from the sorted array
-    const nearestGrids = gridDistances.slice(0, gridDistance).map(({ row, col }) => ({ row, col }));
+    const nearestGrids = filteredGrids.slice(0, gridDistance).map(({ row, col }) => ({ row, col }));
 
     return nearestGrids;
 };
