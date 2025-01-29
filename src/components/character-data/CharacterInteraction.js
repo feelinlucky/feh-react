@@ -76,7 +76,6 @@ export const characterInteraction = (charStates1, charStates2) => {
 };
 
 export const printInteractionResult = (interactionResult) => {
-    console.log("printInteractionResult", interactionResult);
     if (interactionResult.error) {
         return `Error: ${interactionResult.error}`;
     };
