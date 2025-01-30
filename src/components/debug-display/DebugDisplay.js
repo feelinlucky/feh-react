@@ -88,7 +88,8 @@ const DebugDisplay = ({
   setShowTerrainOverlay,
   isDebugDisplayVisible,
   toggleDebugDisplay,
-  turnState
+  turnState,
+  mapClickMode // Add mapClickMode to the props
 }) => {
   const gridCellCoordinates =
     draggedOverCell && gridAnchorCoordinates
@@ -119,6 +120,13 @@ const DebugDisplay = ({
               isActive={showTerrainOverlay}
             />
           </div>
+
+          <DebugInfoBlock
+            title="Map Click Mode"
+            data={{
+              mapClickMode: `${mapClickMode}`
+            }}
+          />
 
           <DebugInfoBlock
             title="Drag Debug Info"
@@ -192,7 +200,6 @@ const DebugDisplay = ({
               }`
             }}
           />
-
         </div >
       )}
     </div >
@@ -215,6 +222,7 @@ DebugDisplay.propTypes = {
   isDebugDisplayVisible: PropTypes.bool.isRequired,
   toggleDebugDisplay: PropTypes.func.isRequired,
   turnState: PropTypes.object.isRequired,
+  mapClickMode: PropTypes.string.isRequired, // Add mapClickMode to propTypes
 };
 
 export default DebugDisplay;

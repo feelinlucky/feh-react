@@ -23,7 +23,8 @@ const LogTextContainer = ({
   setShowTerrainOverlay,
   isDebugDisplayVisible,
   toggleDebugDisplay,
-  turnState
+  turnState,
+  mapClickMode
 }) => {
   const [selectedMode, setSelectedMode] = useState(null);
 
@@ -92,6 +93,7 @@ const LogTextContainer = ({
           isDebugDisplayVisible={isDebugDisplayVisible}
           toggleDebugDisplay={toggleDebugDisplay}
           turnState={turnState}
+          mapClickMode={mapClickMode}
         />
       )}
     </div>

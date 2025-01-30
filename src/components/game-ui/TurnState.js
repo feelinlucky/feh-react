@@ -25,7 +25,7 @@ function createTurnState(allyStates, foeStates, {
     return turnNumber;
   }
 
-  function currentGroupHasEndedTurn() {
+  function currentGroupHasFinishedTurn() {
     const currentGroup = currentGroupStates();
     return Object.values(currentGroup).every(unit => unit.endedTurn);
   };
@@ -45,18 +45,12 @@ function createTurnState(allyStates, foeStates, {
 
   // Check if the character is in the current group and hasn't acted yet
   function unitTurnFinished(characterName) {
-    if (currentGroupHasEndedTurn()) {
-      advanceTurn();
-      return true; // Indicates turn has ended
-    }
-
     const charTurnState = getCharacterTurnState(characterName);
-
-    if (charTurnState.hasMoved && charTurnState.hasActed) {
-      charTurnState.endedTurn = true;
-      return true;
-    }
-
+      if ( (charTurnState?.isAlly === currentActiveGroupIsAlly())
+        && (charTurnState.hasActed || charTurnState.hasMoved)) {
+        charTurnState.endedTurn = true;
+        return true;
+      }
     return false;
   }
 
@@ -74,17 +68,25 @@ function createTurnState(allyStates, foeStates, {
     return (currentUnit[propName] === bool);
   }
 
+  function updateGroupTurnState(characterName) {
+    if (unitTurnFinished(characterName) && currentGroupHasFinishedTurn()) {
+      advanceTurn();
+      return true;
+    };
+    return false;
+  }
+
   function hasMoved(characterName) {
     if (setUnitState(characterName, 'hasMoved', true)) {
-      return unitTurnFinished(characterName);
+      return updateGroupTurnState(characterName)
     }
     return false;
   }
 
   function hasActed(characterName) {
     if (setUnitState(characterName, 'hasActed', true)) {
-      return unitTurnFinished(characterName);
-    }
+      return updateGroupTurnState(characterName)
+    };
     return false;
   }
 
@@ -161,7 +163,7 @@ function createTurnState(allyStates, foeStates, {
     hasActed,
     setUnitTurnAsFinished,
     resetGroupActions,
-    currentGroupHasEndedTurn,
+    currentGroupHasFinishedTurn,
     advanceTurn,
     undo,
     redo

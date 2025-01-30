@@ -238,7 +238,7 @@ const GameUI = () => {
   const [clickedState, setClickedState] = useState(null);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
   const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState({});
-  const [selectedCharacter, setSelectedCharacter] = useState("Alfonse");
+  const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef(null);
   const [gridCenterAdjustment, setGridCenterAdjustment] = useState({ x: 0, y: 0 });
@@ -500,60 +500,61 @@ const GameUI = () => {
 
   // Update turn state after each character action
   const updateTurnState = useCallback(({characterName, justMoved, justActed}) => {
-    let unitTurnFinished = false;
-    
     if (justActed) {
-      unitTurnFinished = turnState.hasActed(characterName);
+      turnState.hasActed(characterName);
     }
     
     if (justMoved) {
-      unitTurnFinished = turnState.hasMoved(characterName);
-    }
-    
-    if (unitTurnFinished) {
-      updateLogText(`${selectedCharacter} finished turn. Turn # ${turnState.getTurnNumber()} for ${turnState.currentActiveGroupIsAlly() ? 'ally' : 'foes'}`, 'event');
+      turnState.hasMoved(characterName);
     }
   }, [turnState]);
 
-  function getMapClickMode(newClickedState, selectedCharacter) {
+  const [mapClickMode, setMapClickMode] = useState('null');
+
+  function getMapClickMode(newClickedState, selectedCharacter, clickedCharacter) {
     if (!newClickedState.isMapGrid) {
       return 'null';
     }
 
-    if (selectedCharacter) {
+    if (selectedCharacter && (!clickedCharacter || (selectedCharacter !== clickedCharacter))) {
       const characterTurnState = turnState.getCharacterTurnState(selectedCharacter);
   
       if (!characterTurnState) {
         console.error(`Character ${selectedCharacter} not found in current group.`);
         return;
       }
-
-      const cellIsHighlighted = isCellHighlighted(newClickedState.gridY, newClickedState.gridX);
-      const cellIsOccupied = isOccupiedCell(newClickedState.gridY, newClickedState.gridX);
-      const endedTurn = characterTurnState.endedTurn;
-      if (!endedTurn) {
-        updateLogText(`${selectedCharacter} has already ended turn.`, 'error');
-        return 'null';
-      }
-      const hasActed = characterTurnState.hasActed;
-      const hasMoved = characterTurnState.hasMoved;
-
-      if (cellIsHighlighted) {
-        if (hasMoved) {
-          return 'null';
+      if (highlightedCells.length > 0) {
+        const endedTurn = characterTurnState.endedTurn;
+        if (endedTurn) {
+          updateLogText(`${selectedCharacter} has already ended turn.`, 'error');
+          return 'switch_selected';
         }
-        if (cellIsOccupied) {
-          if (!hasActed) {
+
+        const cellIsHighlighted = isCellHighlighted(newClickedState.gridY, newClickedState.gridX);
+        const cellIsOccupied = isOccupiedCell(newClickedState.gridY, newClickedState.gridX);
+        const hasActed = characterTurnState.hasActed;
+        const hasMoved = characterTurnState.hasMoved;
+  
+        if (cellIsHighlighted) {
+          if (hasMoved) {
+            return 'switch_selected';
+          }
+          if (cellIsOccupied ) {
+            if (selectedCharacter === clickedCharacter) {
+              return 'null';
+            }
+            if (hasActed) {
+              return 'switch_selected';
+            }
             return 'move_and_interact';
           }
-          return 'null';
-        } else {
-          return 'move_and_interact';
-        }
+          return 'move';
+        }     
+        return 'switch_selected';
       }
       return 'switch_selected';
     }    
-    return 'switch_selected';
+    return 'null';
   };
 
   const handleGridClick = useCallback((gridY, gridX) => {
@@ -570,14 +571,15 @@ const GameUI = () => {
     });
 
     // determine map click state
-    const mapClickMode = getMapClickMode(newClickedState, selectedCharacter);
+    const mode = getMapClickMode(newClickedState, selectedCharacter, clickedCharacter);
+    setMapClickMode(mode);
 
-    switch (mapClickMode) {
+    switch (mode) {
       case 'null':
-        resetSelectState({resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true});
+        resetSelectState({resetClickedState: false, resetSelectedCharacter: true, resetHighlightedCells: true});
         return;
       case 'move_and_interact':
-        const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
+        const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter] || null;
         const draggedOverCharacter = clickedCharacter || null;
         const draggedOverCharacterData = allyStates[draggedOverCharacter] || foeStates[draggedOverCharacter] || null;
 
@@ -588,7 +590,6 @@ const GameUI = () => {
         const actionResult = characterInteraction(selectedCharData, draggedOverCharacterData);
         if (actionResult.error || !actionResult) {
           console.error(`Error: ${actionResult.error}`);
-          return;
         } else {
           const interactionRange = actionResult.range? actionResult.range : 0;
           const areaGrids = [...highlightedCells];
@@ -597,7 +598,7 @@ const GameUI = () => {
           setHighlightedCells(validMoveGrids);
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
-          updateTurnState({characterName: selectedCharacter, justActed: false, justMoved: true});
+          updateTurnState({characterName: selectedCharacter, justActed: true, justMoved: false});
         }
         resetSelectState({resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true});
         return;
@@ -606,17 +607,16 @@ const GameUI = () => {
           ...prev,
           [selectedCharacter]: { row: gridY, col: gridX }
         }));
+        updateTurnState({characterName: selectedCharacter, justActed: false, justMoved: true})
         resetSelectState({resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true});
         return;
       case 'switch_selected':
         if (clickedCharacter) {
-          setSelectedCharacter(clickedCharacter);
-
           const selectedCharState = allyStates[clickedCharacter] || foeStates[clickedCharacter];
           if (!selectedCharState) {
             console.error(`Character ${characterAtPosition} not found in current group.`);
             return;
-          }
+          };
           const movementRange = calculateMovementRange(
             gridY,
             gridX,
@@ -625,9 +625,9 @@ const GameUI = () => {
             terrainData
           );
           setHighlightedCells(movementRange);
-          console.log(`movementRange:`, movementRange);
+          return;
         }
-      return;
+        return;
     }
   }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition, allyStates, foeStates, updateTurnState]);
 
@@ -722,6 +722,7 @@ const GameUI = () => {
           isDebugDisplayVisible={isDebugDisplayVisible}
           toggleDebugDisplay={toggleDebugDisplay}
           turnState={turnState}
+          mapClickMode={mapClickMode}
         />
       </div>
     </div>
