@@ -14,7 +14,6 @@ export const gridSize = { rows: 6, cols: 8 };
 
 // Utility function to calculate cells within a radius, excluding invalid terrain
 /**
- * Utility function to calculate cells within a radius, excluding invalid terrain
  * @param {number} centerRow - Center row coordinate
  * @param {number} centerCol - Center column coordinate
  * @param {number} radius - Movement radius

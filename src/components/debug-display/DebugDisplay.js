@@ -22,7 +22,7 @@ DebugButton.defaultProps = {
   isActive: false,
 };
 
-const DebugInfoBlock = ({ title, data }) => {
+const DebugInfoBlock = ({ title, data, children }) => {
   // Convert data to an array of rows for the table
   const dataRows = Object.entries(data).map(([key, value]) => {
     return (
@@ -47,6 +47,7 @@ const DebugInfoBlock = ({ title, data }) => {
           {dataRows}
         </tbody>
       </table>
+      {children}
     </div>
   );
 };
@@ -54,6 +55,22 @@ const DebugInfoBlock = ({ title, data }) => {
 DebugInfoBlock.propTypes = {
   title: PropTypes.string.isRequired,
   data: PropTypes.any.isRequired,
+  children: PropTypes.node,
+};
+
+const TurnIndicator = ({ turnState }) => (
+  <div className={styles.turnIndicator}>
+    <div>Turn: {turnState.getTurnNumber()}</div>
+    <div>Active Group: {turnState.currentActiveGroupIsAlly() ? 'Allies' : 'Enemies'}</div>
+    <div>Actions Remaining: {
+      Object.values(turnState.currentGroupStates())
+        .filter(unit => !unit.hasActed).length
+    }</div>
+  </div>
+);
+
+TurnIndicator.propTypes = {
+  turnState: PropTypes.object.isRequired,
 };
 
 const DebugDisplay = ({
@@ -71,6 +88,7 @@ const DebugDisplay = ({
   setShowTerrainOverlay,
   isDebugDisplayVisible,
   toggleDebugDisplay,
+  turnState
 }) => {
   const gridCellCoordinates =
     draggedOverCell && gridAnchorCoordinates
@@ -114,29 +132,29 @@ const DebugDisplay = ({
                 draggedOverGrid: draggedOverCell,
                 cursorPos: currentCursorPos
                   ? {
-                      original: currentCursorPos,
-                      adjusted: {
-                        x: currentCursorPos.x - mapPosition.x,
-                        y: currentCursorPos.y - mapPosition.y,
-                      },
-                      adjustedToGrid:
-                        draggedOverCell && gridAnchorCoordinates
-                          ? {
-                              x:
-                                currentCursorPos.x -
-                                mapPosition.x -
-                                gridAnchorCoordinates[
-                                  `${draggedOverCell.row}-${draggedOverCell.col}`
-                                ].x,
-                              y:
-                                currentCursorPos.y -
-                                mapPosition.y -
-                                gridAnchorCoordinates[
-                                  `${draggedOverCell.row}-${draggedOverCell.col}`
-                                ].y,
-                            }
-                          : 'none',
-                    }
+                    original: currentCursorPos,
+                    adjusted: {
+                      x: currentCursorPos.x - mapPosition.x,
+                      y: currentCursorPos.y - mapPosition.y,
+                    },
+                    adjustedToGrid:
+                      draggedOverCell && gridAnchorCoordinates
+                        ? {
+                          x:
+                            currentCursorPos.x -
+                            mapPosition.x -
+                            gridAnchorCoordinates[
+                              `${draggedOverCell.row}-${draggedOverCell.col}`
+                            ].x,
+                          y:
+                            currentCursorPos.y -
+                            mapPosition.y -
+                            gridAnchorCoordinates[
+                              `${draggedOverCell.row}-${draggedOverCell.col}`
+                            ].y,
+                        }
+                        : 'none',
+                  }
                   : 'none',
                 mapPosition: mapPosition,
               },
@@ -162,9 +180,22 @@ const DebugDisplay = ({
               history: clickedStateHistory,
             }}
           />
-        </div>
+
+          <DebugInfoBlock
+            title="Turn Indicator"
+            data={{
+              Turn: `${turnState.getTurnNumber()}`,
+              ActiveGroup: `${turnState.currentActiveGroupIsAlly() ? 'Allies' : 'Enemies'}`,
+              ActionsRemaining: `${
+                Object.values(turnState.currentGroupStates())
+                  .filter(unit => !unit.hasActed).length
+              }`
+            }}
+          />
+
+        </div >
       )}
-    </div>
+    </div >
   );
 };
 
@@ -183,6 +214,7 @@ DebugDisplay.propTypes = {
   setShowTerrainOverlay: PropTypes.func.isRequired,
   isDebugDisplayVisible: PropTypes.bool.isRequired,
   toggleDebugDisplay: PropTypes.func.isRequired,
+  turnState: PropTypes.object.isRequired,
 };
 
 export default DebugDisplay;

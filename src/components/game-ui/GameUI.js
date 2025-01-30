@@ -332,19 +332,6 @@ const GameUI = () => {
   const categorizedLogs = logText.filter(log => log.category !== "uncategorized");
   const uncategorizedLogs = logText.filter(log => log.category === "uncategorized");
 
-  function TurnIndicator({ turnState }) {
-    return (
-      <div className="turn-indicator">
-        <div>Turn: {turnState.getTurnNumber()}</div>
-        <div>Active Group: {turnState.currentActiveGroupIsAlly() ? 'Allies' : 'Enemies'}</div>
-        <div>Actions Remaining: {
-          Object.values(turnState.currentGroupStates())
-            .filter(unit => !unit.hasActed).length
-        }</div>
-      </div>
-    );
-  }
-
   // Track whether the current group is draggable
   const [isDraggable, setIsDraggable] = useState(true);
 
@@ -512,7 +499,7 @@ const GameUI = () => {
   };
 
   // Update turn state after each character action
-  const updateTurnState = useCallback((characterName, justMoved, justActed) => {
+  const updateTurnState = useCallback(({characterName, justMoved, justActed}) => {
     let unitTurnFinished = false;
     
     if (justActed) {
@@ -528,9 +515,8 @@ const GameUI = () => {
     }
   }, [turnState]);
 
-  // determine map grid 
-  function getMapClickMode(newState, isCellHighlighted, selectedCharacter) {
-    if (!newState.isMapGrid) {
+  function getMapClickMode(newClickedState, selectedCharacter) {
+    if (!newClickedState.isMapGrid) {
       return 'null';
     }
 
@@ -542,18 +528,18 @@ const GameUI = () => {
         return;
       }
 
+      const cellIsHighlighted = isCellHighlighted(newClickedState.gridY, newClickedState.gridX);
+      const cellIsOccupied = isOccupiedCell(newClickedState.gridY, newClickedState.gridX);
       const endedTurn = characterTurnState.endedTurn;
-      if (endedTurn) {
+      if (!endedTurn) {
+        updateLogText(`${selectedCharacter} has already ended turn.`, 'error');
         return 'null';
       }
-
-      const cellIsHighlighted = isCellHighlighted(newState.gridY, newState.gridX);
-      const cellIsOccupied = isOccupiedCell(newState.gridY, newState.gridX);
       const hasActed = characterTurnState.hasActed;
       const hasMoved = characterTurnState.hasMoved;
 
       if (cellIsHighlighted) {
-        if (!hasMoved) {
+        if (hasMoved) {
           return 'null';
         }
         if (cellIsOccupied) {
@@ -562,18 +548,29 @@ const GameUI = () => {
           }
           return 'null';
         } else {
-          return 'move';
+          return 'move_and_interact';
         }
       }
       return 'switch_selected';
     }    
+    return 'switch_selected';
   };
 
   const handleGridClick = useCallback((gridY, gridX) => {
-    const newState = { gridY, gridX, isMapGrid: true };
+    const characterAtPosition = Object.entries(charPositions).find(
+      ([_, pos]) => pos.row === gridY && pos.col === gridX
+    );
+    const clickedCharacter= characterAtPosition ? characterAtPosition[0] : null;
+    const newClickedState = { gridY, gridX, isMapGrid: true, characterName: clickedCharacter };
+
+    setClickedState(newClickedState);
+    setClickedStateHistory(prev => {
+      const newHistory = [newClickedState, ...prev].slice(0, 5);
+      return newHistory;
+    });
 
     // determine map click state
-    const mapClickMode = getMapClickMode(newState, isCellHighlighted, selectedCharacter);
+    const mapClickMode = getMapClickMode(newClickedState, selectedCharacter);
 
     switch (mapClickMode) {
       case 'null':
@@ -581,7 +578,7 @@ const GameUI = () => {
         return;
       case 'move_and_interact':
         const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
-        const draggedOverCharacter = findCharacterNameByGridPosition({ row: gridY, col: gridX }, charPositions) || null;
+        const draggedOverCharacter = clickedCharacter || null;
         const draggedOverCharacterData = allyStates[draggedOverCharacter] || foeStates[draggedOverCharacter] || null;
 
         if (!selectedCharData || !draggedOverCharacterData) {
@@ -600,33 +597,26 @@ const GameUI = () => {
           setHighlightedCells(validMoveGrids);
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
-          updateTurnState(selectedCharacter, false, true);
-          return;
+          updateTurnState({characterName: selectedCharacter, justActed: false, justMoved: true});
         }
+        resetSelectState({resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true});
+        return;
       case 'move':
         setCharacterPositions(prev => ({
           ...prev,
           [selectedCharacter]: { row: gridY, col: gridX }
         }));
+        resetSelectState({resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true});
         return;
       case 'switch_selected':
-        // handle switch selected logic
-        setClickedState(newState);
-        setClickedStateHistory(prev => {
-          const newHistory = [newState, ...prev].slice(0, 5);
-          return newHistory;
-        });
+        if (clickedCharacter) {
+          setSelectedCharacter(clickedCharacter);
 
-        const characterAtPosition = Object.entries(charPositions).find(
-          ([_, pos]) => pos.row === gridY && pos.col === gridX
-        );
-    
-        if (characterAtPosition) {
-          const [charName, _] = characterAtPosition;
-          const selectedCharState = allyStates[charName] || foeStates[charName];
-          newState.characterName = charName;
-          setSelectedCharacter(charName);
-    
+          const selectedCharState = allyStates[clickedCharacter] || foeStates[clickedCharacter];
+          if (!selectedCharState) {
+            console.error(`Character ${characterAtPosition} not found in current group.`);
+            return;
+          }
           const movementRange = calculateMovementRange(
             gridY,
             gridX,
@@ -635,8 +625,9 @@ const GameUI = () => {
             terrainData
           );
           setHighlightedCells(movementRange);
+          console.log(`movementRange:`, movementRange);
         }
-        return;
+      return;
     }
   }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition, allyStates, foeStates, updateTurnState]);
 
@@ -730,6 +721,7 @@ const GameUI = () => {
           setShowTerrainOverlay={setShowTerrainOverlay}
           isDebugDisplayVisible={isDebugDisplayVisible}
           toggleDebugDisplay={toggleDebugDisplay}
+          turnState={turnState}
         />
       </div>
     </div>
