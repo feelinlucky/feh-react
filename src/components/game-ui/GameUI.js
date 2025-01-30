@@ -516,17 +516,20 @@ const GameUI = () => {
       return 'null';
     }
 
-    if (selectedCharacter && (!clickedCharacter || (selectedCharacter !== clickedCharacter))) {
-      const characterTurnState = turnState.getCharacterTurnState(selectedCharacter);
-  
-      if (!characterTurnState) {
-        console.error(`Character ${selectedCharacter} not found in current group.`);
-        return;
+    if (selectedCharacter) {
+      if (selectedCharacter === clickedCharacter) {
+        return 'null';
       }
-      if (highlightedCells.length > 0) {
-        const endedTurn = characterTurnState.endedTurn;
-        if (endedTurn) {
-          updateLogText(`${selectedCharacter} has already ended turn.`, 'error');
+
+      const characterTurnState = turnState.getCharacterTurnState(clickedCharacter);
+      if (!characterTurnState) {
+        console.error(`Character ${clickedCharacter} not found in current group.`);
+        return 'null';
+      }
+
+      if (highlightedCells && (highlightedCells.length > 0)) {
+        if (!turnState.unitTurnFinished(clickedCharacter)) {
+          updateLogText(`${clickedCharacter} has already ended turn.`, 'error');
           return 'switch_selected';
         }
 
@@ -540,9 +543,6 @@ const GameUI = () => {
             return 'switch_selected';
           }
           if (cellIsOccupied ) {
-            if (selectedCharacter === clickedCharacter) {
-              return 'null';
-            }
             if (hasActed) {
               return 'switch_selected';
             }
@@ -573,6 +573,7 @@ const GameUI = () => {
     // determine map click state
     const mode = getMapClickMode(newClickedState, selectedCharacter, clickedCharacter);
     setMapClickMode(mode);
+    updateLogText(`${mode} + ${selectedCharacter} : ${clickedCharacter} clicked at grid position: ${gridY}, ${gridX}`, 'info');
 
     switch (mode) {
       case 'null':
