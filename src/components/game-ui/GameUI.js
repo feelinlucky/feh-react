@@ -511,51 +511,49 @@ const GameUI = () => {
 
   const [mapClickMode, setMapClickMode] = useState('null');
 
-  function getMapClickMode(newClickedState, selectedCharacter, clickedCharacter) {
+  const getMapClickMode = (newClickedState, selectedCharacter, clickedCharacter) => {
+    // If the clicked state is not a map grid, return 'null'
     if (!newClickedState.isMapGrid) {
-      return 'null';
+        return 'null';
     }
 
+    // If a character is selected
     if (selectedCharacter) {
-      if (selectedCharacter === clickedCharacter) {
-        return 'null';
-      }
+        const characterTurnState = turnState.getCharacterTurnState(clickedCharacter);
 
-      const characterTurnState = turnState.getCharacterTurnState(clickedCharacter);
-      if (!characterTurnState) {
-        console.error(`Character ${clickedCharacter} not found in current group.`);
-        return 'null';
-      }
-
-      if (highlightedCells && (highlightedCells.length > 0)) {
-        if (!turnState.unitTurnFinished(clickedCharacter)) {
-          updateLogText(`${clickedCharacter} has already ended turn.`, 'error');
-          return 'switch_selected';
+        // Check if the character is valid and belongs to the current group
+        if (!characterTurnState) {
+            console.error(`Character ${clickedCharacter} not found in current group.`);
+            return 'null';
         }
 
         const cellIsHighlighted = isCellHighlighted(newClickedState.gridY, newClickedState.gridX);
         const cellIsOccupied = isOccupiedCell(newClickedState.gridY, newClickedState.gridX);
         const hasActed = characterTurnState.hasActed;
         const hasMoved = characterTurnState.hasMoved;
-  
+
+        // Highlighted cell interaction
         if (cellIsHighlighted) {
-          if (hasMoved) {
-            return 'switch_selected';
-          }
-          if (cellIsOccupied ) {
-            if (hasActed) {
-              return 'switch_selected';
+            if (hasMoved) {
+                return 'switch_selected'; // If already moved, switch selection
             }
-            return 'move_and_interact';
-          }
-          return 'move';
-        }     
-        return 'switch_selected';
-      }
-      return 'switch_selected';
-    }    
-    return 'null';
-  };
+            if (cellIsOccupied) {
+                // If the cell is occupied, check if it's the same character
+                if (selectedCharacter === clickedCharacter) {
+                    return 'null'; // No action needed if clicking on self
+                }
+                if (hasActed) {
+                    return 'switch_selected'; // Can't interact if already acted
+                }
+                return 'move_and_interact'; // Move to occupied cell to interact
+            }
+            return 'move'; // Valid move to an empty cell
+        }
+    }
+
+    // If no character is selected, just switch selection
+    return 'switch_selected';
+};
 
   const handleGridClick = useCallback((gridY, gridX) => {
     const characterAtPosition = Object.entries(charPositions).find(
