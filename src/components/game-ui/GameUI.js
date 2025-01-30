@@ -519,11 +519,11 @@ const GameUI = () => {
 
     // If a character is selected
     if (selectedCharacter) {
-      const characterTurnState = turnState.getCharacterTurnState(clickedCharacter);
+      const characterTurnState = turnState.getCharacterTurnState(selectedCharacter);
 
       // Check if the character is valid and belongs to the current group
       if (!characterTurnState) {
-        console.error(`Character ${clickedCharacter} not found in current group.`);
+        console.error(`Character ${selectedCharacter} not found in current group.`);
         return 'null';
       }
 
@@ -532,11 +532,9 @@ const GameUI = () => {
 
       // Highlighted cell interaction
       if (highlightedCells && (highlightedCells.length > 0)) {
+        console.log('highlightedCells:', highlightedCells);
 
         if (isCellHighlighted(newClickedState.gridY, newClickedState.gridX)) {
-          if (hasMoved) {
-            return 'switch_selected'; // If already moved, switch selection
-          }
           if (isOccupiedCell(newClickedState.gridY, newClickedState.gridX)) {
             // If the cell is occupied, check if it's the same character
             if (selectedCharacter === clickedCharacter) {
@@ -546,6 +544,9 @@ const GameUI = () => {
               return 'switch_selected'; // Can't interact if already acted
             }
             return 'move_and_interact'; // Move to occupied cell to interact
+          }
+          if (hasMoved) {
+            return 'switch_selected'; // Can't interact if already acted
           }
           return 'move'; // Valid move to an empty cell              
         }
@@ -605,6 +606,7 @@ const GameUI = () => {
         return;
       case 'move':
         setSelectedCharacter(clickedCharacter);
+        updateLogText(`Test move: ${mode} + ${selectedCharacter} : ${clickedCharacter} clicked at grid position: ${gridY}, ${gridX}`, 'info');
         setCharacterPositions(prev => ({
           ...prev,
           [selectedCharacter]: { row: gridY, col: gridX }
