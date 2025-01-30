@@ -13,6 +13,10 @@ function createTurnState(allyStates, foeStates, {
     return currentTurnIsOdd() ? allyStates : foeStates;
   }
 
+  function nextGroupStates() {
+    return currentTurnIsOdd() ? foeStates : allyStates;
+  }
+
   function currentActiveGroupIsAlly() {
     return currentTurnIsOdd() ? true : false;
   }
@@ -21,9 +25,9 @@ function createTurnState(allyStates, foeStates, {
     return turnNumber;
   }
 
-  function currentGroupHasActed() {
+  function currentGroupHasEndedTurn() {
     const currentGroup = currentGroupStates();
-    return Object.values(currentGroup).every(unit => unit.hasActed); // all units have acted
+    return Object.values(currentGroup).every(unit => unit.endedTurn);
   };
 
   function advanceTurn() {
@@ -34,48 +38,87 @@ function createTurnState(allyStates, foeStates, {
     if (onTurnStart) onTurnStart(turnNumber);
   }
 
-  // Check if the character is in the current group and hasn't acted yet
-  function waitingToAct(characterName) {
-    if (currentGroupHasActed()) {
-      advanceTurn();
-      return false; // Indicates turn has ended
-    }
-    
+  function getCharacterTurnState(characterName) {
     const currentGroup = currentGroupStates();
-    const currentUnit = currentGroup[characterName];
-    if (!currentUnit) {
-      return false;
-    }
-    return !currentUnit.hasActed;
+    return currentGroup[characterName] || null; // Returns the character's state or null if not found
   }
 
-  function hasActed(characterName) {
+  // Check if the character is in the current group and hasn't acted yet
+  function unitTurnFinished(characterName) {
+    if (currentGroupHasEndedTurn()) {
+      advanceTurn();
+      return true; // Indicates turn has ended
+    }
+
+    const charTurnState = getCharacterTurnState(characterName);
+
+    if (charTurnState.hasMoved && charTurnState.hasActed) {
+      charTurnState.endedTurn = true;
+      return true;
+    }
+
+    return false;
+  }
+
+  function setUnitState(characterName, propName, bool) {
     const currentGroup = currentGroupStates();
-    const currentUnit = currentGroup[characterName]; 
-    
+    const currentUnit = currentGroup[characterName];
+
     if (!currentUnit) {
       console.error(`Character ${characterName} not found in current group ${currentActiveGroupIsAlly()}.`);
       return false;
     }
-    
-    currentUnit.hasActed = true; // currentUnit is a reference to an object within allyStates or foeStates
 
-    if (currentGroupHasActed()) {
-      advanceTurn();
-      return true; // Indicates turn has ended
+    currentUnit[propName] = bool; // currentUnit is a reference to an object within allyStates or foeStates
+
+    return (currentUnit[propName] === bool);
+  }
+
+  function hasMoved(characterName) {
+    if (setUnitState(characterName, 'hasMoved', true)) {
+      return unitTurnFinished(characterName);
     }
     return false;
   }
 
+  function hasActed(characterName) {
+    if (setUnitState(characterName, 'hasActed', true)) {
+      return unitTurnFinished(characterName);
+    }
+    return false;
+  }
+
+  function setUnitTurnAsFinished(characterName) {
+    return (hasMoved(characterName) && hasActed(characterName))
+  }
+
+  function endTurnCurrentGroup() {
+    const currentGroup = currentGroupStates();
+    Object.values(currentGroup).forEach(unit => (
+      unit.hasActed = false,
+      unit.hasMoved = false,
+      unit.endedTurn = false
+    ));
+  }
+
+  function startTurnNextGroup() {
+    const nextGroup = nextGroupStates();
+    Object.values(nextGroup).forEach(unit => (
+      unit.hasActed = true,
+      unit.hasMoved = true,
+      unit.endedTurn = true
+    ));
+  }
+
   function resetGroupActions() {
-    const group = currentGroupStates();
-    Object.values(group).forEach(unit => (unit.hasActed = false));
+    endTurnCurrentGroup();
+    startTurnNextGroup();
   }
 
   // Undo/redo moves
   const turnHistory = [];
   const redoStack = [];
-  
+
   const deepClone = (obj) => {
     return JSON.parse(JSON.stringify(obj));
   };
@@ -87,7 +130,7 @@ function createTurnState(allyStates, foeStates, {
       foeStates: deepClone(foeStates)
     });
   }
-  
+
   function undo() {
     if (turnHistory.length > 1) {
       redoStack.push(turnHistory.pop());
@@ -97,7 +140,7 @@ function createTurnState(allyStates, foeStates, {
       foeStates = prevState.foeStates;
     }
   }
-  
+
   function redo() {
     if (redoStack.length > 0) {
       const nextState = redoStack.pop();
@@ -112,10 +155,13 @@ function createTurnState(allyStates, foeStates, {
     currentActiveGroupIsAlly,
     currentGroupStates,
     getTurnNumber,
-    waitingToAct,
+    getCharacterTurnState,
+    unitTurnFinished,
+    hasMoved,
     hasActed,
+    setUnitTurnAsFinished,
     resetGroupActions,
-    currentGroupHasActed,
+    currentGroupHasEndedTurn,
     advanceTurn,
     undo,
     redo
