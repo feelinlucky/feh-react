@@ -575,7 +575,6 @@ const GameUI = () => {
     // determine map click state
     const mode = getMapClickMode(newClickedState, selectedCharacter, clickedCharacter);
     setMapClickMode(mode);
-    updateLogText(`${mode} + ${selectedCharacter} : ${clickedCharacter} clicked at grid position: ${gridY}, ${gridX}`, 'info');
     switch (mode) {
       case 'null':
         resetSelectState({ resetClickedState: false, resetSelectedCharacter: true, resetHighlightedCells: true });
@@ -631,6 +630,8 @@ const GameUI = () => {
           );
           setHighlightedCells(movementRange);
           return;
+        } else {
+          resetSelectState({ resetClickedState: false, resetSelectedCharacter: false, resetHighlightedCells: true });
         }
         return;
       case 'invalid_move':
