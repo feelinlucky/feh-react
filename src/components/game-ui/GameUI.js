@@ -635,6 +635,7 @@ const GameUI = () => {
         }
         return;
       case 'invalid_move':
+        resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
         return;
     }
   }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition, allyStates, foeStates, updateTurnState]);
@@ -662,14 +663,14 @@ const GameUI = () => {
     <div className={styles['game-container']} onClick={handleContainerClick}>
       <div className={styles['content-wrapper']}>
         <CharacterStatUI
-          charName={selectedCharState.charName || ''}
-          level={selectedCharState.level || 0}
-          wpn={selectedCharState.wpn || ''}
-          hp={selectedCharState.hp || 0}
-          atk={selectedCharState.atk || 0}
-          spd={selectedCharState.spd || 0}
-          def={selectedCharState.def || 0}
-          res={selectedCharState.res || 0}
+          charName={selectedCharState.name}
+          level={selectedCharState.level}
+          wpn={selectedCharState.wpn}
+          hp={selectedCharState.hp}
+          atk={selectedCharState.atk}
+          spd={selectedCharState.spd}
+          def={selectedCharState.def}
+          res={selectedCharState.res}
         />
         <div className={styles['map-container']} ref={mapContainerRef}>
           <GameMap

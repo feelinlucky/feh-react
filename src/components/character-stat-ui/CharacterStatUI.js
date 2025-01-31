@@ -6,7 +6,15 @@ import SingleCharacterStatUI from '../single-character-stat-ui/SingleCharacterSt
 import MockChild from '../mock-child/MockChild';
 
 const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
+    const statUIRef = useRef(null);
 
+    useEffect(() => {
+        if (statUIRef.current) {
+            // You can expose this width through a prop or context if needed
+            const width = statUIRef.current.offsetWidth;
+        }
+    }, []);
+    
     const characterStats = [
         { characterStatType: 'NAME', characterStatValue: charName },
         { characterStatType: 'LV', characterStatValue: level },
@@ -18,17 +26,18 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
         { characterStatType: 'RES', characterStatValue: res },
     ];
 
+    const isValidStats = charName && level && wpn && 
+        typeof hp === 'number' && typeof atk === 'number' && 
+        typeof spd === 'number' && typeof def === 'number' && 
+        typeof res === 'number';
+
+    if (!isValidStats) {
+        return <div className={styles.offState} />;
+    }
+
     const characterStatsSlice1 = characterStats.slice(0, 4);
     const characterStatsSlice2 = characterStats.slice(4);
 
-    const statUIRef = useRef(null);
-
-    useEffect(() => {
-        if (statUIRef.current) {
-            // You can expose this width through a prop or context if needed
-            const width = statUIRef.current.offsetWidth;
-        }
-    }, []);
 
     if (!charName | !level | !wpn | !hp | !atk | !spd | !def | !res) {
         return <div className={styles.offState} />;
