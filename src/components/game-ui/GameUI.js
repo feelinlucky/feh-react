@@ -628,7 +628,6 @@ const GameUI = () => {
         return;
       case 'move':
         setSelectedCharacter(clickedCharacter);
-        updateLogText(`Test move: ${mode} + ${selectedCharacter} : ${clickedCharacter} clicked at grid position: ${gridY}, ${gridX}`, 'info');
         setCharacterPositions(prev => ({
           ...prev,
           [selectedCharacter]: { row: gridY, col: gridX }
