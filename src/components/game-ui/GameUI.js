@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { Component, useEffect, useState, useCallback, useRef } from 'react';
 import styles from './GameUI.module.css';
 import { useLocation } from 'react-router-dom';
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+
 import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
 import Sprite from '../sprite/Sprite';
 import { createTurnState } from './TurnState';
@@ -237,6 +238,26 @@ const GameUI = () => {
   const [selectedCharState, setselectedCharState] = useState({});
   const [clickedState, setClickedState] = useState(null);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
+
+  const createClickedState = ({gridY, gridX, isMapGrid, characterName, clickEvent}) => {
+    if (typeof gridY !== 'number' || typeof gridX !== 'number' || typeof isMapGrid !== 'boolean') {
+      if (!(clickEvent instanceof MouseEvent)) {
+        setClickedState({gridY: 0, gridX: 0, isMapGrid: false, characterName: null, clickEvent: null});
+        return;
+      }
+      setClickedState({gridY: 0, gridX: 0, isMapGrid: false, characterName: null, clickEvent: clickEvent});
+      return;
+    }
+    const clickState = { gridY, gridX, isMapGrid, characterName, clickEvent };
+    setClickedState(clickState);
+    setClickedStateHistory(prev => {
+      const newHistory = [clickState, ...prev].slice(0, 5);
+      return newHistory;
+    });
+  
+    return clickState;
+  };
+
   const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState({});
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
@@ -266,6 +287,13 @@ const GameUI = () => {
   //   [6, 4, 7, 5, 'wall'],
   // ]);
   const [mapState, setMapState] = useState(frontPageState.mapData || { terrain: [] });
+
+  const defaultClickState = {
+    gridY: null,
+    gridX: null,
+    isMapGrid: false,
+    characterName: null
+  };
 
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
   const foeNames = ["FighterSword"];
@@ -456,24 +484,13 @@ const GameUI = () => {
     return currentGridCenterCoordinate;
   };
 
-  const handleContainerClick = useCallback((event) => {
-    if (event.target.closest(`.${styles['map-container']}`)) {
+  const handleContainerClick = useCallback((containerClickEvent) => {
+
+    if (containerClickEvent.target.closest(`.${styles['map-container']}`)) {
       return;
     }
-
-    const newState = {
-      gridY: null,
-      gridX: null,
-      isMapGrid: false,
-      characterName: null
-    };
-
-    setClickedState(newState);
-    setSelectedCharacter(null);
-    setClickedStateHistory(prev => {
-      const newHistory = [newState, ...prev].slice(0, 5);
-      return newHistory;
-    });
+    createClickedState({gridY:0 , gridX:0, isMapGrid: false, characterName: null, clickedComponent: containerClickEvent.currentTarget});    
+    resetSelectState({ resetClickedState: false, resetSelectedCharacter: true, resetHighlightedCells: true });
   }, [setClickedState, setSelectedCharacter]);
   const isCellHighlighted = useCallback((row, col) => {
     return highlightedCells.some(cell => cell.row === row && cell.col === col);
@@ -485,7 +502,7 @@ const GameUI = () => {
 
   function resetSelectState({ resetClickedState, resetSelectedCharacter, resetHighlightedCells }) {
     if (resetClickedState) {
-      setClickedState(null);
+      setClickedState(defaultClickState);
     }
 
     if (resetSelectedCharacter) {
@@ -559,18 +576,16 @@ const GameUI = () => {
     return 'switch_selected';
   };
 
-  const handleGridClick = useCallback((gridY, gridX) => {
+  const handleGridClick = useCallback((gridClickEvent, gridY, gridX) => {
+    if (!(gridClickEvent instanceof MouseEvent)) {
+      return;
+    }
     const characterAtPosition = Object.entries(charPositions).find(
       ([_, pos]) => pos.row === gridY && pos.col === gridX
     );
     const clickedCharacter = characterAtPosition ? characterAtPosition[0] : null;
-    const newClickedState = { gridY, gridX, isMapGrid: true, characterName: clickedCharacter };
-
-    setClickedState(newClickedState);
-    setClickedStateHistory(prev => {
-      const newHistory = [newClickedState, ...prev].slice(0, 5);
-      return newHistory;
-    });
+    
+    const newClickedState = createClickedState({gridY: gridY, gridX: gridX, isMapGrid: true, characterName: clickedCharacter, clickedComponent: gridClickEvent.currentTarget});
 
     // determine map click state
     const mode = getMapClickMode(newClickedState, selectedCharacter, clickedCharacter);

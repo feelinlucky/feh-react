@@ -165,7 +165,7 @@ export const defineTerrainGrid = (rectangles) => {
     return grid;
 };
 
-// WORKING: Check each terrain grids from top-left to bottom-right which are eligible for starting position, and returns the first four eligible grids.
+// Check each terrain grids from top-left to bottom-right which are eligible for starting position, and returns the first four eligible grids.
 export const findEligibleStartingPositions = (terrainGrid) => {
     const eligiblePositions = [];
 
@@ -485,9 +485,9 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
         calculategridAnchorCoordinates();
     }, [mapImageWidthRef.current]);
 
-    const handleGridClick = (row, col) => {
+    const handleGridClick = (e, row, col) => {
         if (typeof onGridClick === 'function') {
-            onGridClick(row, col);
+            onGridClick(e, row, col);
         } else {
             console.error('onGridClick is not a function');
         }
@@ -512,7 +512,7 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                         isClicked={isClicked}
                         isHighlighted={isHighlighted}
                         terrainType={terrainType}
-                        onClick={() => handleGridClick(row, col)}
+                        onClick={(e) => handleGridClick(e, row, col)}
                         onDragOver={onCellDragOver}
                         showTerrainOverlay={showTerrainOverlay}
                     />
