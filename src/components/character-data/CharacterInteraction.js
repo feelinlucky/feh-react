@@ -4,6 +4,7 @@ export const characterInteraction = (charStates1, charStates2) => {
     let char2 = { ...charStates2 };
 
     let interactionType = '';
+    let damage = 0; // Initialize damage variable
 
     if (char1.group[0] === char2.group[0]) {
         interactionType = 'assist'; // Default interaction type for allies
@@ -15,7 +16,7 @@ export const characterInteraction = (charStates1, charStates2) => {
         case 'attack':
             // Calculate damage based on attack type
             let char1wpn = char1.wpnType || '';
-            let damage = char1.atk - char2.def;
+            damage = char1.atk - char2.def;
             if (char1wpn.includes("Magic")) {
                 damage = char1.atk - char2.res;
             }
@@ -68,9 +69,7 @@ export const characterInteraction = (charStates1, charStates2) => {
                 action: 'assist',
                 range: 1,
                 damage: damage,
-                endState: {
-                    hp: char2.hp + damage,
-                }
+                endState: effect
             };
 
         default:
