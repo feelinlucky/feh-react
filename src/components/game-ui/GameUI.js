@@ -73,7 +73,8 @@ const DraggableCharacter = ({
             const isWithinBounds = cursorPos.x >= mapPosition.x && cursorPos.x <= mapPosition.x + 512 && cursorPos.y >= mapPosition.y && cursorPos.y <= mapPosition.y + 512;
             const draggedOverCell = findGridCellByCursor(cursorPos, gridAnchorCoordinates);
 
-            if (!isWithinBounds && draggedOverCell) {
+            if (!isWithinBounds || !draggedOverCell) {
+              setCurrentDraggedOverCell(null);
               return;
             };
 
