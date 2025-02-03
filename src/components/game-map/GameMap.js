@@ -347,7 +347,7 @@ export const findNearestGrids = (centerRow, centerCol, gridDistance, areaGrids) 
     return nearestGrids;
 };
 
-const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick, onDragOver, showTerrainOverlay }) => {
+const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick, onDragOver, showTerrainOverlay, isActiveTurn }) => {
     const ref = useRef(null);
     const [isDraggedOver, setIsDraggedOver] = useState(false);
 
@@ -383,7 +383,8 @@ const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClic
             className={`${styles['grid-cell']} 
             ${styles[`terrain-${terrainType}`]}
             ${isClicked ? styles['grid-cell-clicked'] : ''} 
-            ${isHighlighted ? styles['grid-cell-highlighted'] : ''}
+            ${(isHighlighted && isActiveTurn) ? styles['grid-cell-highlighted-active'] : ''}
+            ${(isHighlighted && !isActiveTurn) ? styles['grid-cell-highlighted-inactive'] : ''}
             ${isDraggedOver ? styles['grid-cell-dragged-over'] : ''}`}
             onClick={onClick}
             data-terrain={terrainType}
@@ -503,6 +504,7 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                     cell.row === row && cell.col === col
                 );
                 const terrainType = terrainData?.[row]?.[col] || TerrainType.PLAIN;
+                const isActiveTurn = clickedState.selectedCharacterIsActive;
 
                 grid.push(
                     <DroppableCell
@@ -515,6 +517,7 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                         onClick={(e) => handleGridClick(e, row, col)}
                         onDragOver={onCellDragOver}
                         showTerrainOverlay={showTerrainOverlay}
+                        isActiveTurn={isActiveTurn}
                     />
                 );
             }

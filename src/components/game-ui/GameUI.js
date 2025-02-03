@@ -241,12 +241,15 @@ const GameUI = () => {
 
   const createClickedState = ({ gridY, gridX, isMapGrid, characterName, clickEvent }) => {
     // Create base click state
+    const selectedCharacterIsActive = characterName ? (selectedCharState?.isAlly === turnState.currentActiveGroupIsAlly()) : false;
+   
     const clickState = {
       gridY: typeof gridY === 'number' ? gridY : null,
       gridX: typeof gridX === 'number' ? gridX : null,
       isMapGrid: Boolean(isMapGrid),
       characterName: characterName || null,
-      clickEvent: clickEvent || null
+      clickEvent: clickEvent || null,
+      selectedCharacterIsActive: selectedCharacterIsActive
     };
 
     // Update current click state
@@ -449,7 +452,8 @@ const GameUI = () => {
         atk: 0,
         spd: 0,
         def: 0,
-        res: 0
+        res: 0,
+        isAlly: false
       });
     }
   }, [selectedCharacter, allyStates, foeStates, setselectedCharState]);
