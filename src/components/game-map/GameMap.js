@@ -504,7 +504,7 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
                     cell.row === row && cell.col === col
                 );
                 const terrainType = terrainData?.[row]?.[col] || TerrainType.PLAIN;
-                const isActiveTurn = clickedState.selectedCharacterIsActive;
+                const isActiveTurn = clickedState?.selectedCharacterIsActive || false;
 
                 grid.push(
                     <DroppableCell
@@ -542,7 +542,8 @@ GameMap.propTypes = {
         gridX: PropTypes.number,
         gridY: PropTypes.number,
         isMapGrid: PropTypes.bool,
-        characterName: PropTypes.string
+        characterName: PropTypes.string,
+        clickEvent: PropTypes.object
     }),
     highlightedCells: PropTypes.arrayOf(PropTypes.shape({
         row: PropTypes.number,

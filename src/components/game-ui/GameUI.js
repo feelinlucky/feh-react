@@ -236,14 +236,26 @@ const GameUI = () => {
   const frontPageState = location.state || {};
 
   const [selectedCharState, setselectedCharState] = useState({});
-  const [clickedState, setClickedState] = useState(null);
+
+  const defaultClickState = {
+    gridY: null,
+    gridX: null,
+    isMapGrid: false,
+    characterName: null,
+    clickEvent: null,
+    selectedCharacterIsActive: false
+  };
+
+  const [clickedState, setClickedState] = useState(defaultClickState);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
 
   const createClickedState = ({ gridY, gridX, isMapGrid, characterName, clickEvent }) => {
     // Create base click state
-    const selectedCharacterIsActive = characterName ? (selectedCharState?.isAlly === turnState.currentActiveGroupIsAlly()) : false;
+    const clickedCharState = allyStates[characterName] || foeStates[characterName];
+    const selectedCharacterIsActive = characterName ? (clickedCharState?.isAlly === turnState.currentActiveGroupIsAlly()) : false;
    
     const clickState = {
+      ...defaultClickState,
       gridY: typeof gridY === 'number' ? gridY : null,
       gridX: typeof gridX === 'number' ? gridX : null,
       isMapGrid: Boolean(isMapGrid),
@@ -293,13 +305,6 @@ const GameUI = () => {
   //   [6, 4, 7, 5, 'wall'],
   // ]);
   const [mapState, setMapState] = useState(frontPageState.mapData || { terrain: [] });
-
-  const defaultClickState = {
-    gridY: null,
-    gridX: null,
-    isMapGrid: false,
-    characterName: null
-  };
 
   const allyNames = ["Alfonse", "Sharena", "Anna", "Fjorm"];
   const foeNames = ["FighterSword"];
@@ -556,7 +561,6 @@ const GameUI = () => {
 
       // Highlighted cell interaction
       if (highlightedCells && (highlightedCells.length > 0)) {
-        console.log('highlightedCells:', highlightedCells);
 
         if (isCellHighlighted(newClickedState.gridY, newClickedState.gridX)) {
           if (isOccupiedCell(newClickedState.gridY, newClickedState.gridX)) {
@@ -622,7 +626,6 @@ const GameUI = () => {
           const interactionRange = actionResult.range ? actionResult.range : 0;
           const areaGrids = [...highlightedCells];
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
-          console.log(`validMoveGrids:`, validMoveGrids);
           setHighlightedCells(validMoveGrids);
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
