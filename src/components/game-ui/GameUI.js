@@ -34,11 +34,12 @@ const DraggableCharacter = ({
   terrainData,
   isOccupiedCell,
   setCharacterPositions,
-  updateLogText
+  updateLogText,
+  handleGridClick
 }) => {
   const overlayRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [currentDraggedOverCell, setCurrentDraggedOverCell] = useState(null);
+  const [currentDraggedOverCell, setCurrentDraggedOverCell] = useState((charPositions?[charName] : null));
 
   useEffect(() => {
     const el = overlayRef.current;
@@ -91,18 +92,20 @@ const DraggableCharacter = ({
           setIsDragging(false);
           setParentIsDragging(false);
 
-          if (currentDraggedOverCell) {
-            const selectedValidNeighborGrid = currentDraggedOverCell;
+          if (!currentDraggedOverCell) {
+            const cursorPos = { x: event.clientX, y: event.clientY };
 
-            setCharacterPositions(prev => ({
-              ...prev,
-              [charName]: selectedValidNeighborGrid
-            }));
+            const isWithinBounds = cursorPos.x >= mapPosition.x && cursorPos.x <= mapPosition.x + 512 && cursorPos.y >= mapPosition.y && cursorPos.y <= mapPosition.y + 512;
+            const draggedOverCell = findGridCellByCursor(cursorPos, gridAnchorCoordinates);
 
-            updateLogText(`${charName} moved to (${selectedValidNeighborGrid.row}, ${selectedValidNeighborGrid.col})`);
-          } else {
-            updateLogText(`${charName} could not move to an occupied grid`);
+            if (!isWithinBounds || !draggedOverCell) {
+              setCurrentDraggedOverCell(null);
+              return;
+            };
+
+            setCurrentDraggedOverCell(draggedOverCell);            
           }
+          handleGridClick(event, currentDraggedOverCell.row, currentDraggedOverCell.col);
         },
         onDragEnd: () => {
           setIsDragging(false);
@@ -736,6 +739,7 @@ const GameUI = () => {
                 isOccupiedCell={isOccupiedCell}
                 setCharacterPositions={setCharacterPositions}
                 updateLogText={updateLogText}
+                handleGridClick={handleGridClick}
               />
             ) : null;
           })}
@@ -761,7 +765,6 @@ const GameUI = () => {
           isDebugDisplayVisible={isDebugDisplayVisible}
           toggleDebugDisplay={toggleDebugDisplay}
           turnState={turnState}
-          mapClickMode={mapClickMode}
         />
       </div>
     </div>
