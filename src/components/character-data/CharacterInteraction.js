@@ -39,11 +39,14 @@ export const characterInteraction = (charStates1, charStates2) => {
                 char2: char2.name,
                 action: 'attack',
                 range: 1,
-                effect: -100 // TODO: create an effect object that encapsulate all the effects of the action
+                damage: damage,
+                endState: {
+                    hp: char2.hp - damage,
+                }
             };
 
         case 'assist':
-            let skill = (char1.skills && char1.skills.assist)? char1.skills.assist : '';
+            let skill = (char1.skills && char1.skills.assist) ? char1.skills.assist : '';
             let effect = {};
 
             switch (skill) {
@@ -62,9 +65,12 @@ export const characterInteraction = (charStates1, charStates2) => {
             return {
                 char1: char1.name,
                 char2: char2.name,
-                action: skill,
+                action: 'assist',
                 range: 1,
-                effect: effect // TODO: create an effect object that encapsulate all the effects of the action
+                damage: damage,
+                endState: {
+                    hp: char2.hp + damage,
+                }
             };
 
         default:
@@ -80,8 +86,18 @@ export const printInteractionResult = (interactionResult) => {
         return `Error: ${interactionResult.error}`;
     };
 
-    const { char1, char2, action, effect } = interactionResult;
-    let resultText = `${char1} used ${action} on ${char2}. Effects: ${JSON.stringify(effect)}`;
+    const { char1, char2, action, damage, endState } = interactionResult;
+    if (interactionResult.error) {
+        let resultText = `${char1} used ${action} on ${char2}. Dmg: ${damage}. Result: ${JSON.stringify(endState)}`;
 
-    return resultText;
-};
+        return resultText;
+    };
+}
+
+export const applyActionEffect = (charState1, charState2, actionResult) => {
+    const { char1, char2, action, endState } = actionResult;
+    let newCharState2 = {
+        ...charState2,
+        ...endState
+    };
+}
