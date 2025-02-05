@@ -10,7 +10,8 @@ import GameMap, {
   findNearestGrids,
   defineTerrainGrid,
   TerrainType,
-  calculateMovementRange
+  calculateMovementRange,
+  findShortestPath
 } from '../game-map/GameMap';
 
 import { sharedProps, characterData } from '../character-data/CharacterData';
@@ -627,6 +628,7 @@ const GameUI = () => {
         if (actionResult.error || !actionResult) {
           console.error(`Error: ${actionResult.error}`);
         } else {
+          // TODO: Add select move grid after destination grid is selected
           const interactionRange = actionResult.range ? actionResult.range : 0;
           const areaGrids = [...highlightedCells];
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
@@ -635,10 +637,23 @@ const GameUI = () => {
           updateLogText(printInteractionResult(actionResult), 'interaction');
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: false });
         }
+
+        // Action is done, reset the selected character
         resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
         return;
       case 'move':
         setSelectedCharacter(clickedCharacter);
+
+        const selectedCharPos = charPositions[selectedCharacter];
+        const selectedCharMoveType = selectedCharState.type
+        
+        const shortestGrids = findShortestPath(selectedCharPos.row, selectedCharPos.col, gridY, gridX, terrainData, selectedCharMoveType) || [];
+        if (shortestGrids.length >= 0) {
+          // TODO: Apply character moving animation
+          console.log('shortestGrids', shortestGrids);
+        };
+
+        // Move character
         setCharacterPositions(prev => ({
           ...prev,
           [selectedCharacter]: { row: gridY, col: gridX }

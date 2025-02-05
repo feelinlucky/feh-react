@@ -347,6 +347,57 @@ export const findNearestGrids = (centerRow, centerCol, gridDistance, areaGrids) 
     return nearestGrids;
 };
 
+/**
+ * Helper function to find the shortest path of grids towards the selected move grids.
+ * Uses Breadth-First Search (BFS) to find the shortest path.
+ * @param {number} startRow - Starting row coordinate
+ * @param {number} startCol - Starting column coordinate
+ * @param {number} endRow - Destination row coordinate
+ * @param {number} endCol - Destination column coordinate
+ * @param {Array<Array<string>>} terrainGrid - Grid of terrain types
+ * @param {string} moveType - Type of movement (infantry, cavalry, etc.)
+ * @returns {Array<{row: number, col: number}>} Array of coordinates representing the shortest path
+ */
+export const findShortestPath = (startRow, startCol, endRow, endCol, terrainData, moveType) => {
+    const queue = [{ row: startRow, col: startCol, path: [] }];
+    const visited = new Set();
+    const cellKey = (row, col) => `${row},${col}`;
+
+    while (queue.length > 0) {
+        const { row, col, path } = queue.shift();
+        const key = cellKey(row, col);
+
+        if (visited.has(key)) continue;
+        visited.add(key);
+
+        const newPath = [...path, { row, col }];
+
+        if (row === endRow && col === endCol) {
+            return newPath;
+        }
+
+        const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        for (const [dRow, dCol] of directions) {
+            const newRow = row + dRow;
+            const newCol = col + dCol;
+
+            if (newRow < 0 || newRow >= gridSize.rows || newCol < 0 || newCol >= gridSize.cols) {
+                continue;
+            }
+
+            const terrainType = terrainData?.[row]?.[col] || TerrainType.PLAIN;
+            const moveCost = TerrainCost[terrainType][moveType] || 999;
+
+            if (moveCost === 999) {
+                continue;
+            }
+
+            queue.push({ row: newRow, col: newCol, path: newPath });
+        }
+    }
+    return [];
+};
+
 const DroppableCell = ({ row, col, isClicked, isHighlighted, terrainType, onClick, onDragOver, showTerrainOverlay, isActiveTurn }) => {
     const ref = useRef(null);
     const [isDraggedOver, setIsDraggedOver] = useState(false);
