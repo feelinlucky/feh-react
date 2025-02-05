@@ -2,7 +2,7 @@ import { useSpring, animated } from 'react-spring';
 import { useDrag } from '@use-gesture/react';
 import { useEffect, useState } from 'react';
 
-export function MovingObject({ DraggableCharacter, points }) {
+export function movingObject({ DraggableCharacter, points }) {
   const [index, setIndex] = useState(0);
   const [props, set] = useSpring(() => ({
     from: { y: points[0][1], x: points[0][0] },

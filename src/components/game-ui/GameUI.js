@@ -19,7 +19,7 @@ import { characterInteraction, printInteractionResult } from '../character-data/
 import MapCharacter from '../map-character/MapCharacter';
 import LogTextContainer from '../log-text-container/LogTextContainer';
 
-import { MovingObject } from './MovingObject';
+import { movingObject } from './movingObject';
 
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
@@ -650,13 +650,8 @@ const GameUI = () => {
         
         const shortestGrids = findShortestPath(selectedCharPos.row, selectedCharPos.col, gridY, gridX, terrainData, selectedCharMoveType) || [];
         if (shortestGrids.length >= 0) {
-          // Use MovingObject as a React component
-          return (
-            <MovingObject
-              DraggableCharacter={DraggableCharacter}
-              points={shortestGrids}
-            />
-          );
+          // Use movingObject as a React component
+          movingObject({ DraggableCharacter, shortestGrids });
         };
 
         // Move character
