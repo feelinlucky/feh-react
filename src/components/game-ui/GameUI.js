@@ -629,6 +629,7 @@ const GameUI = () => {
           console.error(`Error: ${actionResult.error}`);
         } else {
           // TODO: Add select move grid after destination grid is selected
+          // TODO: implement findShortestPath
           const interactionRange = actionResult.range ? actionResult.range : 0;
           const areaGrids = [...highlightedCells];
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
