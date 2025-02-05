@@ -656,8 +656,9 @@ const GameUI = () => {
           // const areaGrids = [...highlightedCells];
           // const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
           // setHighlightedCells(validMoveGrids);
-
-          updateLogText(printInteractionResult(actionResult), 'interaction');
+          const actionResultText = printInteractionResult(actionResult);
+          console.log('actionResultText' ,actionResultText);
+          updateLogText(actionResultText, 'interaction');
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: false });
         }
 
