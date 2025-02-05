@@ -19,7 +19,7 @@ import { characterInteraction, printInteractionResult } from '../character-data/
 import MapCharacter from '../map-character/MapCharacter';
 import LogTextContainer from '../log-text-container/LogTextContainer';
 
-import { movingObject } from './movingObject';
+import { useSpring, animated } from 'react-spring';
 
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
@@ -158,6 +158,45 @@ const DraggableCharacter = ({
       </div>
     </div>
   );
+};
+
+/**
+ * Animates a character's movement along a series of grid positions.
+ * @param {Object} characterRef - The ref of the character to animate.
+ * @param {Array<{row: number, col: number}>} path - The path to follow (array of grid positions).
+ * @param {Object} gridAnchorCoordinates - The grid anchor coordinates for each grid cell.
+ * @param {Function} onComplete - Callback to execute when the animation completes.
+ */
+const animateCharacterMovement = async (characterRef, path, gridAnchorCoordinates, onComplete) => {
+  if (!characterRef || !path || path.length === 0) {
+    console.error('Invalid input for animation');
+    return;
+  }
+  
+  for (let i = 0; i < path.length; i++) {
+    const { row, col } = path[i];
+    const targetCoordinates = gridAnchorCoordinates[`${row}-${col}`];
+
+    if (!targetCoordinates) {
+      console.error('Invalid target coordinates:', row, col);
+      continue;
+    }
+
+    // Use react-spring to animate to the target coordinates
+    await new Promise((resolve) => {
+      const { x, y } = targetCoordinates;
+
+      characterRef.current.style.transition = 'transform 0.3s ease';
+      characterRef.current.style.transform = `translate(${x}px, ${y}px)`;
+
+      setTimeout(() => {
+        resolve(); // Resolve after the transition completes
+      }, 300); // Match the duration of the CSS transition
+    });
+  }
+
+  // Call onComplete when the animation finishes
+  onComplete?.();
 };
 
 const findGridCellByCursor = (cursorPos, gridAnchorCoordinates) => {
@@ -648,11 +687,33 @@ const GameUI = () => {
         const selectedCharPos = charPositions[selectedCharacter];
         const selectedCharMoveType = selectedCharState.type
         
-        const shortestGrids = findShortestPath(selectedCharPos.row, selectedCharPos.col, gridY, gridX, terrainData, selectedCharMoveType) || [];
-        if (shortestGrids.length >= 0) {
-          // Use movingObject as a React component
-          movingObject({ DraggableCharacter, shortestGrids });
-        };
+        const shortestGrids = findShortestPath(
+          selectedCharPos.row,
+          selectedCharPos.col,
+          gridY,
+          gridX,
+          terrainData,
+          selectedCharMoveType
+        ) || [];
+        if (shortestGrids.length > 0) {
+          const characterRef = document.querySelector(`[data-character-name="${selectedCharacter}"]`);
+          if (characterRef) {
+            animateCharacterMovement(
+              { current: characterRef },
+              shortestGrids,
+              gridAnchorCoordinates,
+              () => {
+                // Update character position after animation completes
+                setCharacterPositions((prev) => ({
+                  ...prev,
+                  [selectedCharacter]: { row: gridY, col: gridX },
+                }));
+                updateTurnState({ characterName: selectedCharacter, justActed: false, justMoved: true });
+                resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
+              }
+            );
+          }
+        }
 
         // Move character
         setCharacterPositions(prev => ({

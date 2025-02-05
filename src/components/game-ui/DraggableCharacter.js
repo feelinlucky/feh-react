@@ -80,7 +80,7 @@ const DraggableCharacter = ({
     mapPosition,
     terrainData,
     setIsDropTriggered,
-    updateLogText  
+    updateLogText
   ]);
 
   return (
@@ -93,16 +93,13 @@ const DraggableCharacter = ({
         cursor: isSelected ? 'grab' : 'pointer',
         userSelect: 'none',
         pointerEvents: isSelected ? 'auto' : 'none',
-        pointerEvents: isDraggable ? 'auto' : 'none', // Disable pointer events if not draggable
         opacity: isDragging ? 0.7 : 1,
-        opacity: isDraggable ? 1 : 0.5, // Visually indicate non-draggable state
       }}
       data-dragging={isDragging}
+      data-character-name={charName} // Add this attribute for unique identification
     >
       <div style={{ pointerEvents: 'none' }}>
-        <MapCharacter
-          characterName={charName}
-        />
+        <MapCharacter characterName={charName} />
       </div>
     </div>
   );
