@@ -650,11 +650,13 @@ const GameUI = () => {
         
         const shortestGrids = findShortestPath(selectedCharPos.row, selectedCharPos.col, gridY, gridX, terrainData, selectedCharMoveType) || [];
         if (shortestGrids.length >= 0) {
-          // TODO: Apply character moving animation
-          console.log('shortestGrids', shortestGrids);
-          
-          // Animate character movement
-          MovingObject(DraggableCharacter, shortestGrids);
+          // Use MovingObject as a React component
+          return (
+            <MovingObject
+              DraggableCharacter={DraggableCharacter}
+              points={shortestGrids}
+            />
+          );
         };
 
         // Move character
