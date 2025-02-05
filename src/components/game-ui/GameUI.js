@@ -648,15 +648,14 @@ const GameUI = () => {
         }
 
         const actionResult = characterInteraction(selectedCharData, draggedOverCharacterData);
+        console.log('actionResult', actionResult);
         if (actionResult.error || !actionResult) {
           console.error(`Error: ${actionResult.error}`);
         } else {
-          // TODO: Add select move grid after destination grid is selected
-          // TODO: implement findShortestPath
-          const interactionRange = actionResult.range ? actionResult.range : 0;
-          const areaGrids = [...highlightedCells];
-          const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
-          setHighlightedCells(validMoveGrids);
+          // const interactionRange = actionResult.range ? actionResult.range : 0;
+          // const areaGrids = [...highlightedCells];
+          // const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
+          // setHighlightedCells(validMoveGrids);
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: false });
