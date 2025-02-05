@@ -254,7 +254,7 @@ const GameUI = () => {
   const [clickedState, setClickedState] = useState(defaultClickState);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
 
-  const createClickedState = ({ gridY, gridX, isMapGrid, characterName, clickEvent }) => {
+  const updateClickedState = ({ gridY, gridX, isMapGrid, characterName, clickEvent }) => {
     // Create base click state
     const clickedCharState = allyStates[characterName] || foeStates[characterName];
     const selectedCharacterIsActive = characterName ? (clickedCharState?.isAlly === turnState.currentActiveGroupIsAlly()) : false;
@@ -506,7 +506,7 @@ const GameUI = () => {
     if (containerClickEvent.target.closest(`.${styles['map-container']}`)) {
       return;
     }
-    createClickedState({ gridY: 0, gridX: 0, isMapGrid: false, characterName: null, clickedComponent: containerClickEvent.currentTarget });
+    updateClickedState({ gridY: 0, gridX: 0, isMapGrid: false, characterName: null, clickedComponent: containerClickEvent.currentTarget });
     resetSelectState({ resetClickedState: false, resetSelectedCharacter: true, resetHighlightedCells: true });
   }, [setClickedState, setSelectedCharacter]);
   const isCellHighlighted = useCallback((row, col) => {
@@ -593,20 +593,18 @@ const GameUI = () => {
   };
 
   const handleGridClick = useCallback((gridClickEvent, gridY, gridX) => {
-    createClickedState({
-        gridY,
-        gridX,
-        isMapGrid: true,
-        characterName: null,
-        clickEvent: gridClickEvent
-    });
-    
+
     const characterAtPosition = Object.entries(charPositions).find(
       ([_, pos]) => pos.row === gridY && pos.col === gridX
     );
     const clickedCharacter = characterAtPosition ? characterAtPosition[0] : null;
-
-    const newClickedState = createClickedState({ gridY: gridY, gridX: gridX, isMapGrid: true, characterName: clickedCharacter, clickedComponent: gridClickEvent.currentTarget });
+    const newClickedState = updateClickedState({
+      gridY: gridY,
+      gridX: gridX,
+      isMapGrid: true,
+      characterName: clickedCharacter,
+      clickEvent: gridClickEvent.currentTarget });
+    console.log('gridClickEvent', newClickedState);
 
     // determine map click state
     const mode = getMapClickMode(newClickedState, selectedCharacter, clickedCharacter);

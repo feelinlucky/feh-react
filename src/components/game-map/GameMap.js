@@ -550,7 +550,7 @@ const GameMap = ({ onGridClick, ongridAnchorCoordinates, clickedState, highlight
 
         for (let row = 0; row < gridSize.rows; row++) {
             for (let col = 0; col < gridSize.cols; col++) {
-                const isClicked = clickedState?.gridY? (clickedState.gridY === row && clickedState.gridX === col) : false;
+                const isClicked = (clickedState?.gridY === row && clickedState?.gridX === col);
                 const isHighlighted = highlightedCells && highlightedCells.some(cell =>
                     cell.row === row && cell.col === col
                 );
