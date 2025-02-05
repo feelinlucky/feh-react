@@ -652,13 +652,13 @@ const GameUI = () => {
         if (actionResult.error || !actionResult) {
           console.error(`Error: ${actionResult.error}`);
         } else {
-          // const interactionRange = actionResult.range ? actionResult.range : 0;
-          // const areaGrids = [...highlightedCells];
-          // const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
-          // setHighlightedCells(validMoveGrids);
-          const actionResultText = printInteractionResult(actionResult);
-          console.log('actionResultText' ,actionResultText);
-          updateLogText(actionResultText, 'interaction');
+          // TODO: Implement movement after interaction
+          const interactionRange = actionResult.range ? actionResult.range : 0;
+          const areaGrids = [...highlightedCells];
+          const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
+          setHighlightedCells(validMoveGrids);
+
+          updateLogText(printInteractionResult(actionResult), 'interaction');
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: false });
         }
 

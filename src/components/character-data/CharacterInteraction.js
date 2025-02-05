@@ -86,7 +86,7 @@ export const printInteractionResult = (interactionResult) => {
     };
 
     const { char1, char2, action, damage, endState } = interactionResult;
-    if (interactionResult.error) {
+    if (interactionResult) {
         let resultText = `${char1} used ${action} on ${char2}. Dmg: ${damage}. Result: ${JSON.stringify(endState)}`;
 
         return resultText;
