@@ -42,7 +42,7 @@ const DraggableCharacter = ({
 }) => {
   const overlayRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [currentDraggedOverCell, setCurrentDraggedOverCell] = useState((charPositions?[charName] : null));
+  const [currentDraggedOverCell, setCurrentDraggedOverCell] = useState((charPositions ? [charName] : null));
 
   useEffect(() => {
     const el = overlayRef.current;
@@ -106,7 +106,7 @@ const DraggableCharacter = ({
               return;
             };
 
-            setCurrentDraggedOverCell(draggedOverCell);            
+            setCurrentDraggedOverCell(draggedOverCell);
           }
           handleGridClick(event, currentDraggedOverCell.row, currentDraggedOverCell.col);
         },
@@ -160,43 +160,26 @@ const DraggableCharacter = ({
   );
 };
 
-/**
- * Animates a character's movement along a series of grid positions.
- * @param {Object} characterRef - The ref of the character to animate.
- * @param {Array<{row: number, col: number}>} path - The path to follow (array of grid positions).
- * @param {Object} gridAnchorCoordinates - The grid anchor coordinates for each grid cell.
- * @param {Function} onComplete - Callback to execute when the animation completes.
- */
-const animateCharacterMovement = async (characterRef, path, gridAnchorCoordinates, onComplete) => {
-  if (!characterRef || !path || path.length === 0) {
-    console.error('Invalid input for animation');
-    return;
-  }
-  
-  for (let i = 0; i < path.length; i++) {
-    const { row, col } = path[i];
-    const targetCoordinates = gridAnchorCoordinates[`${row}-${col}`];
+const AnimatedCharacter = ({ charName, coordinates, isSelected, ...props }) => {
+  const { x, y } = useSpring({
+    to: { x: coordinates.x, y: coordinates.y },
+    config: { tension: 300, friction: 20 }
+  });
 
-    if (!targetCoordinates) {
-      console.error('Invalid target coordinates:', row, col);
-      continue;
-    }
-
-    // Use react-spring to animate to the target coordinates
-    await new Promise((resolve) => {
-      const { x, y } = targetCoordinates;
-
-      characterRef.current.style.transition = 'transform 0.3s ease';
-      characterRef.current.style.transform = `translate(${x}px, ${y}px)`;
-
-      setTimeout(() => {
-        resolve(); // Resolve after the transition completes
-      }, 300); // Match the duration of the CSS transition
-    });
-  }
-
-  // Call onComplete when the animation finishes
-  onComplete?.();
+  return (
+    <animated.div
+      style={{
+        position: 'absolute',
+        left: x.to(val => `${val}px`),
+        top: y.to(val => `${val}px`),
+        cursor: isSelected ? 'grab' : 'pointer',
+        userSelect: 'none',
+      }}
+      data-dragging={props.isDragging}
+    >
+      <MapCharacter characterName={charName} />
+    </animated.div>
+  );
 };
 
 const findGridCellByCursor = (cursorPos, gridAnchorCoordinates) => {
@@ -299,7 +282,7 @@ const GameUI = () => {
     // Create base click state
     const clickedCharState = allyStates[characterName] || foeStates[characterName];
     const selectedCharacterIsActive = characterName ? (clickedCharState?.isAlly === turnState.currentActiveGroupIsAlly()) : false;
-   
+
     const clickState = {
       ...defaultClickState,
       gridY: typeof gridY === 'number' ? gridY : null,
@@ -644,7 +627,8 @@ const GameUI = () => {
       gridX: gridX,
       isMapGrid: true,
       characterName: clickedCharacter,
-      clickEvent: gridClickEvent.currentTarget });
+      clickEvent: gridClickEvent.currentTarget
+    });
     console.log('gridClickEvent', newClickedState);
 
     // determine map click state
@@ -686,7 +670,7 @@ const GameUI = () => {
 
         const selectedCharPos = charPositions[selectedCharacter];
         const selectedCharMoveType = selectedCharState.type
-        
+
         const shortestGrids = findShortestPath(
           selectedCharPos.row,
           selectedCharPos.col,
@@ -696,25 +680,8 @@ const GameUI = () => {
           selectedCharMoveType
         ) || [];
         if (shortestGrids.length > 0) {
-          const characterRef = document.querySelector(`[data-character-name="${selectedCharacter}"]`);
-          if (characterRef) {
-            animateCharacterMovement(
-              { current: characterRef },
-              shortestGrids,
-              gridAnchorCoordinates,
-              () => {
-                // Update character position after animation completes
-                setCharacterPositions((prev) => ({
-                  ...prev,
-                  [selectedCharacter]: { row: gridY, col: gridX },
-                }));
-                updateTurnState({ characterName: selectedCharacter, justActed: false, justMoved: true });
-                resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
-              }
-            );
-          }
-        }
 
+        }
         // Move character
         setCharacterPositions(prev => ({
           ...prev,
@@ -797,12 +764,12 @@ const GameUI = () => {
             if (!gridPos) return null;
             const gridAnchor = gridAnchorCoordinates[`${gridPos.row}-${gridPos.col}`];
             return gridAnchor ? (
-              <DraggableCharacter
+              <AnimatedCharacter
                 key={charName}
                 charName={charName}
                 coordinates={{
-                  x: gridAnchor.x - 0,
-                  y: gridAnchor.y + 64
+                  x: gridAnchor.x - 64,
+                  y: gridAnchor.y - 64
                 }}
                 isSelected={selectedCharacter === charName}
                 setParentIsDragging={setIsDragging}
