@@ -261,8 +261,8 @@ const GameUI = () => {
    
     const clickState = {
       ...defaultClickState,
-      gridY: typeof gridY === 'number' ? gridY,
-      gridX: typeof gridX === 'number' ? gridX,
+      gridY: typeof gridY === 'number' ? gridY : null,
+      gridX: typeof gridX === 'number' ? gridX : null,
       isMapGrid: Boolean(isMapGrid),
       characterName: characterName || null,
       clickEvent: clickEvent || null,
