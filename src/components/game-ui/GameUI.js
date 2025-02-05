@@ -19,7 +19,7 @@ import { characterInteraction, printInteractionResult } from '../character-data/
 import MapCharacter from '../map-character/MapCharacter';
 import LogTextContainer from '../log-text-container/LogTextContainer';
 
-import { MovingObject } from '@atlaskit/motion/MovingObject';
+import { MovingObject } from './MovingObject';
 
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
