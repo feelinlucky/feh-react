@@ -5,10 +5,12 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@use-gesture/react": "^10.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
+    "react-spring": "^9.7.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

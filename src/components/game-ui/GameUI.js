@@ -19,6 +19,8 @@ import { characterInteraction, printInteractionResult } from '../character-data/
 import MapCharacter from '../map-character/MapCharacter';
 import LogTextContainer from '../log-text-container/LogTextContainer';
 
+import { MovingObject } from '@atlaskit/motion/MovingObject';
+
 const publicFolder = `${process.env.PUBLIC_URL}`;
 
 const DraggableCharacter = ({
@@ -650,6 +652,9 @@ const GameUI = () => {
         if (shortestGrids.length >= 0) {
           // TODO: Apply character moving animation
           console.log('shortestGrids', shortestGrids);
+          
+          // Animate character movement
+          MovingObject(DraggableCharacter, shortestGrids);
         };
 
         // Move character
