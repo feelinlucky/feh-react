@@ -310,6 +310,13 @@ const GameUI = () => {
     return clickState;
   };
 
+  const rollbackToPreviousClickState = () => {
+    const previousClickState = clickedStateHistory[1];
+    if (previousClickState) {
+      setClickedState(previousClickState);
+    }
+  };
+
   const [gridAnchorCoordinates, setgridAnchorCoordinates] = useState({});
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
@@ -600,6 +607,9 @@ const GameUI = () => {
           if (isOccupiedCell(newClickedState.gridY, newClickedState.gridX)) {
             // If the cell is occupied, check if it's the same character
             if (selectedCharacter === clickedCharacter) {
+              if (hasActed) {
+                return 'switch_selected';
+              }
               return 'null'; // No action needed if clicking on self
             }
             if (hasActed) {
@@ -611,6 +621,9 @@ const GameUI = () => {
             return 'switch_selected'; // Can't interact if already acted
           }
           return 'move_to_empty_grid'; // Valid move to an empty cell              
+        }
+        if (hasActed) {
+          return 'invalid_click'; // TODO
         }
         return 'invalid_move'; // No action needed if not highlighted
       }
@@ -653,7 +666,6 @@ const GameUI = () => {
         }
 
         const actionResult = characterInteraction(selectedCharData, draggedOverCharacterData);
-        console.log('actionResult', actionResult);
         if (actionResult.error || !actionResult) {
           console.error(`Error: ${actionResult.error}`);
         } else {
@@ -719,6 +731,10 @@ const GameUI = () => {
         return;
       case 'invalid_move':
         resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
+        return;
+
+      case 'invalid_click':
+        rollbackToPreviousClickState();
         return;
     }
   }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition, allyStates, foeStates, updateTurnState]);
