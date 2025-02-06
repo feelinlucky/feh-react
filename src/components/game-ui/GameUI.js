@@ -286,7 +286,7 @@ const GameUI = () => {
       (clickedCharState?.isAlly && currentActiveGroupIsAlly) ||
       (!clickedCharState?.isAlly && !currentActiveGroupIsAlly)
     ) : false;
-    
+
 
     const clickState = {
       ...defaultClickState,
@@ -537,6 +537,18 @@ const GameUI = () => {
     return currentGridCenterCoordinate;
   };
 
+  function closestPointToCursorFinder(point1, point2, cursorPos) {
+    const points = [point1,point2];
+    const findClosestCoordinate = () => {
+      return points.reduce((closest, point) => {
+        const distanceToCurrent = calculateDistance(cursorPos, point);
+        const distanceToClosest = calculateDistance(cursorPos, closest);
+        return distanceToCurrent < distanceToClosest ? point : closest;
+      }, points[0]);
+    }
+    return findClosestCoordinate();
+  }
+
   const handleContainerClick = useCallback((containerClickEvent) => {
 
     if (containerClickEvent.target.closest(`.${styles['map-container']}`)) {
@@ -675,6 +687,17 @@ const GameUI = () => {
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
           setHighlightedCells(validMoveGrids);
 
+          const validMoveCoordinates = validMoveGrids.map(grid => rowColNumToGridCoord(grid.row, grid.col));
+          const prevCursorObserverState = isCursorObserverActive || false;
+          setIsCursorObserverActive(true);
+          const closestPoint = closestPointToCursorFinder(validMoveCoordinates[0], validMoveCoordinates[1], currentCursorPos);
+          setIsCursorObserverActive(prevCursorObserverState);
+          const closestGrid = findGridCellByCursor(closestPoint, gridAnchorCoordinates);
+          setCharacterPositions(prev => ({
+            ...prev,
+            [selectedCharacter]: { row: closestGrid.row, col: closestGrid.col }
+          }));
+
           updateLogText(printInteractionResult(actionResult), 'interaction');
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: false });
           return;
@@ -697,14 +720,13 @@ const GameUI = () => {
           terrainData,
           selectedCharMoveType
         ) || [];
-        if (shortestGrids.length > 0) {
 
-        }
-        // Move character
-        setCharacterPositions(prev => ({
-          ...prev,
-          [selectedCharacter]: { row: gridY, col: gridX }
-        }));
+        if (shortestGrids.length) {
+          setCharacterPositions(prev => ({
+            ...prev,
+            [selectedCharacter]: { row: gridY, col: gridX }
+          }));
+        };
         updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true }) // count as has acted if moving toward empty grid
         resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
         return;
@@ -732,7 +754,6 @@ const GameUI = () => {
       case 'invalid_move':
         resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
         return;
-
       case 'invalid_click':
         rollbackToPreviousClickState();
         return;
