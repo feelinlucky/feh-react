@@ -281,7 +281,12 @@ const GameUI = () => {
   const updateClickedState = ({ gridY, gridX, isMapGrid, characterName, clickEvent }) => {
     // Create base click state
     const clickedCharState = allyStates[characterName] || foeStates[characterName];
-    const selectedCharacterIsActive = characterName ? (clickedCharState?.isAlly === turnState.currentActiveGroupIsAlly()) : false;
+    const currentActiveGroupIsAlly = turnState.currentActiveGroupIsAlly();
+    const selectedCharacterIsActive = characterName ? (
+      (clickedCharState?.isAlly && currentActiveGroupIsAlly) ||
+      (!clickedCharState?.isAlly && !currentActiveGroupIsAlly)
+    ) : false;
+    
 
     const clickState = {
       ...defaultClickState,
@@ -605,7 +610,7 @@ const GameUI = () => {
           if (hasMoved) {
             return 'switch_selected'; // Can't interact if already acted
           }
-          return 'move'; // Valid move to an empty cell              
+          return 'move_to_empty_grid'; // Valid move to an empty cell              
         }
         return 'invalid_move'; // No action needed if not highlighted
       }
@@ -660,12 +665,13 @@ const GameUI = () => {
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: false });
+          return;
         }
 
         // Action is done, reset the selected character
         resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
         return;
-      case 'move':
+      case 'move_to_empty_grid':
         setSelectedCharacter(clickedCharacter);
 
         const selectedCharPos = charPositions[selectedCharacter];
@@ -687,7 +693,7 @@ const GameUI = () => {
           ...prev,
           [selectedCharacter]: { row: gridY, col: gridX }
         }));
-        updateTurnState({ characterName: selectedCharacter, justActed: false, justMoved: true })
+        updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true }) // count as has acted if moving toward empty grid
         resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
         return;
       case 'switch_selected':

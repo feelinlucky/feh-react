@@ -47,7 +47,7 @@ function createTurnState(allyStates, foeStates, {
   function unitTurnFinished(characterName) {
     const charTurnState = getCharacterTurnState(characterName);
       if ( (charTurnState?.isAlly === currentActiveGroupIsAlly())
-        && (charTurnState.hasActed || charTurnState.hasMoved)) {
+        && (charTurnState.hasActed && charTurnState.hasMoved)) {
         charTurnState.endedTurn = true;
         return true;
       }
