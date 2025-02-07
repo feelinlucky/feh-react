@@ -183,16 +183,21 @@ const AnimatedCharacter = ({ charName, coordinates, isSelected, ...props }) => {
 };
 
 const findGridCellByCursor = (cursorPos, gridAnchorCoordinates) => {
+  console.log('Cursor Position:', cursorPos.x, cursorPos.y);
   for (const key in gridAnchorCoordinates) {
     const [row, col] = key.split('-').map(Number);
     const anchor = gridAnchorCoordinates[key];
+    const diameter = 50;
+    // console.log(`Checking grid cell at row ${row}, col ${col} with anchor`, anchor);
     if (
-      cursorPos.x >= anchor.x - 32 && cursorPos.x <= anchor.x + 32 &&
-      cursorPos.y >= anchor.y - 32 && cursorPos.y <= anchor.y + 32
+      cursorPos.x >= anchor.x - diameter && cursorPos.x <= anchor.x + diameter &&
+      cursorPos.y >= anchor.y - diameter && cursorPos.y <= anchor.y + diameter
     ) {
+      // console.log(`Cursor is within grid cell at row ${row}, col ${col}`);
       return { row, col };
     }
   }
+  // console.log('Cursor is not within any grid cell');
   return null;
 };
 
@@ -537,16 +542,37 @@ const GameUI = () => {
     return currentGridCenterCoordinate;
   };
 
-  function closestPointToCursorFinder(point1, point2, cursorPos) {
-    const points = [point1,point2];
-    const findClosestCoordinate = () => {
-      return points.reduce((closest, point) => {
-        const distanceToCurrent = calculateDistance(cursorPos, point);
-        const distanceToClosest = calculateDistance(cursorPos, closest);
-        return distanceToCurrent < distanceToClosest ? point : closest;
-      }, points[0]);
+  function closestPointToCursorFinder(points, cursorPos) {
+    // Validate inputs
+    if (!cursorPos || !points || points.length === 0) {
+      return null;
     }
-    return findClosestCoordinate();
+  
+    // Validate cursor position
+    if (typeof cursorPos.x !== 'number' || typeof cursorPos.y !== 'number') {
+      console.warn('closestPointToCursorFinder: Invalid cursor position', cursorPos);
+      return null;
+    }
+  
+    // Validate points
+    const validPoints = points.filter(point => 
+      point && 
+      typeof point.x === 'number' && 
+      typeof point.y === 'number'
+    );
+  
+    if (validPoints.length === 0) {
+      console.warn('closestPointToCursorFinder: No valid points', points);
+      return null;
+    }
+  
+    // Find the point with the minimum distance to the cursor
+    return validPoints.reduce((closest, point) => {
+      const currentDistance = calculateDistance(cursorPos, point);
+      const closestDistance = calculateDistance(cursorPos, closest);
+      
+      return currentDistance < closestDistance ? point : closest;
+    }, validPoints[0]);
   }
 
   const handleContainerClick = useCallback((containerClickEvent) => {
@@ -686,16 +712,33 @@ const GameUI = () => {
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
           setHighlightedCells(validMoveGrids);
 
-          // const validMoveCoordinates = validMoveGrids.map(grid => rowColNumToGridCoord(grid.row, grid.col));
-          // const prevCursorObserverState = isCursorObserverActive || false;
-          // setIsCursorObserverActive(true);
-          // const closestPoint = closestPointToCursorFinder(validMoveCoordinates[0], validMoveCoordinates[1], currentCursorPos);
-          // setIsCursorObserverActive(prevCursorObserverState);
-          // const closestGrid = findGridCellByCursor(closestPoint, gridAnchorCoordinates);
-          // setCharacterPositions(prev => ({
-          //   ...prev,
-          //   [selectedCharacter]: { row: closestGrid.row, col: closestGrid.col }
-          // }));
+          const validMoveCoordinates = validMoveGrids.map(grid => rowColNumToGridCoord(grid.row, grid.col));
+          const selectedCharPos = charPositions[selectedCharacter];
+          const selectedCharPosCoord = rowColNumToGridCoord(selectedCharPos.row, selectedCharPos.col);
+          const closestPoint = closestPointToCursorFinder(validMoveCoordinates, selectedCharPosCoord);
+          //WORKING
+          let turnOfCursorObserver = false;
+          if (!isCursorObserverActive) {
+            turnOfCursorObserver = true;
+            toggleCursorObserver();
+          };
+          
+          const closestGrid = findGridCellByCursor({x: parseInt(closestPoint.x), y: parseInt(closestPoint.y)}, gridAnchorCoordinates);
+
+          if (turnOfCursorObserver) {
+            toggleCursorObserver();
+            turnOfCursorObserver = false;
+          };
+
+          console.log('closestGrid',closestGrid);
+          if (!closestGrid) {
+            console.error('closestGrid not found');
+            return;
+          }
+          setCharacterPositions(prev => ({
+            ...prev,
+            [selectedCharacter]: { row: closestGrid.row, col: closestGrid.col }
+          }));
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: false });
