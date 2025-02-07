@@ -716,19 +716,18 @@ const GameUI = () => {
           const selectedCharPos = charPositions[selectedCharacter];
           const selectedCharPosCoord = rowColNumToGridCoord(selectedCharPos.row, selectedCharPos.col);
           const closestPoint = closestPointToCursorFinder(validMoveCoordinates, selectedCharPosCoord);
-          //WORKING
-          let turnOfCursorObserver = false;
-          if (!isCursorObserverActive) {
-            turnOfCursorObserver = true;
-            toggleCursorObserver();
-          };
           
-          const closestGrid = findGridCellByCursor({x: parseInt(closestPoint.x), y: parseInt(closestPoint.y)}, gridAnchorCoordinates);
-
-          if (turnOfCursorObserver) {
-            toggleCursorObserver();
-            turnOfCursorObserver = false;
+          const adjustedClosestPoint = {
+            x: parseInt(closestPoint.x) - mapPosition.x,
+            y: parseInt(closestPoint.y) - mapPosition.y
           };
+
+          if (adjustedClosestPoint.x < 0 || adjustedClosestPoint.y < 0 || adjustedClosestPoint.x >= 512 || adjustedClosestPoint.y >= 512) {
+            console.error('Closest point is out of bounds:', adjustedClosestPoint);
+            return;
+          }
+
+          const closestGrid = findGridCellByCursor({x: adjustedClosestPoint.x, y: adjustedClosestPoint.y}, gridAnchorCoordinates);
 
           console.log('closestGrid',closestGrid);
           if (!closestGrid) {
