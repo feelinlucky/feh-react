@@ -661,7 +661,7 @@ const GameUI = () => {
           return 'move_to_empty_grid'; // Valid move to an empty cell              
         }
         if (hasActed) {
-          return 'invalid_click'; // TODO
+          return 'invalid_click';
         }
         return 'invalid_move'; // No action needed if not highlighted
       }
@@ -705,8 +705,10 @@ const GameUI = () => {
         const actionResult = characterInteraction(selectedCharData, draggedOverCharacterData);
         if (actionResult.error || !actionResult) {
           console.error(`Error: ${actionResult.error}`);
+          rollbackToPreviousClickState();
+          return;
         } else {
-          // TODO: Implement movement after interaction
+          // Implement movement after interaction
           const interactionRange = actionResult.range ? actionResult.range : 0;
           const areaGrids = [...highlightedCells];
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
@@ -740,12 +742,10 @@ const GameUI = () => {
           }));
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
-          updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: false });
+          updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
+          resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
           return;
-        }
-
-        // Action is done, reset the selected character
-        resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
+        };
         return;
       case 'move_to_empty_grid':
         setSelectedCharacter(clickedCharacter);
