@@ -659,7 +659,6 @@ const GameUI = () => {
       characterName: clickedCharacter,
       clickEvent: gridClickEvent.currentTarget
     });
-    console.log('gridClickEvent', newClickedState);
 
     // determine map click state
     const mode = getMapClickMode(newClickedState, selectedCharacter, clickedCharacter);
@@ -687,16 +686,16 @@ const GameUI = () => {
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
           setHighlightedCells(validMoveGrids);
 
-          const validMoveCoordinates = validMoveGrids.map(grid => rowColNumToGridCoord(grid.row, grid.col));
-          const prevCursorObserverState = isCursorObserverActive || false;
-          setIsCursorObserverActive(true);
-          const closestPoint = closestPointToCursorFinder(validMoveCoordinates[0], validMoveCoordinates[1], currentCursorPos);
-          setIsCursorObserverActive(prevCursorObserverState);
-          const closestGrid = findGridCellByCursor(closestPoint, gridAnchorCoordinates);
-          setCharacterPositions(prev => ({
-            ...prev,
-            [selectedCharacter]: { row: closestGrid.row, col: closestGrid.col }
-          }));
+          // const validMoveCoordinates = validMoveGrids.map(grid => rowColNumToGridCoord(grid.row, grid.col));
+          // const prevCursorObserverState = isCursorObserverActive || false;
+          // setIsCursorObserverActive(true);
+          // const closestPoint = closestPointToCursorFinder(validMoveCoordinates[0], validMoveCoordinates[1], currentCursorPos);
+          // setIsCursorObserverActive(prevCursorObserverState);
+          // const closestGrid = findGridCellByCursor(closestPoint, gridAnchorCoordinates);
+          // setCharacterPositions(prev => ({
+          //   ...prev,
+          //   [selectedCharacter]: { row: closestGrid.row, col: closestGrid.col }
+          // }));
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: false });
