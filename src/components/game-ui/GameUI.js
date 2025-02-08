@@ -717,6 +717,7 @@ const GameUI = () => {
           const interactionRange = actionResult.range ? actionResult.range : 0;
           const selectedCharPos = charPositions[selectedCharacter];
           const selectedCharPosCoord = rowColNumToGridCoord(selectedCharPos.row, selectedCharPos.col);
+          const clickedCharPos = charPositions[clickedCharacter];
           
           const areaGrids = [...highlightedCells];
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
@@ -739,14 +740,13 @@ const GameUI = () => {
           }
 
           const closestGrid = findGridCellByCursor({x: adjustedClosestPoint.x, y: adjustedClosestPoint.y}, gridAnchorCoordinates);
-          if (!closestGrid) {
-            console.error('closestGrid not found');
-            return;
+
+          if (closestGrid && !isOccupiedCell(closestGrid.row, closestGrid.col)) {
+            setCharacterPositions(prev => ({
+              ...prev,
+              [selectedCharacter]: { row: closestGrid.row, col: closestGrid.col }
+            }));
           }
-          setCharacterPositions(prev => ({
-            ...prev,
-            [selectedCharacter]: { row: closestGrid.row, col: closestGrid.col }
-          }));
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
