@@ -672,6 +672,12 @@ const GameUI = () => {
     return 'switch_selected';
   };
 
+  const filterGridPosition = (gridCells, excludeRow, excludeCol) => {
+    return gridCells.filter(cell => 
+      cell.row !== excludeRow || cell.col !== excludeCol
+    );
+  };
+
   const handleGridClick = useCallback((gridClickEvent, gridY, gridX) => {
 
     const characterAtPosition = Object.entries(charPositions).find(
@@ -709,13 +715,17 @@ const GameUI = () => {
         } else {
           // Implement movement after interaction
           const interactionRange = actionResult.range ? actionResult.range : 0;
+          const selectedCharPos = charPositions[selectedCharacter];
+          const selectedCharPosCoord = rowColNumToGridCoord(selectedCharPos.row, selectedCharPos.col);
+          
           const areaGrids = [...highlightedCells];
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
           setHighlightedCells(validMoveGrids);
 
-          const validMoveCoordinates = validMoveGrids.map(grid => rowColNumToGridCoord(grid.row, grid.col));
-          const selectedCharPos = charPositions[selectedCharacter];
-          const selectedCharPosCoord = rowColNumToGridCoord(selectedCharPos.row, selectedCharPos.col);
+          // TODO create proper 'valid action grids' function
+          const validActionGrids = filterGridPosition([...highlightedCells], selectedCharPos.row, selectedCharPos.col);
+          const validMoveCoordinates = validActionGrids.map(grid => rowColNumToGridCoord(grid.row, grid.col));
+
           const closestPoint = closestPointToCursorFinder(validMoveCoordinates, selectedCharPosCoord);
           
           const adjustedClosestPoint = {
