@@ -48,7 +48,6 @@ export const findNearestNeighbors = (cellX, cellY) => {
     // Get coordinates of cells
     const { row: xRow, col: xCol } = cellX;
     const { row: yRow, col: yCol } = cellY;
-    console.log(cellX, cellY);
     
     // Define the 4 adjacent cells of Y (up, right, down, left)
     const neighbors = [
