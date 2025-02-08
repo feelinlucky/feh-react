@@ -22,13 +22,39 @@ DebugButton.defaultProps = {
   isActive: false,
 };
 
+// Utility to safely stringify JSON
+const safeStringify = (obj) => {
+  const seen = new WeakSet();
+  return JSON.stringify(obj, (key, value) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return '[Circular]'; // Handle circular references
+      }
+      seen.add(value);
+    }
+    if (typeof value === 'function') {
+      return '[Function]'; // Replace functions with a placeholder
+    }
+    if (value instanceof HTMLElement) {
+      return '[HTMLElement]'; // Replace DOM nodes with a placeholder
+    }
+    return value;
+  }, 2); // Pretty print with 2 spaces
+};
+
 const DebugInfoBlock = ({ title, data, children }) => {
   // Convert data to an array of rows for the table
   const dataRows = Object.entries(data).map(([key, value]) => {
+    let displayValue;
+    try {
+      displayValue = safeStringify(value); // Safely stringify the value
+    } catch (err) {
+      displayValue = '[Unserializable]'; // Fallback for unexpected cases
+    }
     return (
       <tr key={key}>
         <td>{key}</td>
-        <td>{JSON.stringify(value)}</td>
+        <td><pre>{displayValue}</pre></td>
       </tr>
     );
   });
