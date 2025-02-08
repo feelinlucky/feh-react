@@ -672,9 +672,10 @@ const GameUI = () => {
     return 'switch_selected';
   };
 
-  const filterGridPosition = (gridCells, excludeRow, excludeCol) => {
-    return gridCells.filter(cell => 
-      cell.row !== excludeRow || cell.col !== excludeCol
+  const filterOccupiedCells = (gridCells, charPositions) => {
+    const occupiedCells = Object.values(charPositions);
+    return gridCells.filter(({ row, col }) => 
+      !occupiedCells.some(pos => pos.row === row && pos.col === col)
     );
   };
 
@@ -695,6 +696,7 @@ const GameUI = () => {
     // determine map click state
     const mode = getMapClickMode(newClickedState, selectedCharacter, clickedCharacter);
     setMapClickMode(mode);
+    updateLogText(`Clicked at (${gridY}, ${gridX}), mode: ${mode}`, 'event');
     switch (mode) {
       case 'null':
         resetSelectState({ resetClickedState: false, resetSelectedCharacter: true, resetHighlightedCells: true });
@@ -724,16 +726,16 @@ const GameUI = () => {
           setHighlightedCells(validMoveGrids);
 
           // TODO create proper 'valid action grids' function
-          const validActionGrids = filterGridPosition([...highlightedCells], selectedCharPos.row, selectedCharPos.col);
+          const validActionGrids = filterOccupiedCells([...highlightedCells], charPositions);
           const validMoveCoordinates = validActionGrids.map(grid => rowColNumToGridCoord(grid.row, grid.col));
 
           const closestPoint = closestPointToCursorFinder(validMoveCoordinates, selectedCharPosCoord);
-          
+          console.log('Closest point:', closestPoint);
           const adjustedClosestPoint = {
             x: parseInt(closestPoint.x) - mapPosition.x,
             y: parseInt(closestPoint.y) - mapPosition.y
           };
-
+          console.log('Adjusted closest point:', adjustedClosestPoint);
           if (adjustedClosestPoint.x < 0 || adjustedClosestPoint.y < 0 || adjustedClosestPoint.x >= 512 || adjustedClosestPoint.y >= 512) {
             console.error('Closest point is out of bounds:', adjustedClosestPoint);
             return;
@@ -907,4 +909,3 @@ const GameUI = () => {
 };
 
 export default GameUI;
-
