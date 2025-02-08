@@ -183,7 +183,6 @@ const AnimatedCharacter = ({ charName, coordinates, isSelected, ...props }) => {
 };
 
 const findGridCellByCursor = (cursorPos, gridAnchorCoordinates) => {
-  console.log('Cursor Position:', cursorPos.x, cursorPos.y);
   for (const key in gridAnchorCoordinates) {
     const [row, col] = key.split('-').map(Number);
     const anchor = gridAnchorCoordinates[key];
