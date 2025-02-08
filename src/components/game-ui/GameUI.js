@@ -627,6 +627,7 @@ const GameUI = () => {
 
     // If a character is selected
     if (selectedCharacter) {
+      const sameCharisClicked = selectedCharacter === clickedCharacter;
       const characterTurnState = turnState.getCharacterTurnState(selectedCharacter);
 
       // Check if the character is valid and belongs to the current group
@@ -644,11 +645,11 @@ const GameUI = () => {
         if (isCellHighlighted(newClickedState.gridY, newClickedState.gridX)) {
           if (isOccupiedCell(newClickedState.gridY, newClickedState.gridX)) {
             // If the cell is occupied, check if it's the same character
-            if (selectedCharacter === clickedCharacter) {
+            if (sameCharisClicked) {
               if (hasActed) {
                 return 'switch_selected';
               }
-              return 'null'; // No action needed if clicking on self
+              return 'invalid_click';
             }
             if (hasActed) {
               return 'switch_selected'; // Can't interact if already acted
@@ -697,7 +698,6 @@ const GameUI = () => {
         const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter] || null;
         const draggedOverCharacter = clickedCharacter || null;
         const draggedOverCharacterData = allyStates[draggedOverCharacter] || foeStates[draggedOverCharacter] || null;
-
         if (!selectedCharData || !draggedOverCharacterData) {
           return;
         }
@@ -730,8 +730,6 @@ const GameUI = () => {
           }
 
           const closestGrid = findGridCellByCursor({x: adjustedClosestPoint.x, y: adjustedClosestPoint.y}, gridAnchorCoordinates);
-
-          console.log('closestGrid',closestGrid);
           if (!closestGrid) {
             console.error('closestGrid not found');
             return;
