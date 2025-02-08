@@ -7,6 +7,7 @@ import CharacterStatUI from '../character-stat-ui/CharacterStatUI';
 import Sprite from '../sprite/Sprite';
 import { createTurnState } from './TurnState';
 import GameMap, {
+  findNearestNeighbors,
   findNearestGrids,
   defineTerrainGrid,
   TerrainType,
@@ -725,30 +726,25 @@ const GameUI = () => {
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
           setHighlightedCells(validMoveGrids);
 
-          // TODO create proper 'valid action grids' function
-          const validActionGrids = filterOccupiedCells([...highlightedCells], charPositions);
-          const validMoveCoordinates = validActionGrids.map(grid => rowColNumToGridCoord(grid.row, grid.col));
+          // Find nearest valid move grid after action is taken
+          const nearestAfterActionMoveGrids = findNearestNeighbors(selectedCharPos, {row: gridY, col: gridX});
 
-          const closestPoint = closestPointToCursorFinder(validMoveCoordinates, selectedCharPosCoord);
-          console.log('Closest point:', closestPoint);
-          const adjustedClosestPoint = {
-            x: parseInt(closestPoint.x) - mapPosition.x,
-            y: parseInt(closestPoint.y) - mapPosition.y
+          if (nearestAfterActionMoveGrids.length) {
+            let closestGrid = null;
+            for (const grid of nearestAfterActionMoveGrids) {
+              if (!isOccupiedCell(grid.row, grid.col)) {
+                closestGrid = grid;
+                break;
+              }              
+            };
+            
+            if (closestGrid) {
+              setCharacterPositions(prev => ({
+                ...prev,
+                [selectedCharacter]: { row: closestGrid.row, col: closestGrid.col }
+              }));
+            };
           };
-          console.log('Adjusted closest point:', adjustedClosestPoint);
-          if (adjustedClosestPoint.x < 0 || adjustedClosestPoint.y < 0 || adjustedClosestPoint.x >= 512 || adjustedClosestPoint.y >= 512) {
-            console.error('Closest point is out of bounds:', adjustedClosestPoint);
-            return;
-          }
-
-          const closestGrid = findGridCellByCursor({x: adjustedClosestPoint.x, y: adjustedClosestPoint.y}, gridAnchorCoordinates);
-
-          if (closestGrid && !isOccupiedCell(closestGrid.row, closestGrid.col)) {
-            setCharacterPositions(prev => ({
-              ...prev,
-              [selectedCharacter]: { row: closestGrid.row, col: closestGrid.col }
-            }));
-          }
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });

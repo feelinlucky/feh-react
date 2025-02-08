@@ -44,6 +44,39 @@ export const calculateCellsInRadius = (centerRow, centerCol, radius, invalidCell
     return cells;
 };
 
+export const findNearestNeighbors = (cellX, cellY) => {
+    // Get coordinates of cells
+    const { row: xRow, col: xCol } = cellX;
+    const { row: yRow, col: yCol } = cellY;
+    console.log(cellX, cellY);
+    
+    // Define the 4 adjacent cells of Y (up, right, down, left)
+    const neighbors = [
+      { row: yRow - 1, col: yCol }, // up
+      { row: yRow, col: yCol + 1 }, // right
+      { row: yRow + 1, col: yCol }, // down
+      { row: yRow, col: yCol - 1 }  // left
+    ].filter(({ row, col }) => 
+      // Ensure cells are within grid bounds
+      row >= 0 && row < gridSize.rows && 
+      col >= 0 && col < gridSize.cols
+    );
+  
+    // Calculate Manhattan distance from each neighbor to X
+    const distances = neighbors.map(neighbor => ({
+      cell: neighbor,
+      distance: Math.abs(neighbor.row - xRow) + Math.abs(neighbor.col - xCol)
+    }));
+  
+    // Find the minimum distance
+    const minDistance = Math.min(...distances.map(d => d.distance));
+    
+    // Return all neighbors with the minimum distance
+    return distances
+      .filter(d => d.distance === minDistance)
+      .map(d => d.cell);
+  };
+
 // Terrain types enum
 export const TerrainType = {
     PLAIN: 'plain',
