@@ -719,8 +719,8 @@ const GameUI = () => {
           // Implement movement after interaction
           const interactionRange = actionResult.range ? actionResult.range : 0;
           const selectedCharPos = charPositions[selectedCharacter];
-          const selectedCharPosCoord = rowColNumToGridCoord(selectedCharPos.row, selectedCharPos.col);
-          const clickedCharPos = charPositions[clickedCharacter];
+          // const selectedCharPosCoord = rowColNumToGridCoord(selectedCharPos.row, selectedCharPos.col);
+          // const clickedCharPos = charPositions[clickedCharacter];
           
           const areaGrids = [...highlightedCells];
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
