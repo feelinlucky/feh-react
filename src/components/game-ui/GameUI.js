@@ -16,7 +16,7 @@ import GameMap, {
 } from '../game-map/GameMap';
 
 import { sharedProps, characterData } from '../character-data/CharacterData';
-import { characterInteraction, printInteractionResult } from '../character-data/CharacterInteraction';
+import { characterInteraction, printInteractionResult, applyActionResult, printCharacterState } from '../character-data/CharacterInteraction';
 import MapCharacter from '../map-character/MapCharacter';
 import LogTextContainer from '../log-text-container/LogTextContainer';
 
@@ -746,7 +746,10 @@ const GameUI = () => {
             };
           };
 
+          console.log('Before:', printCharacterState(clickedCharacter, allyStates, foeStates));
           updateLogText(printInteractionResult(actionResult), 'interaction');
+          applyActionResult(allyStates, foeStates, actionResult);
+          console.log('After:', printCharacterState(clickedCharacter, allyStates, foeStates));
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
           resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
           return;

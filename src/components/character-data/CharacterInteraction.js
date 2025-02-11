@@ -34,6 +34,7 @@ export const characterInteraction = (charStates1, charStates2) => {
 
             // Ensure minimum 0 hitPoints
             hitPoints = Math.max(0, hitPoints);
+            const char2HP = char2.hp - hitPoints;
 
             return {
                 char1: char1.name,
@@ -43,7 +44,7 @@ export const characterInteraction = (charStates1, charStates2) => {
                 hitPoints: hitPoints,
                 endState: {
                     char2: {
-                        hp: char2.hp - hitPoints,
+                        hp: char2HP,
                     }
                 }
             };
@@ -104,9 +105,13 @@ export const applyActionEffect = (charState1, charState2, actionResult) => {
 }
 
 export const applyActionResult = (allyStates, foeStates, actionResult) => {
+    // Ensure allyStates is an array
+    const safeAllyStates = Array.isArray(allyStates) ? allyStates : [];
+    const safeFoeStates = Array.isArray(foeStates) ? foeStates : [];
+
     // Determine the target states based on the characters in the action result
-    const isAllyAction = actionResult.char1 && allyStates.some(char => char.name === actionResult.char1);
-    const targetStates = isAllyAction ? foeStates : allyStates;
+    const isAllyAction = actionResult.char1 && safeAllyStates.some(char => char.name === actionResult.char1);
+    const targetStates = isAllyAction ? safeFoeStates : safeAllyStates;
 
     // Find the target character
     const targetCharIndex = targetStates.findIndex(char => char.name === actionResult.char2);
@@ -119,15 +124,50 @@ export const applyActionResult = (allyStates, foeStates, actionResult) => {
             ...actionResult.endState[actionResult.char2 ? 'char2' : 'char1']
         };
 
-        return {
-            updatedTargetStates,
-            isAllyAction
-        };
+        return isAllyAction 
+            ? { allyStates, foeStates: updatedTargetStates }
+            : { allyStates: updatedTargetStates, foeStates };
     }
 
-    // If no target character found, return original states
-    return {
-        updatedTargetStates: targetStates,
-        isAllyAction
-    };
+    // If no changes, return original states
+    return { allyStates, foeStates };
+};
+
+export const printCharacterState = (characterName, allyStates, foeStates) => {
+    // Handle both object and array formats
+    let characterState;
+    
+    // If allyStates is an object
+    if (!Array.isArray(allyStates)) {
+        characterState = allyStates[characterName];
+    } else {
+        // If allyStates is an array
+        characterState = allyStates.find(char => char.name === characterName);
+    }
+    
+    // If not found in allyStates, check foeStates
+    if (!characterState) {
+        if (!Array.isArray(foeStates)) {
+            characterState = foeStates[characterName];
+        } else {
+            characterState = foeStates.find(char => char.name === characterName);
+        }
+    }
+    
+    // If character not found in either array
+    if (!characterState) {
+        return `Character "${characterName}" not found.`;
+    }
+    
+    // Create a detailed state string
+    const stateString = `Character: ${characterState.name}
+Group: ${characterState.group}
+HP: ${characterState.hp}
+Attack: ${characterState.atk}
+Defense: ${characterState.def}
+Resistance: ${characterState.res}
+Weapon Type: ${characterState.wpnType}
+Skills: ${characterState.skills ? JSON.stringify(characterState.skills) : 'None'}`;
+    
+    return stateString;
 };
