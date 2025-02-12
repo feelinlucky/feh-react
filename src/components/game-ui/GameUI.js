@@ -685,7 +685,10 @@ const GameUI = () => {
     const characterAtPosition = Object.entries(charPositions).find(
       ([_, pos]) => pos.row === gridY && pos.col === gridX
     );
-    const clickedCharacter = characterAtPosition ? characterAtPosition[0] : null;
+    let clickedCharacter = characterAtPosition ? characterAtPosition[0] : null;
+    if (clickedCharacter === selectedCharacter) {
+      clickedCharacter = null;
+    }
     const newClickedState = updateClickedState({
       gridY: gridY,
       gridX: gridX,
@@ -704,13 +707,12 @@ const GameUI = () => {
         return;
       case 'move_and_interact':
         const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter] || null;
-        const draggedOverCharacter = clickedCharacter || null;
-        const draggedOverCharacterData = allyStates[draggedOverCharacter] || foeStates[draggedOverCharacter] || null;
-        if (!selectedCharData || !draggedOverCharacterData) {
+        const clickedCharacterStates = allyStates[clickedCharacter] || foeStates[clickedCharacter] || null;
+        if (!selectedCharData || !clickedCharacterStates) {
           return;
         }
 
-        const actionResult = characterInteraction(selectedCharData, draggedOverCharacterData);
+        const actionResult = characterInteraction(selectedCharData, clickedCharacterStates);
         if (actionResult.error || !actionResult) {
           console.error(`Error: ${actionResult.error}`);
           rollbackToPreviousClickState();
@@ -719,8 +721,6 @@ const GameUI = () => {
           // Implement movement after interaction
           const interactionRange = actionResult.range ? actionResult.range : 0;
           const selectedCharPos = charPositions[selectedCharacter];
-          // const selectedCharPosCoord = rowColNumToGridCoord(selectedCharPos.row, selectedCharPos.col);
-          // const clickedCharPos = charPositions[clickedCharacter];
           
           const areaGrids = [...highlightedCells];
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
@@ -748,7 +748,16 @@ const GameUI = () => {
 
           console.log('Before:', printCharacterState(clickedCharacter, allyStates, foeStates));
           updateLogText(printInteractionResult(actionResult), 'interaction');
-          applyActionResult(allyStates, foeStates, actionResult);
+          const {activeTurnStates, passiveTurnStates} = applyActionResult(allyStates, foeStates, actionResult);
+          if (actionResult.isAlly) {
+            setAllyStates(activeTurnStates);
+            setFoeStates(passiveTurnStates);
+          } else {
+            setFoeStates(activeTurnStates);
+            setAllyStates(passiveTurnStates);
+          }
+
+          console.log('Action result:', actionResult);
           console.log('After:', printCharacterState(clickedCharacter, allyStates, foeStates));
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
           resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });

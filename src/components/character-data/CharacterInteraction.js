@@ -46,33 +46,8 @@ export const characterInteraction = (charStates1, charStates2) => {
                     char2: {
                         hp: char2HP,
                     }
-                }
-            };
-
-        case 'assist':
-            let skill = (char1.skills && char1.skills.assist) ? char1.skills.assist : '';
-            let effect = {};
-
-            switch (skill) {
-                case 'Rally Attack':
-                    effect.atk = Math.min(char2.atk + 5, 99);
-                    break;
-                case 'Rally Defense':
-                    effect.def = Math.min(char2.def + 5, 99);
-                    break;
-                case 'Heal':
-                    // Healing - restore 50% of healer's attack as HP
-                    let healing = Math.floor(char1.atk * 0.5);
-                    effect.hp = Math.min(char2.hp, char2.hp + healing);
-            };
-
-            return {
-                char1: char1.name,
-                char2: char2.name,
-                action: 'assist',
-                range: 1,
-                hitPoints: hitPoints,
-                endState: effect
+                },
+                isAlly: char1.isAlly,
             };
 
         default:
@@ -83,58 +58,61 @@ export const characterInteraction = (charStates1, charStates2) => {
     };
 };
 
-export const printInteractionResult = (interactionResult) => {
-    if (interactionResult.error) {
-        return `Error: ${interactionResult.error}`;
+export const printactionResult = (actionResult) => {
+    if (actionResult.error) {
+        return `Error: ${actionResult.error}`;
     };
 
-    const { char1, char2, action, hitPoints, endState } = interactionResult;
-    if (interactionResult) {
+    const { char1, char2, action, hitPoints, endState } = actionResult;
+    if (actionResult) {
         let resultText = `${char1} used ${action} on ${char2}. Dmg: ${hitPoints}. Result: ${JSON.stringify(endState)}`;
 
         return resultText;
     };
 }
 
-export const applyActionEffect = (charState1, charState2, actionResult) => {
-    const { char1, char2, action, endState } = actionResult;
-    let newCharState2 = {
-        ...charState2,
-        ...endState
-    };
-}
-
 export const applyActionResult = (allyStates, foeStates, actionResult) => {
     // Ensure allyStates is an array
-    const safeAllyStates = Array.isArray(allyStates) ? allyStates : [];
-    const safeFoeStates = Array.isArray(foeStates) ? foeStates : [];
+    let activeTurnStates, passiveTurnStates;
+    if (actionResult.isAlly) {
+        activeTurnStates = Array.isArray(allyStates) ? allyStates : [];
+        passiveTurnStates = Array.isArray(foeStates) ? foeStates : [];
+    } else {
+        activeTurnStates = Array.isArray(foeStates) ? foeStates : [];
+        passiveTurnStates = Array.isArray(allyStates) ? allyStates : [];
+    };
 
-    // Determine the target states based on the characters in the action result
-    const isAllyAction = actionResult.char1 && safeAllyStates.some(char => char.name === actionResult.char1);
-    const targetStates = isAllyAction ? safeFoeStates : safeAllyStates;
+    // Apply changes to states
+    const activeTurnEndResult = actionResult.endState.char1;
+    const passiveTurnEndResult = actionResult.endState.char2;
 
-    // Find the target character
-    const targetCharIndex = targetStates.findIndex(char => char.name === actionResult.char2);
+    const updatedActiveTurnStates = activeTurnStates.map(char => {
+        if (char.name === activeTurnEndResult.name) {
+            return {
+                ...char,
+                ...activeTurnEndResult  // Changed from activeTurnStates to activeTurnEndResult
+            };
+        } else {
+            return char;
+        }
+    });
 
-    // If target character found, apply the end state
-    if (targetCharIndex !== -1) {
-        const updatedTargetStates = [...targetStates];
-        updatedTargetStates[targetCharIndex] = {
-            ...updatedTargetStates[targetCharIndex],
-            ...actionResult.endState[actionResult.char2 ? 'char2' : 'char1']
-        };
+    // Apply changes to passive turn states
+    const updatedPassiveTurnStates = passiveTurnStates.map(char => {
+        if (char.name === passiveTurnEndResult.name) {
+            return {
+                ...char,
+                ...passiveTurnEndResult  // Changed from passiveTurnStates to passiveTurnEndResult
+            };
+        } else {
+            return char;
+        }
+    });
 
-        return isAllyAction 
-            ? { allyStates, foeStates: updatedTargetStates }
-            : { allyStates: updatedTargetStates, foeStates };
-    }
-
-    // If no changes, return original states
-    return { allyStates, foeStates };
-};
+    return { updatedActiveTurnStates, updatedPassiveTurnStates };
+}
 
 export const printCharacterState = (characterName, allyStates, foeStates) => {
-    // Handle both object and array formats
     let characterState;
     
     // If allyStates is an object
@@ -144,7 +122,7 @@ export const printCharacterState = (characterName, allyStates, foeStates) => {
         // If allyStates is an array
         characterState = allyStates.find(char => char.name === characterName);
     }
-    
+
     // If not found in allyStates, check foeStates
     if (!characterState) {
         if (!Array.isArray(foeStates)) {
@@ -153,12 +131,12 @@ export const printCharacterState = (characterName, allyStates, foeStates) => {
             characterState = foeStates.find(char => char.name === characterName);
         }
     }
-    
+
     // If character not found in either array
     if (!characterState) {
         return `Character "${characterName}" not found.`;
     }
-    
+
     // Create a detailed state string
     const stateString = `Character: ${characterState.name}
 Group: ${characterState.group}
@@ -168,6 +146,6 @@ Defense: ${characterState.def}
 Resistance: ${characterState.res}
 Weapon Type: ${characterState.wpnType}
 Skills: ${characterState.skills ? JSON.stringify(characterState.skills) : 'None'}`;
-    
+
     return stateString;
 };
