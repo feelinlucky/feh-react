@@ -72,59 +72,39 @@ export const printInteractionResult = (actionResult) => {
 }
 
 export const applyActionResult = (allyStates, foeStates, actionResult) => {
-    // Convert allyStates and foeStates to arrays if they are objects
-    const convertToArray = (states) => {
-        if (!states) return [];
-        if (Array.isArray(states)) return states;
-        // If states is an object (dictionary), convert to array of values
-        return Object.values(states);
-    };
-
-    // Validate actionResult and its endState
+    
     if (!actionResult || !actionResult.endState) {
         console.error('Invalid action result or missing end state');
-        return { updatedActiveTurnStates: [], updatedPassiveTurnStates: [] };
+        return { updatedActiveTurnStates: {}, updatedPassiveTurnStates: {} };
     }
-
-    let activeTurnStates, passiveTurnStates;
+    const { char1, char2, endState } = actionResult;
+    
+    let updatedActiveTurnStates, updatedPassiveTurnStates;
+    
     if (actionResult.isAlly) {
-        activeTurnStates = convertToArray(allyStates);
-        passiveTurnStates = convertToArray(foeStates);
+        updatedActiveTurnStates = {
+            ...allyStates,
+            ...(endState.char1 ? { [char1]: { ...allyStates[char1], ...endState.char1 } } : {})
+        };
+
+        updatedPassiveTurnStates = {
+            ...foeStates,
+            ...(endState.char2 ? { [char2]: { ...foeStates[char2], ...endState.char2 } } : {})
+        };
     } else {
-        activeTurnStates = convertToArray(foeStates);
-        passiveTurnStates = convertToArray(allyStates);
-    };
+        updatedActiveTurnStates = {
+            ...foeStates,
+            ...(endState.char1 ? { [char1]: { ...foeStates[char1], ...endState.char1 } } : {})
+        };
 
-    // Safely extract end state results
-    const activeTurnEndResult = actionResult.endState.char1 || {};
-    const passiveTurnEndResult = actionResult.endState.char2 || {};
-
-    const updatedActiveTurnStates = activeTurnStates.map(char => {
-        if (activeTurnEndResult.name && char.name === activeTurnEndResult.name) {
-            return {
-                ...char,
-                ...activeTurnEndResult
-            };
-        } else {
-            return char;
-        }
-    });
-
-    // Apply changes to passive turn states
-    const updatedPassiveTurnStates = passiveTurnStates.map(char => {
-        if (passiveTurnEndResult.name && char.name === passiveTurnEndResult.name) {
-            return {
-                ...char,
-                ...passiveTurnEndResult
-            };
-        } else {
-            return char;
-        }
-    });
-
-    console.log('updatedActiveTurnStates', updatedActiveTurnStates, 'updatedPassiveTurnStates', updatedPassiveTurnStates);
+        updatedPassiveTurnStates = {
+            ...allyStates,
+            ...(endState.char2 ? { [char2]: { ...allyStates[char2], ...endState.char2 } } : {})
+        };
+    }
     return { updatedActiveTurnStates, updatedPassiveTurnStates };
-}
+};
+
 
 export const printCharacterState = (characterName, allyStates, foeStates) => {
     let characterState;
