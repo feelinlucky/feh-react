@@ -5,7 +5,7 @@ import Sprite from '../sprite/Sprite';
 import SingleCharacterStatUI from '../single-character-stat-ui/SingleCharacterStatUI';
 import MockChild from '../mock-child/MockChild';
 
-const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
+const CharacterStatUI = ({ charName, level, wpnType, hp, atk, spd, def, res, skills }) => {
     const statUIRef = useRef(null);
 
     useEffect(() => {
@@ -18,7 +18,8 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
     const characterStats = [
         { characterStatType: 'NAME', characterStatValue: charName },
         { characterStatType: 'LV', characterStatValue: level },
-        { characterStatType: 'WPN', characterStatValue: wpn },
+        { characterStatType: 'WPNTYPE', characterStatValue: wpnType},
+        { characterStatType: 'WPN', characterStatValue: skills?.weapon},
         { characterStatType: 'HP', characterStatValue: hp },
         { characterStatType: 'ATK', characterStatValue: atk },
         { characterStatType: 'SPD', characterStatValue: spd },
@@ -26,12 +27,13 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
         { characterStatType: 'RES', characterStatValue: res },
     ];
 
-    const isValidStats = charName && level && wpn && 
+    const isValidStats = charName && level && wpnType && 
         typeof hp === 'number' && typeof atk === 'number' && 
         typeof spd === 'number' && typeof def === 'number' && 
         typeof res === 'number';
 
     if (!isValidStats) {
+        console.error('Invalid stats:', characterStats);
         return <div className={styles.offState} />;
     }
 
@@ -39,7 +41,7 @@ const CharacterStatUI = ({ charName, level, wpn, hp, atk, spd, def, res }) => {
     const characterStatsSlice2 = characterStats.slice(4);
 
 
-    if (!charName | !level | !wpn | !hp | !atk | !spd | !def | !res) {
+    if (!charName || !level || !wpnType || !hp || !atk || !spd || !def || !res || !skills) {
         return <div className={styles.offState} />;
     } else {
         return (

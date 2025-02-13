@@ -491,22 +491,10 @@ const GameUI = () => {
   }, [mapPosition]);
 
   useEffect(() => {
-    if (selectedCharacter) {
+    if (selectedCharacter && (selectedCharacter !== selectedCharState.name)) {
       const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
       setSelectedCharState({ ...selectedCharData });
-    } else {
-      setSelectedCharState({
-        charName: '',
-        level: 0,
-        wpn: '',
-        hp: 0,
-        atk: 0,
-        spd: 0,
-        def: 0,
-        res: 0,
-        isAlly: false
-      });
-    }
+    };
   }, [selectedCharacter, allyStates, foeStates, setSelectedCharState]);
 
   useEffect(() => {
@@ -909,12 +897,13 @@ const GameUI = () => {
         <CharacterStatUI
           charName={selectedCharState.name}
           level={selectedCharState.level}
-          wpn={selectedCharState.wpn}
+          wpnType={selectedCharState.wpnType}
           hp={selectedCharState.hp}
           atk={selectedCharState.atk}
           spd={selectedCharState.spd}
           def={selectedCharState.def}
           res={selectedCharState.res}
+          skills={selectedCharState.skills}
         />
         <div className={styles['map-container']} ref={mapContainerRef}>
           <GameMap
