@@ -583,6 +583,7 @@ const GameUI = () => {
     updateClickedState({ gridY: 0, gridX: 0, isMapGrid: false, characterName: null, clickedComponent: containerClickEvent.currentTarget });
     resetSelectState({ resetClickedState: false, resetSelectedCharacter: true, resetHighlightedCells: true });
   }, [setClickedState, setSelectedCharacter]);
+
   const isCellHighlighted = useCallback((row, col) => {
     return highlightedCells.some(cell => cell.row === row && cell.col === col);
   }, [highlightedCells]);
@@ -746,19 +747,29 @@ const GameUI = () => {
             };
           };
 
-          console.log('Before:', printCharacterState(clickedCharacter, allyStates, foeStates));
           updateLogText(printInteractionResult(actionResult), 'interaction');
-          const {activeTurnStates, passiveTurnStates} = applyActionResult(allyStates, foeStates, actionResult);
+          const {updatedActiveTurnStates, updatedPassiveTurnStates} = applyActionResult(allyStates, foeStates, actionResult);
+
           if (actionResult.isAlly) {
-            setAllyStates(activeTurnStates);
-            setFoeStates(passiveTurnStates);
+            setAllyStates(prevStates => ({
+              ...prevStates,
+              ...updatedActiveTurnStates
+            }));
+            setFoeStates(prevStates => ({
+              ...prevStates,
+              ...updatedPassiveTurnStates
+            }));
           } else {
-            setFoeStates(activeTurnStates);
-            setAllyStates(passiveTurnStates);
+            setFoeStates(prevStates => ({
+              ...prevStates,
+              ...updatedActiveTurnStates
+            }));
+            setAllyStates(prevStates => ({
+              ...prevStates,
+              ...updatedPassiveTurnStates
+            }));
           }
 
-          console.log('Action result:', actionResult);
-          console.log('After:', printCharacterState(clickedCharacter, allyStates, foeStates));
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
           resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
           return;
@@ -835,6 +846,61 @@ const GameUI = () => {
 
   const toggleDebugDisplay = () => {
     setIsDebugDisplayVisible(!isDebugDisplayVisible);
+  };
+
+  useEffect(() => {
+    console.log('Ally States Updated:', allyStates);
+    console.log('Foe States Updated:', foeStates);
+  }, [allyStates, foeStates]);
+
+  const handleCharacterInteraction = (clickedCharacter, actionResult) => {
+    updateLogText(printInteractionResult(actionResult), 'interaction');
+    const {updatedActiveTurnStates, updatedPassiveTurnStates} = applyActionResult(allyStates, foeStates, actionResult);
+    
+    if (Object.keys(updatedActiveTurnStates).length === 0 && Object.keys(updatedPassiveTurnStates).length === 0) {
+      console.error('No state updates detected');
+      return;
+    }
+
+    if (actionResult.isAlly) {
+      setAllyStates(prevStates => {
+        const newStates = {
+          ...prevStates,
+          ...updatedActiveTurnStates
+        };
+        // console.log('New Ally States:', newStates);
+        return newStates;
+      });
+      setFoeStates(prevStates => {
+        const newStates = {
+          ...prevStates,
+          ...updatedPassiveTurnStates
+        };
+        // console.log('New Foe States:', newStates);
+        return newStates;
+      });
+    } else {
+      setFoeStates(prevStates => {
+        const newStates = {
+          ...prevStates,
+          ...updatedActiveTurnStates
+        };
+        // console.log('New Foe States:', newStates);
+        return newStates;
+      });
+      setAllyStates(prevStates => {
+        const newStates = {
+          ...prevStates,
+          ...updatedPassiveTurnStates
+        };
+        // console.log('New Ally States:', newStates);
+        return newStates;
+      });
+    }
+
+    console.log('Action result:', actionResult);
+    updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
+    resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
   };
 
   return (
