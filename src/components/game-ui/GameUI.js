@@ -269,7 +269,7 @@ const GameUI = () => {
   const location = useLocation();
   const frontPageState = location.state || {};
 
-  const [selectedCharState, setselectedCharState] = useState({});
+  const [selectedCharState, setSelectedCharState] = useState({});
 
   const defaultClickState = {
     gridY: null,
@@ -493,9 +493,9 @@ const GameUI = () => {
   useEffect(() => {
     if (selectedCharacter) {
       const selectedCharData = allyStates[selectedCharacter] || foeStates[selectedCharacter];
-      setselectedCharState({ ...selectedCharData });
+      setSelectedCharState({ ...selectedCharData });
     } else {
-      setselectedCharState({
+      setSelectedCharState({
         charName: '',
         level: 0,
         wpn: '',
@@ -507,7 +507,7 @@ const GameUI = () => {
         isAlly: false
       });
     }
-  }, [selectedCharacter, allyStates, foeStates, setselectedCharState]);
+  }, [selectedCharacter, allyStates, foeStates, setSelectedCharState]);
 
   useEffect(() => {
     const handleMouseMove = (event) => {
