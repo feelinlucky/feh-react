@@ -198,3 +198,10 @@
 .log-text-item {
   margin-bottom: 5px;
 }
+
+.damage-number {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1000;
+}

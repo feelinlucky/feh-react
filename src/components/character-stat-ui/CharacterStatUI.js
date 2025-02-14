@@ -80,7 +80,6 @@ const CharacterStatUI = ({ charName, level, wpnType, hp, atk, spd, def, res, ski
                     ))}
                 </div>
             </div>
-
         );
     }
 };

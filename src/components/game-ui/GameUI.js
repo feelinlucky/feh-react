@@ -265,6 +265,39 @@ const calculateGridCellCoordinates = (draggedOverGrid, gridAnchorCoordinates) =>
   };
 };
 
+const DamageNumber = ({ damage, position, onAnimationEnd }) => {
+  const springProps = useSpring({
+    from: {
+      opacity: 1,
+      transform: 'translateY(0px)',
+    },
+    to: {
+      opacity: 0,
+      transform: 'translateY(-30px)',
+    },
+    config: { tension: 120, friction: 14 },
+    onRest: onAnimationEnd,
+  });
+
+  return (
+    <animated.div
+      style={{
+        ...springProps,
+        position: 'absolute',
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        fontSize: '24px',
+        fontWeight: 'bold',
+        color: '#ff0000',
+        textShadow: '2px 2px 2px rgba(0,0,0,0.5)',
+        zIndex: 1000,
+      }}
+    >
+      {damage}
+    </animated.div>
+  );
+};
+
 const GameUI = () => {
   const location = useLocation();
   const frontPageState = location.state || {};
@@ -282,6 +315,7 @@ const GameUI = () => {
 
   const [clickedState, setClickedState] = useState(defaultClickState);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
+  const [damageNumbers, setDamageNumbers] = useState([]);
 
   const updateClickedState = ({ gridY, gridX, isMapGrid, characterName, clickEvent }) => {
     // Create base click state
@@ -535,30 +569,30 @@ const GameUI = () => {
     if (!cursorPos || !points || points.length === 0) {
       return null;
     }
-  
+
     // Validate cursor position
     if (typeof cursorPos.x !== 'number' || typeof cursorPos.y !== 'number') {
       console.warn('closestPointToCursorFinder: Invalid cursor position', cursorPos);
       return null;
     }
-  
+
     // Validate points
-    const validPoints = points.filter(point => 
-      point && 
-      typeof point.x === 'number' && 
+    const validPoints = points.filter(point =>
+      point &&
+      typeof point.x === 'number' &&
       typeof point.y === 'number'
     );
-  
+
     if (validPoints.length === 0) {
       console.warn('closestPointToCursorFinder: No valid points', points);
       return null;
     }
-  
+
     // Find the point with the minimum distance to the cursor
     return validPoints.reduce((closest, point) => {
       const currentDistance = calculateDistance(cursorPos, point);
       const closestDistance = calculateDistance(cursorPos, closest);
-      
+
       return currentDistance < closestDistance ? point : closest;
     }, validPoints[0]);
   }
@@ -664,7 +698,7 @@ const GameUI = () => {
 
   const filterOccupiedCells = (gridCells, charPositions) => {
     const occupiedCells = Object.values(charPositions);
-    return gridCells.filter(({ row, col }) => 
+    return gridCells.filter(({ row, col }) =>
       !occupiedCells.some(pos => pos.row === row && pos.col === col)
     );
   };
@@ -710,13 +744,13 @@ const GameUI = () => {
           // Implement movement after interaction
           const interactionRange = actionResult.range ? actionResult.range : 0;
           const selectedCharPos = charPositions[selectedCharacter];
-          
+
           const areaGrids = [...highlightedCells];
           const validMoveGrids = findNearestGrids(gridY, gridX, interactionRange, areaGrids);
           setHighlightedCells(validMoveGrids);
 
           // Find nearest valid move grid after action is taken
-          const nearestAfterActionMoveGrids = findNearestNeighbors(selectedCharPos, {row: gridY, col: gridX});
+          const nearestAfterActionMoveGrids = findNearestNeighbors(selectedCharPos, { row: gridY, col: gridX });
 
           if (nearestAfterActionMoveGrids.length) {
             let closestGrid = null;
@@ -724,9 +758,9 @@ const GameUI = () => {
               if (!isOccupiedCell(grid.row, grid.col)) {
                 closestGrid = grid;
                 break;
-              }              
+              }
             };
-            
+
             if (closestGrid) {
               setCharacterPositions(prev => ({
                 ...prev,
@@ -736,7 +770,7 @@ const GameUI = () => {
           };
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
-          const {updatedActiveTurnStates, updatedPassiveTurnStates} = applyActionResult(allyStates, foeStates, actionResult);
+          const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, actionResult);
 
           if (actionResult.isAlly) {
             setAllyStates(prevStates => ({
@@ -843,8 +877,25 @@ const GameUI = () => {
 
   const handleCharacterInteraction = (clickedCharacter, actionResult) => {
     updateLogText(printInteractionResult(actionResult), 'interaction');
-    const {updatedActiveTurnStates, updatedPassiveTurnStates} = applyActionResult(allyStates, foeStates, actionResult);
-    
+    const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, actionResult);
+
+    if (actionResult.hitPoints > 0) {
+      // Get position for damage number display
+      const targetPos = charPositions[actionResult.char2];
+      const gridAnchor = gridAnchorCoordinates[`${targetPos.row}-${targetPos.col}`];
+
+      if (gridAnchor) {
+        setDamageNumbers(prev => [...prev, {
+          id: Date.now(),
+          damage: actionResult.hitPoints,
+          position: {
+            x: gridAnchor.x,
+            y: gridAnchor.y - 32 // Offset above the character
+          }
+        }]);
+      }
+    }
+
     if (Object.keys(updatedActiveTurnStates).length === 0 && Object.keys(updatedPassiveTurnStates).length === 0) {
       console.error('No state updates detected');
       return;
@@ -943,6 +994,17 @@ const GameUI = () => {
               />
             ) : null;
           })}
+
+          {damageNumbers.map(({ id, damage, position }) => (
+            <DamageNumber
+              key={id}
+              damage={damage}
+              position={position}
+              onAnimationEnd={() => {
+                setDamageNumbers(prev => prev.filter(item => item.id !== id));
+              }}
+            />
+          ))}
         </div>
         <LogTextContainer
           logText={logText}
