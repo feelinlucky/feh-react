@@ -875,25 +875,29 @@ const GameUI = () => {
     console.log('Foe States Updated:', foeStates);
   }, [allyStates, foeStates]);
 
-  const handleCharacterInteraction = (clickedCharacter, actionResult) => {
+  const handleCharacterInteraction = (selectedCharacter, clickedCharacter, actionResult) => {
     updateLogText(printInteractionResult(actionResult), 'interaction');
     const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, actionResult);
-
+    console.log('actionResult', actionResult);
     if (actionResult.hitPoints > 0) {
       // Get position for damage number display
       const targetPos = charPositions[actionResult.char2];
       const gridAnchor = gridAnchorCoordinates[`${targetPos.row}-${targetPos.col}`];
 
-      if (gridAnchor) {
-        setDamageNumbers(prev => [...prev, {
-          id: Date.now(),
-          damage: actionResult.hitPoints,
-          position: {
-            x: gridAnchor.x,
-            y: gridAnchor.y - 32 // Offset above the character
-          }
-        }]);
+      if (!gridAnchor) {
+        console.error('Grid anchor not found for target position:', targetPos);
+        return;
       }
+
+      setDamageNumbers(prev => [...prev, {
+        id: Date.now(),
+        damage: actionResult.hitPoints,
+        position: {
+          x: gridAnchor.x,
+          y: gridAnchor.y - 32 // Offset above the character
+        }
+      }]);
+      console.log('Damage Number:', damageNumbers); 
     }
 
     if (Object.keys(updatedActiveTurnStates).length === 0 && Object.keys(updatedPassiveTurnStates).length === 0) {
