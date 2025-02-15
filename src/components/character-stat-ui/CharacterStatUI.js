@@ -33,7 +33,6 @@ const CharacterStatUI = ({ charName, level, wpnType, hp, atk, spd, def, res, ski
         typeof res === 'number';
 
     if (!isValidStats) {
-        console.error('Invalid stats:', characterStats);
         return <div className={styles.offState} />;
     }
 

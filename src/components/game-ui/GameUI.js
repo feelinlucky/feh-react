@@ -316,6 +316,8 @@ const GameUI = () => {
   const [clickedState, setClickedState] = useState(defaultClickState);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
   const [damageNumbers, setDamageNumbers] = useState([]);
+  const [prevDamageNumberId, setPrevDamageNumberId] = useState(null);
+  const [showDamageNumber, setShowDamageNumber] = useState(false);
 
   const updateClickedState = ({ gridY, gridX, isMapGrid, characterName, clickEvent }) => {
     // Create base click state
@@ -875,13 +877,12 @@ const GameUI = () => {
     console.log('Foe States Updated:', foeStates);
   }, [allyStates, foeStates]);
 
-  const handleCharacterInteraction = (selectedCharacter, clickedCharacter, actionResult) => {
-    updateLogText(printInteractionResult(actionResult), 'interaction');
-    const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, actionResult);
-    console.log('actionResult', actionResult);
-    if (actionResult.hitPoints > 0) {
+  const actionResult = useRef(null);
+
+  useEffect(() => {
+    if (actionResult.current && actionResult.current.hitPoints > 0) {
       // Get position for damage number display
-      const targetPos = charPositions[actionResult.char2];
+      const targetPos = charPositions[actionResult.current.char2];
       const gridAnchor = gridAnchorCoordinates[`${targetPos.row}-${targetPos.col}`];
 
       if (!gridAnchor) {
@@ -891,13 +892,53 @@ const GameUI = () => {
 
       setDamageNumbers(prev => [...prev, {
         id: Date.now(),
-        damage: actionResult.hitPoints,
+        damage: actionResult.current.hitPoints,
         position: {
           x: gridAnchor.x,
           y: gridAnchor.y - 32 // Offset above the character
         }
       }]);
-      console.log('Damage Number:', damageNumbers); 
+
+      if (!prevDamageNumberId || (prevDamageNumberId !== damageNumbers.id)) {
+        setPrevDamageNumberId(damageNumbers.id);
+
+        setShowDamageNumber(true);
+        let damageNumberTimer;
+        damageNumberTimer = setTimeout(() => {
+          setShowDamageNumber(false);
+        }, 5000);
+
+        return () => clearTimeout(damageNumberTimer);
+      }
+
+      console.log('Damage Number:', damageNumbers);
+    }
+  }, [actionResult, setDamageNumbers, setPrevDamageNumberId, setShowDamageNumber]);
+
+  const handleCharacterInteraction = (selectedCharacter, clickedCharacter, result) => {
+    actionResult.current = result;
+    updateLogText(printInteractionResult(result), 'interaction');
+    const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, result);
+    console.log('result', result);
+    if (result.hitPoints > 0) {
+      // Get position for damage number display
+      const targetPos = charPositions[result.char2];
+      const gridAnchor = gridAnchorCoordinates[`${targetPos.row}-${targetPos.col}`];
+
+      if (!gridAnchor) {
+        console.error('Grid anchor not found for target position:', targetPos);
+        return;
+      }
+
+      setDamageNumbers(prev => [...prev, {
+        id: Date.now(),
+        damage: result.hitPoints,
+        position: {
+          x: gridAnchor.x,
+          y: gridAnchor.y - 32 // Offset above the character
+        }
+      }]);
+      console.log('Damage Number:', damageNumbers);
     }
 
     if (Object.keys(updatedActiveTurnStates).length === 0 && Object.keys(updatedPassiveTurnStates).length === 0) {
@@ -905,7 +946,7 @@ const GameUI = () => {
       return;
     }
 
-    if (actionResult.isAlly) {
+    if (result.isAlly) {
       setAllyStates(prevStates => {
         const newStates = {
           ...prevStates,
@@ -941,7 +982,7 @@ const GameUI = () => {
       });
     }
 
-    console.log('Action result:', actionResult);
+    console.log('Action result:', result);
     updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
     resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
   };
@@ -999,7 +1040,7 @@ const GameUI = () => {
             ) : null;
           })}
 
-          {damageNumbers.map(({ id, damage, position }) => (
+          {showDamageNumber ? damageNumbers.map(({ id, damage, position }) => (
             <DamageNumber
               key={id}
               damage={damage}
@@ -1008,7 +1049,7 @@ const GameUI = () => {
                 setDamageNumbers(prev => prev.filter(item => item.id !== id));
               }}
             />
-          ))}
+          )) : null};
         </div>
         <LogTextContainer
           logText={logText}
