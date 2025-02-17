@@ -448,9 +448,6 @@ const GameUI = () => {
     });
   }, []);
 
-  const categorizedLogs = logText.filter(log => log.category !== "uncategorized");
-  const uncategorizedLogs = logText.filter(log => log.category === "uncategorized");
-
   // Track whether the current group is draggable
   const [isDraggable, setIsDraggable] = useState(true);
 
@@ -492,7 +489,7 @@ const GameUI = () => {
 
   const handlegridAnchorCoordinates = useCallback((gridAnchorCoordinates) => {
     setgridAnchorCoordinates(gridAnchorCoordinates);
-  }, [mapState]);
+  }, []);
 
   useEffect(() => {
     const updateMapPosition = () => {
@@ -770,6 +767,10 @@ const GameUI = () => {
           };
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
+          // TODO: add handle damage number in actionResult.
+
+
+
           const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, actionResult);
 
           if (actionResult.isAlly) {
@@ -848,6 +849,9 @@ const GameUI = () => {
       case 'invalid_click':
         rollbackToPreviousClickState();
         return;
+      default:
+        console.warn(`Unhandled map click mode: ${mode}`);
+        return;
     }
   }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition, allyStates, foeStates, updateTurnState]);
 
@@ -875,75 +879,29 @@ const GameUI = () => {
     console.log('Foe States Updated:', foeStates);
   }, [allyStates, foeStates]);
 
-  const handleCharacterInteraction = (selectedCharacter, clickedCharacter, actionResult) => {
-    updateLogText(printInteractionResult(actionResult), 'interaction');
-    const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, actionResult);
-    console.log('actionResult', actionResult);
-    if (actionResult.hitPoints > 0) {
-      // Get position for damage number display
-      const targetPos = charPositions[actionResult.char2];
-      const gridAnchor = gridAnchorCoordinates[`${targetPos.row}-${targetPos.col}`];
+  const handleDamageNumbers = (actionResult) => {
+    const { char2, hitPoints } = actionResult;
 
-      if (!gridAnchor) {
+    if (hitPoints > 0) {
+      // Get position for damage number display
+      const targetPos = charPositions[char2];
+      const targetPosCoord = targetPosCoordCoordinates[`${targetPos.row}-${targetPos.col}`];
+
+      if (!targetPosCoord) {
         console.error('Grid anchor not found for target position:', targetPos);
         return;
       }
 
       setDamageNumbers(prev => [...prev, {
-        id: Date.now(),
+        timestamp: Date.now(),
         damage: actionResult.hitPoints,
         position: {
-          x: gridAnchor.x,
-          y: gridAnchor.y - 32 // Offset above the character
+          x: targetPosCoord.x,
+          y: targetPosCoord.y - 32 // Offset above the character
         }
       }]);
-      console.log('Damage Number:', damageNumbers); 
+      console.log('Damage Number:', damageNumbers);
     }
-
-    if (Object.keys(updatedActiveTurnStates).length === 0 && Object.keys(updatedPassiveTurnStates).length === 0) {
-      console.error('No state updates detected');
-      return;
-    }
-
-    if (actionResult.isAlly) {
-      setAllyStates(prevStates => {
-        const newStates = {
-          ...prevStates,
-          ...updatedActiveTurnStates
-        };
-        // console.log('New Ally States:', newStates);
-        return newStates;
-      });
-      setFoeStates(prevStates => {
-        const newStates = {
-          ...prevStates,
-          ...updatedPassiveTurnStates
-        };
-        // console.log('New Foe States:', newStates);
-        return newStates;
-      });
-    } else {
-      setFoeStates(prevStates => {
-        const newStates = {
-          ...prevStates,
-          ...updatedActiveTurnStates
-        };
-        // console.log('New Foe States:', newStates);
-        return newStates;
-      });
-      setAllyStates(prevStates => {
-        const newStates = {
-          ...prevStates,
-          ...updatedPassiveTurnStates
-        };
-        // console.log('New Ally States:', newStates);
-        return newStates;
-      });
-    }
-
-    console.log('Action result:', actionResult);
-    updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
-    resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
   };
 
   return (
