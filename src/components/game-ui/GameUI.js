@@ -450,9 +450,6 @@ const GameUI = () => {
     });
   }, []);
 
-  const categorizedLogs = logText.filter(log => log.category !== "uncategorized");
-  const uncategorizedLogs = logText.filter(log => log.category === "uncategorized");
-
   // Track whether the current group is draggable
   const [isDraggable, setIsDraggable] = useState(true);
 
@@ -494,7 +491,7 @@ const GameUI = () => {
 
   const handlegridAnchorCoordinates = useCallback((gridAnchorCoordinates) => {
     setgridAnchorCoordinates(gridAnchorCoordinates);
-  }, [mapState]);
+  }, []);
 
   useEffect(() => {
     const updateMapPosition = () => {
@@ -772,6 +769,9 @@ const GameUI = () => {
           };
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
+          // TODO: add handle damage number in actionResult.
+          handleDamageNumbers(actionResult);
+
           const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, actionResult);
 
           if (actionResult.isAlly) {
@@ -850,6 +850,9 @@ const GameUI = () => {
       case 'invalid_click':
         rollbackToPreviousClickState();
         return;
+      default:
+        console.warn(`Unhandled map click mode: ${mode}`);
+        return;
     }
   }, [charPositions, setSelectedCharacter, terrainData, isCellHighlighted, selectedCharacter, currentCursorPos, gridAnchorCoordinates, mapPosition, allyStates, foeStates, updateTurnState]);
 
@@ -877,116 +880,48 @@ const GameUI = () => {
     console.log('Foe States Updated:', foeStates);
   }, [allyStates, foeStates]);
 
-  const actionResult = useRef(null);
-
-  useEffect(() => {
-    if (actionResult.current && actionResult.current.hitPoints > 0) {
-      // Get position for damage number display
-      const targetPos = charPositions[actionResult.current.char2];
-      const gridAnchor = gridAnchorCoordinates[`${targetPos.row}-${targetPos.col}`];
-
-      if (!gridAnchor) {
-        console.error('Grid anchor not found for target position:', targetPos);
-        return;
-      }
-
-      setDamageNumbers(prev => [...prev, {
-        id: Date.now(),
-        damage: actionResult.current.hitPoints,
-        position: {
-          x: gridAnchor.x,
-          y: gridAnchor.y - 32 // Offset above the character
-        }
-      }]);
-
-      if (!prevDamageNumberId || (prevDamageNumberId !== damageNumbers.id)) {
-        setPrevDamageNumberId(damageNumbers.id);
-
-        setShowDamageNumber(true);
-        let damageNumberTimer;
-        damageNumberTimer = setTimeout(() => {
-          setShowDamageNumber(false);
-        }, 5000);
-
-        return () => clearTimeout(damageNumberTimer);
-      }
-
-      console.log('Damage Number:', damageNumbers);
-    }
-  }, [actionResult, setDamageNumbers, setPrevDamageNumberId, setShowDamageNumber]);
-
-  const handleCharacterInteraction = (selectedCharacter, clickedCharacter, result) => {
-    actionResult.current = result;
-    updateLogText(printInteractionResult(result), 'interaction');
-    const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, result);
-    console.log('result', result);
-    if (result.hitPoints > 0) {
-      // Get position for damage number display
-      const targetPos = charPositions[result.char2];
-      const gridAnchor = gridAnchorCoordinates[`${targetPos.row}-${targetPos.col}`];
-
-      if (!gridAnchor) {
-        console.error('Grid anchor not found for target position:', targetPos);
-        return;
-      }
-
-      setDamageNumbers(prev => [...prev, {
-        id: Date.now(),
-        damage: result.hitPoints,
-        position: {
-          x: gridAnchor.x,
-          y: gridAnchor.y - 32 // Offset above the character
-        }
-      }]);
-      console.log('Damage Number:', damageNumbers);
-    }
-
-    if (Object.keys(updatedActiveTurnStates).length === 0 && Object.keys(updatedPassiveTurnStates).length === 0) {
-      console.error('No state updates detected');
+  const handleDamageNumbers = (actionResult) => {
+    if (!actionResult || !actionResult.damage) return;
+  
+    const { damage, targetName } = actionResult;
+  
+    // Get position for damage number display
+    const targetPos = charPositions[targetName];
+    if (!targetPos) {
+      console.error('Target position not found for:', targetName);
       return;
     }
-
-    if (result.isAlly) {
-      setAllyStates(prevStates => {
-        const newStates = {
-          ...prevStates,
-          ...updatedActiveTurnStates
-        };
-        // console.log('New Ally States:', newStates);
-        return newStates;
-      });
-      setFoeStates(prevStates => {
-        const newStates = {
-          ...prevStates,
-          ...updatedPassiveTurnStates
-        };
-        // console.log('New Foe States:', newStates);
-        return newStates;
-      });
-    } else {
-      setFoeStates(prevStates => {
-        const newStates = {
-          ...prevStates,
-          ...updatedActiveTurnStates
-        };
-        // console.log('New Foe States:', newStates);
-        return newStates;
-      });
-      setAllyStates(prevStates => {
-        const newStates = {
-          ...prevStates,
-          ...updatedPassiveTurnStates
-        };
-        // console.log('New Ally States:', newStates);
-        return newStates;
-      });
+  
+    const targetPosCoord = gridAnchorCoordinates[`${targetPos.row}-${targetPos.col}`];
+    if (!targetPosCoord) {
+      console.error('Grid anchor not found for target position:', targetPos);
+      return;
     }
-
-    console.log('Action result:', result);
-    updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
-    resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
+  
+    const newDamageNumber = {
+      id: Date.now(),
+      damage: damage,
+      position: {
+        x: targetPosCoord.x,
+        y: targetPosCoord.y - 32 // Offset above the character
+      }
+    };
+  
+    setDamageNumbers(prev => [...prev, newDamageNumber]);
+    
+    console.log('damageNumbers', newDamageNumber);
   };
-
+  // Add this inside the GameUI component's return statement, right after the AnimatedCharacter mapping
+  {damageNumbers.map(({ id, damage, position }) => (
+    <DamageNumber
+      key={id}
+      damage={damage}
+      position={position}
+      onAnimationEnd={() => {
+        setDamageNumbers(prev => prev.filter(item => item.id !== id));
+      }}
+    />
+  ))}
   return (
     <div className={styles['game-container']} onClick={handleContainerClick}>
       <div className={styles['content-wrapper']}>
@@ -1040,16 +975,6 @@ const GameUI = () => {
             ) : null;
           })}
 
-          {showDamageNumber ? damageNumbers.map(({ id, damage, position }) => (
-            <DamageNumber
-              key={id}
-              damage={damage}
-              position={position}
-              onAnimationEnd={() => {
-                setDamageNumbers(prev => prev.filter(item => item.id !== id));
-              }}
-            />
-          )) : null};
         </div>
         <LogTextContainer
           logText={logText}
