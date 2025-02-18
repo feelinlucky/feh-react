@@ -879,14 +879,14 @@ const GameUI = () => {
   }, [allyStates, foeStates]);
 
   const handleDamageNumbers = (actionResult) => {
-    if (!actionResult || !actionResult.damage) return;
+    if (!actionResult || !actionResult.hitPoints) return;
 
-    const { damage, targetName } = actionResult;
+    const { hitPoints, char2 } = actionResult;
 
     // Get position for damage number display
-    const targetPos = charPositions[targetName];
+    const targetPos = charPositions[char2];
     if (!targetPos) {
-      console.error('Target position not found for:', targetName);
+      console.error('Target position not found for:', char2);
       return;
     }
 
@@ -898,7 +898,7 @@ const GameUI = () => {
 
     const newDamageNumber = {
       id: Date.now(),
-      damage: damage,
+      damage: hitPoints,
       position: {
         x: targetPosCoord.x,
         y: targetPosCoord.y - 32
