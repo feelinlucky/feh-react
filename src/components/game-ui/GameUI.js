@@ -316,8 +316,6 @@ const GameUI = () => {
   const [clickedState, setClickedState] = useState(defaultClickState);
   const [clickedStateHistory, setClickedStateHistory] = useState([]);
   const [damageNumbers, setDamageNumbers] = useState([]);
-  const [prevDamageNumberId, setPrevDamageNumberId] = useState(null);
-  const [showDamageNumber, setShowDamageNumber] = useState(false);
 
   const updateClickedState = ({ gridY, gridX, isMapGrid, characterName, clickEvent }) => {
     // Create base click state
@@ -903,13 +901,15 @@ const GameUI = () => {
       damage: damage,
       position: {
         x: targetPosCoord.x,
-        y: targetPosCoord.y - 32 // Offset above the character
+        y: targetPosCoord.y - 32
       }
     };
 
-    setDamageNumbers(prev => [...prev, newDamageNumber]);
-
-    console.log('damageNumbers', newDamageNumber);
+    setDamageNumbers(prev => {
+      const updatedNumbers = [...prev, newDamageNumber];
+      console.log('Updated damage numbers:', updatedNumbers);
+      return updatedNumbers;
+    });
   };
 
   return (
