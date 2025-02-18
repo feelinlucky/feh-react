@@ -882,22 +882,22 @@ const GameUI = () => {
 
   const handleDamageNumbers = (actionResult) => {
     if (!actionResult || !actionResult.damage) return;
-  
+
     const { damage, targetName } = actionResult;
-  
+
     // Get position for damage number display
     const targetPos = charPositions[targetName];
     if (!targetPos) {
       console.error('Target position not found for:', targetName);
       return;
     }
-  
+
     const targetPosCoord = gridAnchorCoordinates[`${targetPos.row}-${targetPos.col}`];
     if (!targetPosCoord) {
       console.error('Grid anchor not found for target position:', targetPos);
       return;
     }
-  
+
     const newDamageNumber = {
       id: Date.now(),
       damage: damage,
@@ -906,22 +906,12 @@ const GameUI = () => {
         y: targetPosCoord.y - 32 // Offset above the character
       }
     };
-  
+
     setDamageNumbers(prev => [...prev, newDamageNumber]);
-    
+
     console.log('damageNumbers', newDamageNumber);
   };
-  // Add this inside the GameUI component's return statement, right after the AnimatedCharacter mapping
-  {damageNumbers.map(({ id, damage, position }) => (
-    <DamageNumber
-      key={id}
-      damage={damage}
-      position={position}
-      onAnimationEnd={() => {
-        setDamageNumbers(prev => prev.filter(item => item.id !== id));
-      }}
-    />
-  ))}
+
   return (
     <div className={styles['game-container']} onClick={handleContainerClick}>
       <div className={styles['content-wrapper']}>
@@ -974,6 +964,17 @@ const GameUI = () => {
               />
             ) : null;
           })}
+
+          {damageNumbers.map(({ id, damage, position }) => (
+            <DamageNumber
+              key={id}
+              damage={damage}
+              position={position}
+              onAnimationEnd={() => {
+                setDamageNumbers(prev => prev.filter(item => item.id !== id));
+              }}
+            />
+          ))}
 
         </div>
         <LogTextContainer
