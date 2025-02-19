@@ -279,8 +279,6 @@ const DamageNumber = ({ damage, position, onAnimationEnd }) => {
     onRest: onAnimationEnd, // Trigger the callback when animation ends
   });
 
-  console.log('DamageNumber props:', damage, ' | ', position, ' | ', onAnimationEnd);
-
   return (
     <animated.div
       style={{
