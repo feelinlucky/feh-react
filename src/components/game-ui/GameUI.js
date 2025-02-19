@@ -269,15 +269,17 @@ const DamageNumber = ({ damage, position, onAnimationEnd }) => {
   const springProps = useSpring({
     from: {
       opacity: 1,
-      transform: 'translateY(0px)',
+      transform: 'translateY(0px)'
     },
     to: {
       opacity: 0,
-      transform: 'translateY(-30px)',
+      transform: 'translateY(-30px)'
     },
-    config: { tension: 120, friction: 14 },
-    onRest: onAnimationEnd,
+    config: { tension: 120, friction: 14 }, // Customize animation settings
+    onRest: onAnimationEnd, // Trigger the callback when animation ends
   });
+
+  console.log('DamageNumber props:', damage, ' | ', position, ' | ', onAnimationEnd);
 
   return (
     <animated.div
@@ -297,6 +299,7 @@ const DamageNumber = ({ damage, position, onAnimationEnd }) => {
     </animated.div>
   );
 };
+
 
 const GameUI = () => {
   const location = useLocation();
@@ -905,11 +908,12 @@ const GameUI = () => {
       }
     };
 
-    setDamageNumbers(prev => {
-      const updatedNumbers = [...prev, newDamageNumber];
-      console.log('Updated damage numbers:', updatedNumbers);
-      return updatedNumbers;
-    });
+    setDamageNumbers((prev) => [...prev, newDamageNumber]);
+    // setDamageNumbers(prev => {
+    //   const updatedNumbers = [...prev, newDamageNumber];
+    //   console.log('Updated damage numbers:', updatedNumbers);
+    //   return updatedNumbers;
+    // });
   };
 
   return (
@@ -971,7 +975,7 @@ const GameUI = () => {
               damage={damage}
               position={position}
               onAnimationEnd={() => {
-                setDamageNumbers(prev => prev.filter(item => item.id !== id));
+                setDamageNumbers((prev) => prev.filter((item) => item.id !== id));
               }}
             />
           ))}
