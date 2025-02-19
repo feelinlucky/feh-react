@@ -276,12 +276,12 @@ const DamageNumber = ({ damage, position, onAnimationEnd }) => {
       opacity: 0,
       transform: 'translateY(-30px)'
     },
-    config: { duration: displayTime, tension: 120, friction: 14 }, // Customize animation settings
-    onRest: onAnimationEnd, // Trigger the callback when animation ends
+    config: { duration: displayTime, tension: 120, friction: 14 },
+    onRest: onAnimationEnd,
   });
 
   useEffect(() => {
-    const timer = setTimeout(onAnimationEnd, displayTime); // Ensure removal after 1 second
+    const timer = setTimeout(onAnimationEnd, displayTime);
     return () => clearTimeout(timer);
   }, [onAnimationEnd]);
 
@@ -294,8 +294,11 @@ const DamageNumber = ({ damage, position, onAnimationEnd }) => {
         top: `${position.y}px`,
         fontSize: '24px',
         fontWeight: 'bold',
-        color: '#ff0000',
-        textShadow: '2px 2px 2px rgba(0,0,0,0.5)',
+        color: '#ffffff', // White text
+        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Black background with transparency
+        padding: '2px 4px', // Padding for better visibility
+        borderRadius: '4px', // Rounded corners
+        textShadow: '2px 2px 2px rgba(0,0,0,0.5)', // Shadow for text
         zIndex: 1000,
       }}
     >
