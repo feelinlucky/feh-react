@@ -266,6 +266,7 @@ const calculateGridCellCoordinates = (draggedOverGrid, gridAnchorCoordinates) =>
 };
 
 const DamageNumber = ({ damage, position, onAnimationEnd }) => {
+  const displayTime = 5000;
   const springProps = useSpring({
     from: {
       opacity: 1,
@@ -275,9 +276,14 @@ const DamageNumber = ({ damage, position, onAnimationEnd }) => {
       opacity: 0,
       transform: 'translateY(-30px)'
     },
-    config: { tension: 120, friction: 14 }, // Customize animation settings
+    config: { duration: displayTime, tension: 120, friction: 14 }, // Customize animation settings
     onRest: onAnimationEnd, // Trigger the callback when animation ends
   });
+
+  useEffect(() => {
+    const timer = setTimeout(onAnimationEnd, displayTime); // Ensure removal after 1 second
+    return () => clearTimeout(timer);
+  }, [onAnimationEnd]);
 
   return (
     <animated.div
