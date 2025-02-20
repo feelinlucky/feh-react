@@ -414,6 +414,30 @@ const GameUI = () => {
     }, {})
   );
 
+  const applyAndCheckActionResult = (allyStates, foeStates, actionResult) => {
+    const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, actionResult);
+  
+    if (actionResult.isAlly) {
+      setAllyStates(prevStates => ({
+        ...prevStates,
+        ...updatedActiveTurnStates
+      }));
+      setFoeStates(prevStates => ({
+        ...prevStates,
+        ...updatedPassiveTurnStates
+      }));
+    } else {
+      setFoeStates(prevStates => ({
+        ...prevStates,
+        ...updatedActiveTurnStates
+      }));
+      setAllyStates(prevStates => ({
+        ...prevStates,
+        ...updatedPassiveTurnStates
+      }));
+    }
+  };
+
   const terrainData = defineTerrainGrid(mapState?.terrain || []);
   const allyPos = mapState?.allyPos || [];
   const foePos = mapState?.foePos || [];
@@ -777,30 +801,9 @@ const GameUI = () => {
           };
 
           updateLogText(printInteractionResult(actionResult), 'interaction');
-          // TODO: add handle damage number in actionResult.
           handleDamageNumbers(actionResult);
 
-          const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, actionResult);
-
-          if (actionResult.isAlly) {
-            setAllyStates(prevStates => ({
-              ...prevStates,
-              ...updatedActiveTurnStates
-            }));
-            setFoeStates(prevStates => ({
-              ...prevStates,
-              ...updatedPassiveTurnStates
-            }));
-          } else {
-            setFoeStates(prevStates => ({
-              ...prevStates,
-              ...updatedActiveTurnStates
-            }));
-            setAllyStates(prevStates => ({
-              ...prevStates,
-              ...updatedPassiveTurnStates
-            }));
-          }
+          applyAndCheckActionResult(allyStates, foeStates, actionResult);
 
           updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
           resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
@@ -916,11 +919,6 @@ const GameUI = () => {
     };
 
     setDamageNumbers((prev) => [...prev, newDamageNumber]);
-    // setDamageNumbers(prev => {
-    //   const updatedNumbers = [...prev, newDamageNumber];
-    //   console.log('Updated damage numbers:', updatedNumbers);
-    //   return updatedNumbers;
-    // });
   };
 
   return (
