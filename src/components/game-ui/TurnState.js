@@ -1,7 +1,9 @@
 function createTurnState(allyStates, foeStates, {
   onTurnStart,
   onTurnEnd,
-  onGroupSwitch
+  onGroupSwitch,
+  setAllyStates,
+  setFoeStates
 }) {
   let turnNumber = 1;
 
@@ -144,31 +146,48 @@ function createTurnState(allyStates, foeStates, {
 
   function endTurnCurrentGroup() {
     const currentGroup = currentGroupStates();
-    Object.values(currentGroup).forEach(unit => (
-      unit.hasActed = false,
-      unit.hasMoved = false,
-      unit.endedTurn = false
-    ));
+    const updatedGroup = { ...currentGroup };
+    Object.keys(updatedGroup).forEach(characterName => {
+      updatedGroup[characterName] = {
+        ...updatedGroup[characterName],
+        hasActed: false,
+        hasMoved: false,
+        endedTurn: false
+      };
+    });
+    if (currentActiveGroupIsAlly()) {
+      setAllyStates(updatedGroup);
+    } else {
+      setFoeStates(updatedGroup);
+    }
   }
 
   function startTurnNextGroup() {
     const nextGroup = nextGroupStates();
-    Object.values(nextGroup).forEach(unit => {
-      if (unit.isAlive) {
-        unit.hasActed = true;
-        unit.hasMoved = true;
-        unit.endedTurn = true;
+    const updatedGroup = { ...nextGroup };
+    Object.keys(updatedGroup).forEach(characterName => {
+      if (updatedGroup[characterName].isAlive) {
+        updatedGroup[characterName] = {
+          ...updatedGroup[characterName],
+          hasActed: false,
+          hasMoved: false,
+          endedTurn: false
+        };
       } else {
-        console.log(unit.name + ' is dead.');
+        console.log(updatedGroup[characterName].name + ' is dead.');
       }
     });
+    if (!currentActiveGroupIsAlly()) {
+      setAllyStates(updatedGroup);
+    } else {
+      setFoeStates(updatedGroup);
+    }
   }
-
+  
   function resetGroupActions() {
     endTurnCurrentGroup();
     startTurnNextGroup();
   }
-
   // Undo/redo moves
   const turnHistory = [];
   const redoStack = [];
@@ -190,8 +209,8 @@ function createTurnState(allyStates, foeStates, {
       redoStack.push(turnHistory.pop());
       const prevState = turnHistory[turnHistory.length - 1];
       turnNumber = prevState.turnNumber;
-      allyStates = prevState.allyStates;
-      foeStates = prevState.foeStates;
+      setAllyStates(prevState.allyStates);
+      setFoeStates(prevState.foeStates);
     }
   }
 
@@ -200,11 +219,10 @@ function createTurnState(allyStates, foeStates, {
       const nextState = redoStack.pop();
       turnHistory.push(nextState);
       turnNumber = nextState.turnNumber;
-      allyStates = nextState.allyStates;
-      foeStates = nextState.foeStates;
+      setAllyStates(nextState.allyStates);
+      setFoeStates(nextState.foeStates);
     }
   }
-
   return {
     currentActiveGroupIsAlly,
     currentGroupStates,

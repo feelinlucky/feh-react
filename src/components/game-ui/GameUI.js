@@ -527,7 +527,9 @@ const GameUI = () => {
     {
       onTurnStart: handleTurnStart,
       onTurnEnd: handleTurnEnd,
-      onGroupSwitch: handleGroupSwitch
+      onGroupSwitch: handleGroupSwitch,
+      setAllyStates,
+      setFoeStates
     }
   )).current;
 
