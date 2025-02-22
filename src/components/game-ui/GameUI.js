@@ -402,19 +402,19 @@ const GameUI = () => {
 
   const [allyStates, setAllyStates] = useState(
     allyNames.reduce((acc, name) => {
-      acc[name] = { ...characterData(name), group: 'ally', hasMoved: false, hasActed: false, turnEnded: false };
+      acc[name] = { ...characterData(name), group: 'ally', isAlive: true, hasMoved: false, hasActed: false, turnEnded: false };
       return acc;
     }, {})
   );
 
   const [foeStates, setFoeStates] = useState(
     foeNames.reduce((acc, name) => {
-      acc[name] = { ...characterData(name), group: 'foe', hasMoved: false, hasActed: false, turnEnded: false };
+      acc[name] = { ...characterData(name), group: 'foe', isAlive: true, hasMoved: false, hasActed: false, turnEnded: false };
       return acc;
     }, {})
   );
 
-  const applyAndCheckActionResult = (allyStates, foeStates, actionResult) => {
+  const applyActionToCharStates = (allyStates, foeStates, actionResult) => {
     const { updatedActiveTurnStates, updatedPassiveTurnStates } = applyActionResult(allyStates, foeStates, actionResult);
   
     if (actionResult.isAlly) {
@@ -435,7 +435,28 @@ const GameUI = () => {
         ...prevStates,
         ...updatedPassiveTurnStates
       }));
-    }
+    };
+
+    // After updating character states, check if any character has 0 HP. If so, update its isAlive state to false
+    setAllyStates(prevStates => {
+      const updatedStates = { ...prevStates };
+      for (const charName in updatedStates) {
+        if (updatedStates[charName].hp <= 0) {
+          updatedStates[charName].isAlive = false;
+        }
+      }
+      return updatedStates;
+    });
+
+    setFoeStates(prevStates => {
+      const updatedStates = { ...prevStates };
+      for (const charName in updatedStates) {
+        if (updatedStates[charName].hp <= 0) {
+          updatedStates[charName].isAlive = false;
+        }
+      }
+      return updatedStates;
+    });
   };
 
   const terrainData = defineTerrainGrid(mapState?.terrain || []);
@@ -661,9 +682,15 @@ const GameUI = () => {
   };
 
   // Update turn state after each character action
-  const updateTurnState = useCallback(({ characterName, justMoved, justActed }) => {
+  const updateTurnState = useCallback(({ characterName, justMoved, justActed , targetCharacter = null}) => {
     if (justActed) {
       turnState.hasActed(characterName);
+
+      if (targetCharacter) {
+        turnState.applyAliveStates([characterName, targetCharacter]);
+      } else {
+        turnState.applyAliveState(characterName);
+      };
     }
 
     if (justMoved) {
@@ -803,9 +830,8 @@ const GameUI = () => {
           updateLogText(printInteractionResult(actionResult), 'interaction');
           handleDamageNumbers(actionResult);
 
-          applyAndCheckActionResult(allyStates, foeStates, actionResult);
-
-          updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true });
+          applyActionToCharStates(allyStates, foeStates, actionResult);
+          updateTurnState({ characterName: selectedCharacter, justActed: true, justMoved: true , targetCharacter: clickedCharacter});
           resetSelectState({ resetClickedState: true, resetSelectedCharacter: true, resetHighlightedCells: true });
           return;
         };

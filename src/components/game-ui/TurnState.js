@@ -5,6 +5,11 @@ function createTurnState(allyStates, foeStates, {
 }) {
   let turnNumber = 1;
 
+  function getCharacterState(characterName) {
+    const characterState = allyStates[characterName] || foeStates[characterName] || null;
+    return characterState;
+  }
+
   function currentTurnIsOdd() {
     return (turnNumber === 1) || ((turnNumber % 2) === 1);
   }
@@ -46,11 +51,11 @@ function createTurnState(allyStates, foeStates, {
   // Check if the character is in the current group and hasn't acted yet
   function unitTurnFinished(characterName) {
     const charTurnState = getCharacterTurnState(characterName);
-      if ( (charTurnState?.isAlly === currentActiveGroupIsAlly())
-        && (charTurnState.hasActed && charTurnState.hasMoved)) {
-        charTurnState.endedTurn = true;
-        return true;
-      }
+    if ((charTurnState?.isAlly === currentActiveGroupIsAlly())
+      && (charTurnState.hasActed && charTurnState.hasMoved)) {
+      charTurnState.endedTurn = true;
+      return true;
+    }
     return false;
   }
 
@@ -94,6 +99,49 @@ function createTurnState(allyStates, foeStates, {
     return (hasMoved(characterName) && hasActed(characterName))
   }
 
+  function getAliveState(characterName) {
+    const charState = getCharacterState(characterName);
+    if (!charState) {
+      console.error(`Character ${characterName} not found.`);
+      return null;
+    }
+    return charState.isAlive;
+  }
+
+  function setAliveState(characterName, bool) {
+    const charState = getCharacterState(characterName);
+    if (!charState) {
+      console.error(`Character ${characterName} not found.`);
+      return false;
+    }
+    charState.isAlive = bool;
+
+    if (getAliveState(characterName) === false) {
+      setUnitTurnAsFinished(characterName);
+    };
+    return;
+  }
+
+  function applyAliveState(characterName) {
+    const charState = getCharacterState(characterName);
+    if (!charState) {
+      console.error(`Character ${characterName} not found.`);
+      return false;
+    }
+    if (charState.isAlive && (charState.hp <= 0)) {
+      setAliveState(characterName, false);
+    };
+
+    return;
+  }
+
+  function applyAliveStates(characterNames) {
+    for (const characterName of characterNames) {
+      applyAliveState(characterName);
+    };
+    return;
+  }
+
   function endTurnCurrentGroup() {
     const currentGroup = currentGroupStates();
     Object.values(currentGroup).forEach(unit => (
@@ -105,11 +153,15 @@ function createTurnState(allyStates, foeStates, {
 
   function startTurnNextGroup() {
     const nextGroup = nextGroupStates();
-    Object.values(nextGroup).forEach(unit => (
-      unit.hasActed = true,
-      unit.hasMoved = true,
-      unit.endedTurn = true
-    ));
+    Object.values(nextGroup).forEach(unit => {
+      if (unit.isAlive) {
+        unit.hasActed = true;
+        unit.hasMoved = true;
+        unit.endedTurn = true;
+      } else {
+        console.log(unit.name + ' is dead.');
+      }
+    });
   }
 
   function resetGroupActions() {
@@ -161,6 +213,8 @@ function createTurnState(allyStates, foeStates, {
     unitTurnFinished,
     hasMoved,
     hasActed,
+    applyAliveState,
+    applyAliveStates,
     setUnitTurnAsFinished,
     resetGroupActions,
     currentGroupHasFinishedTurn,
